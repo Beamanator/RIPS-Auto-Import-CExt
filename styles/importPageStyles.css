@@ -1,0 +1,50 @@
+div[class^="col-"] {
+    border: solid 1px black;
+    display: inline-block;
+}
+div[class^="col-"]:nth-child(even) {
+    background-color: #bfbfbf;
+}
+div[class^="col-"]:nth-child(odd) {
+    background-color: #fff;
+}
+
+div#table-containers {
+    clear: left;
+    white-space: nowrap;
+    overflow-x: scroll;
+}
+
+div.table-buttons {
+    /*width: 100px;*/
+    display: inline-block;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border: solid 1px black;
+    background-color: #fff;
+}
+div.table-buttons:nth-child(even) {
+    background-color: #bfbfbf;
+}
+
+div#full-import {
+    float: left;
+    width: 800px;
+}
+
+button.disabled-button {
+    color: #adadad;
+}
+
+button.table-buttons-minus {
+    width: 35px;
+    margin-left: 12px;
+}
+button.table-buttons-plus {
+    width: 35px;
+    margin-right: 15px;
+}
+
+body {
+    width: 800px; /* 800px is max width */
+}
