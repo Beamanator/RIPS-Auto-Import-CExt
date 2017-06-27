@@ -1,9 +1,8 @@
-// Last Updated: March 21, 2017
+// Last Updated: June 27, 2017
 // ==================== ERROR THROWING API =======================
 
 /*
 	Ideas for improvement:
-	1) Throw swal error?
 */
 
 /*

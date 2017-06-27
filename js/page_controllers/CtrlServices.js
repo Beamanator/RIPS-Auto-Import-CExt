@@ -3,6 +3,13 @@
  * Controller function for Services pages - decides what to do based off of
  * passed in action.
  * 
+ * Process:
+ * 1) Get current client's service id from input (it should exist)
+ * 2) Gets matching service description
+ * 3) Looks for service description on "services" list page
+ * 4.A) - redirects to add new if doesn't exist
+ * 4.B) - reopens (if needed) then redirects to Action controller if does exist
+ * 
  * Called by: Run_CtrlServices [in MainContent.js]
  * 
  * @param {any} action 
@@ -22,10 +29,14 @@ function Services_Controller( action ) {
 
 // ============================== MAIN FUNCTIONS =======================
 
+/**
+ * Function begins the search for:
+ * 1) if a service needs to be added to the client, and
+ * 2) if the service already exists, and
+ * 3) if the service already exists and needs to be reopened
+ * 
+ */
 function startServiceSearch() {
-	debugger;
-	var needsService = true;
-
 	// get client data and index from store
 	var mObj = {
 		action: 'get_data_from_chrome_storage_local',
@@ -45,95 +56,109 @@ function startServiceSearch() {
 		var FT = Utils_GetFieldTranslator();
 		if (!FT) return; // let Utils handle everything - and quit!
 
-		var serviceCode = client[FT['SERVICE_CODE']];
+		// get service id from client object
+		var serviceID = client[FT['SERVICE_ID']];
 
-		// FIXME: Need to convert service code or description to names that will
-		// appear in the table :(
-		// -> Either in DropdownCodeContainer or Utils or new file
+		// TODO: Make sure ids from Utils_GetServiceDescFromID is the same id
+		// needed in adding a service!
 
+		// get service description from map - to match with table
+		var serviceDesc = Utils_GetServiceDescFromID( serviceID );
+
+		// if service description doesn't exist, id didn't match mapping
+		if (!serviceDesc) {
+			var errorMessage = 'client #' + (clientIndex + 1) + ' from import has a'
+				+ ' service id that doesn\'t match a real service';
+			
+			// service id didn't match, so stop import...
+			var mObj2 = {
+				action: 'stopped_via_error',
+				message: errorMessage
+			};
+
+			chrome.runtime.sendMessage(mObj2, function(response) {
+				// ... then warn user about error
+				ThrowError({
+					message: errorMessage,
+					errMethods: ['mAlert', 'mConsole']
+				});
+			});
+		}
+		
+		// serviceDesc exists, so try to find it in the services list
+		else {
+			searchServiceInTable( serviceDesc );
+		}
 	});
 	
 	console.log('commented out real useful code below [in file]:');
-	// TODO: uncomment once above FIXME is complete
-
-
-	// // Loop through each row and column of the services table:
-	// $('table.webGrid tbody tr').each(function(rowIndex) {
-	// 	var cellList = $(this).find('td');
-
-	// 	// service name is only thing that uniquely describes service.
-	// 	// var serviceHistoryID = cellList[0].innerHTML; // <-- not really needed
-	// 	var isLive = $(this).find('input[type="checkbox"]').is(':checked');
-	// 	var serviceName = cellList[2].innerHTML;
-
-	// 	// console.log(serviceID, isLive, serviceName);
-	// 	var serviceRow = $(this);
-
-	// 	// check if service ID matches that of AEP ('Children's Education Program') & it's live
-	// 	if (serviceName === "Children's Education Program") {
-	// 		needsService = false;
-	// 		// console.log('about to store state to client-service-added');
-			
-	// 		if (isLive) {
-	// 			navigate();
-	// 			return false;
-	// 		} else {
-	// 			updateStorageLocal([{'ACTION_STATE': 'CLIENT_SERVICE_REOPENED'}])
-	// 			.then(function(results) {
-	// 				// not live, so need to reopen service.
-	// 				reOpenService(serviceRow);
-	// 				return false;
-	// 			});
-	// 		}
-	// 	}
-	// });
-
-	// if (needsService) {
-	// 	// If the code got here, we need to add the service. So click "New" after updating action-state
-	// 	updateStorageLocal([{'ACTION_STATE': 'CLIENT_SERVICE_NEEDED'}])
-	// 	.then(function(results) {
-	// 		$('input#NewServices').click();
-	// 	});
-	// }
 }
 
-// re-opens service 'Adult Education Program'
-// ugly, but the 'reopen' button shows up around 1 second after clicking on the service you want to reopen
-// so my only solution is to have options to wait 1 then 10 seconds for it to show up.
-function reOpenService(serviceRow) {
-	// click on row to bring up options for reopening:
-	serviceRow.click();
+/**
+ * Function attempts to match a given service description with descriptions
+ * shown in the "services" table on Service page.
+ * 
+ * If service is found, decide if it needs to be reopened
+ * Else, redirect to page to add service
+ * 
+ * @param {string} serviceDesc - description of service to match to table descriptions 
+ */
+function searchServiceInTable( serviceDesc ) {
+	var needsService = true;
+	
+	// Loop through each row and column of the services table:
+	$('table.webGrid tbody tr').each(function(rowIndex) {
+		var $serviceRow = $(this);
 
-	var reopenButton = $('input[value="Reopen"]');
+		// get array of cells in current service row
+		var cellList = $serviceRow.find('td');
 
-	// look for 'reopen' button, and click it.
-	if (reopenButton.length < 1) {
-		setTimeout( function(){
-			reopenButton = $('input[value="Reopen"]');
-			if (reopenButton.length < 1) {
-				setTimeout( function(){
-					reopenButton = $('input[value="Reopen"]');
-					if (reopenButton.length < 1) {
-						// TODO: potentially set ACTION_STATE to something to continue the
-						// process. Also maybe store some error info? stop the import?
-						console.log('after 11 seconds, still couldnt reopen the service :(');
-					} else {
-						reopenButton.click();
-					}
-				}, 10000);
-			} else {
-				reopenButton.click();
+		// service description is only thing that uniquely describes service on page.
+		var isLive = $serviceRow.find('input[type="checkbox"]').is(':checked');
+		var rowServiceDescription = cellList[2].innerHTML;
+
+		// check if serviceDesc matches this row
+		if (rowServiceDescription.toUpperCase() === serviceDesc.toUpperCase()) {
+			
+			if (isLive) {
+				// no need to add new service
+				needsService = false;
+				
+				// navigate to add actions page
+				Utils_NavigateToTab('/Stars/MatterAction/CreateNewAction');
 			}
-		}, 1000);
-	} else {
-		reopenButton.click();
+			
+			/*
+				If service found but not live: do nothing
+					-> needsService stays true, so adds service
+					-> still exits loop (via return false)
+					-> removing reOpenService($serviceRow); (reasons below)
+			*/
+
+			return false; // -> break loop
+		}
+
+		// return true; -> same as 'continue' in jquery loop
+	});
+
+	// serviceDesc wasn't found in table, so client needs new service added
+	if (needsService) {
+		var mObj = {
+			action: 'store_data_to_chrome_storage_local',
+			dataObj: {
+				'ACTION_STATE': 'CLIENT_ADD_SERVICE'
+			}
+		};
+		
+		// update action state then click 'new' button
+		// -> this will redirect to page to add a new service
+		chrome.runtime.sendMessage(mObj, function(response) {
+			$('input#NewServices').click();
+		});
 	}
 }
 
-// navigate to next part of the workflow - adding actions.
-function navigate() {
-	updateStorageLocal([{'ACTION_STATE': 'CLIENT_SERVICE_ADDED'}])
-	.then(function(results) {
-		navigateToTab('/Stars/MatterAction/CreateNewAction');
-	});
-}
+// NOTE: Code (reOpenService) removed b/c:
+// 1) it looks super ugly, and if internet is bad, maay still break.
+// 2) if a service is 'closed', you can still add a new one of the same type
+//    -> can't have 2 live servies of the same type, can have two closed of same type

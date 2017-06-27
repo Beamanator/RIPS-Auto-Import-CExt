@@ -71,7 +71,7 @@ chrome.runtime.onMessage.addListener(function(mObj, MessageSender, sendResponse)
 
         // import should be stopped due to an error
         case 'stopped_via_error':
-            stopViaError(sendResponse);
+            stopViaError(mObj, sendResponse);
             break;
 
         // ---- NEW ACTIONS GO ABOVE THIS LINE ----
@@ -118,13 +118,15 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
  * Function sets action state as "ERROR_STATE", effectively shutting down the import
  * Then sendResponse is called, letting the caller display an error or anything
  * 
- * Also, client index and client data are cleared
+ * Also, client index and client data are cleared and message (from mObj) is
+ * saved as ERROR_MESSAGE (if it exists)
  * 
+ * @param {object} mObj - message config object from caller
  * @param {function} sendResponse callback function for caller to use to display specific error
  */
-function stopViaError(sendResponse) {
+function stopViaError(mObj, sendResponse) {
     // setup mObj:
-    var mObj = {
+    var mObj2 = {
         dataObj: {
             'ACTION_STATE': 'ERROR_STATE',
             'CLIENT_DATA': '',
@@ -132,7 +134,12 @@ function stopViaError(sendResponse) {
         }
     };
 
-    storeToChromeLocalStorage(mObj, sendResponse);
+    // if mObj has a message attached, add ERROR_MESSAGE
+    if (mObj.message)
+        mObj2['dataObj']['ERROR_MESSAGE'] = mObj.message;
+
+    // store / clear data:
+    storeToChromeLocalStorage(mObj2, sendResponse);
 }
 
 /**
@@ -193,6 +200,7 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
             ACTION_STATE    -	holds the on/off (true / false) value for each field
                             ANALYZE_CLIENT_DUPLICATES = analyze search results
                             CHECK_CLIENT_SERVICES   = check if specific service is live for client
+                            CLIENT_ADD_SERVICE      = tells service ctrl to add service
                             CLIENT_CREATED          = client created, now decide what's next
                             ERROR_STATE             = errored state - fix the problem and try again!
                             REGISTER_NEW_CLIENT     = Register new client

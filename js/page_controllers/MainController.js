@@ -175,7 +175,7 @@ function BeginClientImport() {
 
 /**
  * Function will decide the next step to take AFTER client has been created (or found)
- * - if SERVICE_CODE is found in client data, go to services page.
+ * - if SERVICE_ID is found in client data, go to services page.
  * - else, go back to advanced search page and to next client.
  * 
  * Called by: AdvancedSearch.js, ClientBasicInformation.js
@@ -201,13 +201,13 @@ function MainContent_DoNextStep() {
 		var FT = Utils_GetFieldTranslator();
 		if (!FT) return; // basically quit doing anything else!
 
-		// 2) get service code column
-		// (service code is only required field for any service or action entering)
-		var serviceCode = client[FT['SERVICE_CODE']];
+		// 2) get service id column from spreadsheet data
+		// (service id is only required field for any service or action entering)
+		var serviceID = client[FT['SERVICE_ID']];
 
-		// 3.A) if there is no service code, go back to advanced search page to process
+		// 3.A) if there is no service id, go back to advanced search page to process
 		// next client.
-		if (!serviceCode) {
+		if (!serviceID) {
 			// store next action state before redirecting to Advanced Search
 			var mObj2 = {
 				action: 'store_data_to_chrome_storage_local',
@@ -223,7 +223,7 @@ function MainContent_DoNextStep() {
 			});
 		}
 
-		// 3.B) if there is a service code, set action state and redirect to
+		// 3.B) if there is a service id, set action state and redirect to
 		// services page to figure out what data to add
 		else {
 			var mObj2 = {

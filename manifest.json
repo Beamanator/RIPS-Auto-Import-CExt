@@ -9,8 +9,6 @@
 		TODO:
 			Registration.js:
 				- Add rest of client data to import [insertClientDetails()]
-			background.js:
-				- Decide how to redirect user after creating client
 	*/
 
 	"permissions": [
@@ -35,11 +33,12 @@
 			"js": [ "js/page_controllers/CtrlServices.js" ]
 		},
 		{	// Add Action page
-			"matches": [
-				"http://rips.247lib.com/*/MatterAction/CreateNewAction",  // [add]
-				"http://rips.247lib.com/*/MatterAction/MatterActionsList" // [view]
-			], // TODO: make sure page is named correctly [CtrlActions.js]
-			"js": [ "js/page_controllers/CtrlActions.js" ]
+			"matches": [ "http://rips.247lib.com/*/MatterAction/CreateNewAction" ],
+			"js": [ "js/page_controllers/CtrlAddAction.js" ]
+		},
+		{	// View Actions page
+			"matches": [ "http://rips.247lib.com/*/MatterAction/MatterActionsList" ],
+			"js": [ "js/page_controllers/CtrlViewActions.js" ]
 		},
 		{	// Advanced Search page
 			"matches": [ "http://rips.247lib.com/*/SearchClientDetails/*" ],
