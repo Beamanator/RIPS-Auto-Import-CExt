@@ -17,7 +17,7 @@ function Utils_GetFieldTranslator() {
 	// if Field Translator doesn't exist, can't add any clients, so cancel!
 	else {
 		var errorMessage = 'Field Translator not found! Cancelling import';
-		
+
 		// set action state to error state
 		var mObj = {
 			action: 'stopped_via_error',
@@ -108,36 +108,37 @@ function Utils_UrlContains(urlPiece) {
 }
 
 /**
- * Function returns the description of the service for the given id
+ * Function returns the description of the service for the given code
  * Purpose = for service controller to match to list of services on page
  * 
  * Called by: CtrlServices.js
  * 
- * @param {number} id - id of service (from Matters and Actions -> Matters) page
+ * @param {string} code - code of service (from Matters and Actions -> Matters) page
+ * 						-> up to 6 characters long
  * @returns - string description of service, or undefined
  */
-function Utils_GetServiceDescFromID( id ) {
-	var map = {
-		65:		'Adult Education Program',			// AEP
-		56: 	'PS Adults and Families Program',	// AFP
-		64: 	'Children\'s Education Program', 	// CEP
-		57:		'PS Direct Assistance Program',		// DAP
-		58:		'PS Drop in and Emergency Response',		// DIER
-		66:		'Education Access and Capacity Building',	// EACB
-		59:		'PS Groups and Activities',			// GROUPS
-		67:		'Management',						// MAN
-		60:		'PS Medical Access Program',		// MED
-		63:		'Montessori Preschool',				// MONT
-		39:		'Non Client Time',					// NONCLN
-		69:		'Professional Development Courses',	// PDC
-		68:		'RLAP Protection',					// PRO
-		45:		'RLAP RSD',							// RSD
-		55:		'RLAP Resettlement', 				// RST
-		61:		'PS Unaccompanied Children and Youth Program',	// UCY
-		62:		'PS Unaccompanied Youth Bridging Program'		// UYBP
+function Utils_GetServiceDescFromCode( code ) {
+	var map = {										// id's below
+		AEP:	'Adult Education Program',			// 65
+		AFP: 	'PS Adults and Families Program',	// 56
+		CEP: 	'Children\'s Education Program', 	// 64
+		DAP:	'PS Direct Assistance Program',		// 57
+		DIER:	'PS Drop in and Emergency Response',		// 58
+		EACB:	'Education Access and Capacity Building',	// 66
+		GROUPS:	'PS Groups and Activities',			// 59
+		MAN:	'Management',						// 67
+		MED:	'PS Medical Access Program',		// 60
+		MONT:	'Montessori Preschool',				// 63
+		NONCLN:	'Non Client Time',					// 39
+		PDC:	'Professional Development Courses',	// 69
+		PRO:	'RLAP Protection',					// 68
+		RSD:	'RLAP RSD',							// 45
+		RST:	'RLAP Resettlement', 				// 55
+		UCY:	'PS Unaccompanied Children and Youth Program',	// 61
+		UYBP:	'PS Unaccompanied Youth Bridging Program'		// 62
 	};
 
-	return map[id];
+	return map[code];
 }
 
 // =====================================================================================

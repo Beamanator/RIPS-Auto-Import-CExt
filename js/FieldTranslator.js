@@ -39,15 +39,15 @@ function FT_getFieldTranslator() {
 
 		// ================ OPTIONAL SERVICE / ACTION =================
 		// === SERVICES: ===
-		"SERVICE_NAME":			"Service Name",
-		"SERVICE_ID":			"Service ID", // REQUIRED!!
+		// "SERVICE_NAME":			"Service Name",
+		"SERVICE_CODE":			"Service Code", // REQUIRED!!
 		"SERVICE_START_DATE":	"Service Start Date",
 		"SERVICE_CASEWORKER":	"Service Caseworker",
 
 		// === ACTIONS: ===
 		"ACTION_NAME":			"Action Name",
 		"ACTION_CODE":			"Action Code", // REQUIRED!!
-		"ACTION_SERVICE":		"Action Service",
+		// "ACTION_SERVICE":		"Action Service",
 		"ACTION_DATE":			"Action Date",
 		"ACTION_CASEWORKER":	"Action Caseworker",
 		"ACTION_NOTES":			"Attendance Notes"

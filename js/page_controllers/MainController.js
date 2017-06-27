@@ -27,9 +27,9 @@ function getPageControllerFunctions() {
 		'ClientDetails/ClientServicesList': 'Run_CtrlServices',
 		'MatterAction/CreateNewServices': 'Run_CtrlServices',
 
-		// Action ctrl
-		'MatterAction/CreateNewAction': '',
-		'MatterAction/MatterActionsList': ''
+		// New / View Action ctrls
+		'MatterAction/CreateNewAction': 'Run_CtrlAddAction',
+		'MatterAction/MatterActionsList': 'Run_CtrlViewActions'
 	}
 }
 
@@ -136,21 +136,22 @@ function Run_CtrlClientBasicInformation( action ) {
 }
 
 // run controller code in CtrlServices.js
-function Run_CtrlServices( action  ){
+function Run_CtrlServices( action  ) {
 	if (Services_Controller)
 		Services_Controller( action );
 }
 
-// TODO: handle these functions in AdvancedSearch_Controller!
-// function StartImport( clientData ) {
-// 	AdvancedSearch_StartImport( clientData );
-// }
-// function importNextClient() {
-// 	AdvancedSearch_ImportNextClient();
-// }
-// function processAdvancedSearchResults() {
-// 	AdvancedSearch_ProcessSearchResults();
-// }
+// run controller code in CtrlAddAction.js
+function Run_CtrlAddAction( action ) {
+	if (AddAction_Controller)
+		AddAction_Controller( action );
+}
+
+// run controller code in CtrlViewActions.js
+function Run_CtrlViewActions( action ) {
+	if (ViewActions_Controller)
+		ViewActions_Controller( action );
+}
 
 // ======================================= OTHER FUNCTIONS ========================================
 
@@ -175,7 +176,7 @@ function BeginClientImport() {
 
 /**
  * Function will decide the next step to take AFTER client has been created (or found)
- * - if SERVICE_ID is found in client data, go to services page.
+ * - if SERVICE_CODE is found in client data, go to services page.
  * - else, go back to advanced search page and to next client.
  * 
  * Called by: AdvancedSearch.js, ClientBasicInformation.js
@@ -201,13 +202,13 @@ function MainContent_DoNextStep() {
 		var FT = Utils_GetFieldTranslator();
 		if (!FT) return; // basically quit doing anything else!
 
-		// 2) get service id column from spreadsheet data
-		// (service id is only required field for any service or action entering)
-		var serviceID = client[FT['SERVICE_ID']];
+		// 2) get service code column from spreadsheet data
+		// (service code is only required field for any service or action entering)
+		var serviceCode = client[FT['SERVICE_CODE']];
 
-		// 3.A) if there is no service id, go back to advanced search page to process
+		// 3.A) if there is no service code, go back to advanced search page to process
 		// next client.
-		if (!serviceID) {
+		if (!serviceCode) {
 			// store next action state before redirecting to Advanced Search
 			var mObj2 = {
 				action: 'store_data_to_chrome_storage_local',
@@ -223,7 +224,7 @@ function MainContent_DoNextStep() {
 			});
 		}
 
-		// 3.B) if there is a service id, set action state and redirect to
+		// 3.B) if there is a service code, set action state and redirect to
 		// services page to figure out what data to add
 		else {
 			var mObj2 = {

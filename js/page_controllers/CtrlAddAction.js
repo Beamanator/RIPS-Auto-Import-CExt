@@ -1,24 +1,48 @@
-$(document).ready(function(){
-	getValueFromStorage('ACTION_STATE')
-	.then(function(action) {
-		switch(action) {
-			case 'CLIENT_SERVICE_ADDED':
-				setServiceDropdown();
-				break;
-			// case 'CLIENT_ACTION_SERVICE_SELECTED':
-				// setActionDropdown();
-				// break;
-			case 'CLIENT_ACTION_ADDED':
-				navigate('/Stars/SearchClientDetails/AdvancedSearch');
-				break;
-			default:
-				message('current ACTION_STATE ('+ action +')is preventing script from running');
-		}
-	})
-	.catch(function(err) {
-		message(err);
-	});
-});
+// ============================== PAGE CONTROLLER =======================
+/**
+ * Controller function for Add Actions page
+ * 
+ * Called by: Run_CtrlServices [in MainContent.js]
+ * 
+ * @param {any} action 
+ */
+function AddAction_Controller( action ) {
+	switch(action) {
+		// Add action :)
+		case 'CLIENT_ADD_ACTION':
+			debugger;
+			// addActionRedirect();
+			break;
+
+		// Action not handled by controller!
+		default:
+			console.error('invalid action found in CtrlAddAction.js:', action);
+	}
+}
+
+// ============================== MAIN FUNCTIONS =======================
+
+// $(document).ready(function(){
+// 	getValueFromStorage('ACTION_STATE')
+// 	.then(function(action) {
+// 		switch(action) {
+// 			case 'CLIENT_SERVICE_ADDED':
+// 				setServiceDropdown();
+// 				break;
+// 			// case 'CLIENT_ACTION_SERVICE_SELECTED':
+// 				// setActionDropdown();
+// 				// break;
+// 			case 'CLIENT_ACTION_ADDED':
+// 				navigate('/Stars/SearchClientDetails/AdvancedSearch');
+// 				break;
+// 			default:
+// 				message('current ACTION_STATE ('+ action +')is preventing script from running');
+// 		}
+// 	})
+// 	.catch(function(err) {
+// 		message(err);
+// 	});
+// });
 
 // populates the 'Service' dropdown with service 'Adult Education Program' [AEP]
 function setServiceDropdown() {
