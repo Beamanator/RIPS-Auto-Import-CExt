@@ -6,7 +6,7 @@
  * Function gets Field Translator from FieldTranslator.js - if file doesn't exist or function
  * is named something else, cancel import and display error.
  * 
- * Called by: MainController.js, CtrlRegistration.js
+ * Called by: MainController.js, CtrlRegistration.js, CtrlServices.js, CtrlAddAction.js
  * 
  * @returns Field Translator object, or undefined
  */
@@ -93,7 +93,7 @@ function Utils_GetUrlPiece( url ) {
  * @returns {boolean} true / false depending on if urlPiece is contained within current url
  */
 function Utils_UrlContains(urlPiece) {
-	var url = Utils_GetUrlPiece();
+	var url = Utils_GetPageURL();
 
 	if (url.indexOf(urlPiece) === -1) {
 		// error & quit if the import is not on the right page.

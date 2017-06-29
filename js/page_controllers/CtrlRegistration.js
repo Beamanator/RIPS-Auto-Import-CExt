@@ -66,8 +66,10 @@ function addClientData(clientData, clientIndex) {
 	if (success) {
 		// setup Client Index key to update
 		var mObj = {
-			// {'CLIENT_INDEX': ''}, // -> TODO: commented out so index can be updated later?
-			'ACTION_STATE': 'CLIENT_CREATED'
+			action: 'store_data_to_chrome_storage_local',
+			dataObj: {
+				'ACTION_STATE': 'CLIENT_CREATED'
+			}
 		};
 
 		// save keys in local storage

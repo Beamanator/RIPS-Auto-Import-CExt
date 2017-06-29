@@ -17,6 +17,6 @@ function ClientBasicInformation_Controller( action ) {
 
 		// Action not handled by ClientBasicInformation.js!
 		default:
-			console.error('invalid action found in ClientBasicInformation.js:', action);
+			console.error('invalid action found in CtrlClientBasicInformation.js:', action);
 	}
 }

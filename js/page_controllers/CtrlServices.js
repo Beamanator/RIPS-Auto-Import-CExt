@@ -31,6 +31,11 @@ function Services_Controller( action ) {
 			addActionRedirect();
 			break;
 
+		// service was added, but no action data needed - redirect to advanced search
+		case 'CLIENT_SKIP_ACTION_DATA':
+			importNextClientRedirect();
+			break;
+
 		// Action not handled by controller!
 		default:
 			console.error('invalid action found in CtrlServices.js:', action);
@@ -72,6 +77,8 @@ function startServiceSearch() {
 		// get service description from map - to match with table
 		var serviceDesc = Utils_GetServiceDescFromCode( serviceCode );
 
+		var actionName = client[FT['ACTION_NAME']];
+
 		// if service description doesn't exist, id didn't match mapping
 		if (!serviceDesc) {
 			var errorMessage = 'client #' + (clientIndex + 1) + ' from import has a'
@@ -94,7 +101,7 @@ function startServiceSearch() {
 		
 		// serviceDesc exists, so try to find it in the services list
 		else {
-			searchServiceInTable( serviceDesc );
+			searchServiceInTable( serviceDesc, actionName );
 		}
 	});
 	
@@ -108,9 +115,10 @@ function startServiceSearch() {
  * If service is found, decide if it needs to be reopened
  * Else, redirect to page to add service
  * 
- * @param {string} serviceDesc - description of service to match to table descriptions 
+ * @param {string} serviceDesc - description of service to match to table descriptions
+ * @param {string} actionName - indicator for where to go next (add action / advanced search)
  */
-function searchServiceInTable( serviceDesc ) {
+function searchServiceInTable( serviceDesc, actionName ) {
 	var needsService = true;
 	
 	// Loop through each row and column of the services table:
@@ -127,19 +135,15 @@ function searchServiceInTable( serviceDesc ) {
 		// check if serviceDesc matches this row
 		if (rowServiceDescription.toUpperCase() === serviceDesc.toUpperCase()) {
 			
-			if (isLive) {
-				// no need to add new service
+			// no need to add new service if live already
+			if (isLive)
 				needsService = false;
-				
-				// navigate to add actions page
-				Utils_NavigateToTab('/Stars/MatterAction/CreateNewAction');
-			}
 			
 			/*
 				If service found but not live: do nothing
 					-> needsService stays true, so adds service
 					-> still exits loop (via return false)
-					-> removing reOpenService($serviceRow); (reasons below)
+					-> removing reOpenService($serviceRow); (see Footnote A)
 			*/
 
 			return false; // -> break loop
@@ -148,7 +152,7 @@ function searchServiceInTable( serviceDesc ) {
 		// return true; -> same as 'continue' in jquery loop
 	});
 
-	// serviceDesc wasn't found in table, so client needs new service added
+	// serviceDesc wasn't found in table or service is closed (so let's open it!)
 	if (needsService) {
 		var mObj = {
 			action: 'store_data_to_chrome_storage_local',
@@ -163,12 +167,32 @@ function searchServiceInTable( serviceDesc ) {
 			$('input#NewServices').click();
 		});
 	}
-}
+	
+	// service is found and live already, so 1st check if action name exists
+	// -> if it does, change action state then go to CreateNewAction
+	// -> if not, change action state then go to advanced Search
+	else {
+		// if actionName exists, set action state and redirect to Add Action page
+		if ( actionName ) {
+			// goal = store action state, then redirect
+			var mObj = {
+				action: 'store_data_to_chrome_storage_local',
+				dataObj: {
+					'ACTION_STATE': 'CLIENT_ADD_ACTION_DATA'
+				}
+			};
 
-// NOTE: Code (reOpenService) removed b/c:
-// 1) it looks super ugly, and if internet is bad, maay still break.
-// 2) if a service is 'closed', you can still add a new one of the same type
-//    -> can't have 2 live servies of the same type, can have two closed of same type
+			// saves action state, then redirects to add action page
+			chrome.runtime.sendMessage(mObj, function(response) {
+				Utils_NavigateToTab( '/Stars/MatterAction/CreateNewAction' );
+			});
+		}
+
+		// if actionName doesn't exist / is empty, skip and go to advanced search
+		else
+			importNextClientRedirect();
+	}
+}
 
 /**
  * Function adds a new service and caseworker (if needed) to client, updates
@@ -214,24 +238,26 @@ function addNewService() {
 
 		// TODO: add service start date stuff
 
-		// --- add caseworker in ---
-		// 1) loop through caseworker dropdown
-		$('select#CASEWORKERID option').each(function(rowIndex, optionElem) {
-			// get CW from current option element
-			var optionCW = optionElem.innerText.trim().toUpperCase();
+		// --- add caseworker in, if defined in client data ---
+		if ( serviceCaseworker ) {
+			// 1) loop through caseworker dropdown
+			$('select#CASEWORKERID option').each(function(rowIndex, optionElem) {
+				// get CW from current option element
+				var optionCW = optionElem.innerText.trim().toUpperCase();
 
-			// if this cw matches client cw:
-			// 1) get id (option value), 2) put it in, 3) and break loop!
-			if (optionCW === serviceCaseworker.toUpperCase()) {
-				var optionVal = optionElem.value; // 1 - get id
-				$('select#CASEWORKERID').val( optionVal ); // 2 - put val in dropdown
-				return false; // 3 - break loop
-			}
-		});
+				// if this cw matches client cw:
+				// 1) get id (option value), 2) put it in, 3) and break loop!
+				if (optionCW === serviceCaseworker.toUpperCase()) {
+					var optionVal = optionElem.value; // 1 - get id
+					$('select#CASEWORKERID').val( optionVal ); // 2 - put val in dropdown
+					return false; // 3 - break loop
+				}
+			});
+		}
 
 		// if select box val is empty, didn't find caseworker
 		// -> give user an option to continue or not
-		if ($('select#CASEWORKERID').val( ) === '') {
+		if ( serviceCaseworker && $('select#CASEWORKERID').val( ) === '') {
 			var message = 'Could not find caseworker from given value "'
 				+ serviceCaseworker + '" - continue import?\n\nNOTE: This warning'
 				+ ' will pop up for every service with this invalid caseworker';
@@ -270,49 +296,61 @@ function addNewService() {
 }
 
 /**
- * Function slightly extrapolates clicking the save button. (2 ways this function)
- * can be called.
+ * Function slightly extrapolates clicking the save button. (2 ways this function
+ * can be called)
  * 
- * Also - delayed by 500 milliseconds just to give Action dropdown some time to load
- * [last test = results are same if we wait or not]
+ * Also - save click delayed by 500 milliseconds just to give Action dropdown
+ * some time to load [last test = results are same if we wait or not]
  * 
  * @param {object} actionName - name of action to be added to client
  */
 function clickSave( actionName ) {
-	// if actionName doesn't exist / is empty, skip action step -> go to advanced search
-	if (!actionName || actionName === '') {
-		// reset next action state before redirecting to Advanced Search
-		var mObj = {
-			action: 'store_data_to_chrome_storage_local',
-			dataObj: {
-				'ACTION_STATE': 'SEARCH_FOR_CLIENT',
-				'CLIENT_INDEX': '' // auto increment
-			}
-		};
-	
-		// saves action state, then redirects to advanced search
-		chrome.runtime.sendMessage(mObj, function(response) {
-			Utils_NavigateToTab('/Stars/SearchClientDetails/AdvancedSearch');
-		});
-	}
+	var actionState;
+
+	// if actionName doesn't exist / is empty, skip adding action data
+	if (!actionName || actionName === '')
+		actionState = 'CLIENT_SKIP_ACTION_DATA';
 
 	// if actionName exists, set action state and click 'save'
-	else {
-		var mObj = {
-			action: 'store_data_to_chrome_storage_local',
-			dataObj: {
-				'ACTION_STATE': 'CLIENT_ADD_ACTION_DATA'
-			}
-		};
+	else
+		actionState = 'CLIENT_ADD_ACTION_DATA';
+
+	// store action state, then click 'save'
+	var mObj = {
+		action: 'store_data_to_chrome_storage_local',
+		dataObj: {
+			'ACTION_STATE': actionState
+		}
+	};
 	
-		// saves action state, then click save (redirect to service list page)
-		chrome.runtime.sendMessage(mObj, function(response) {
-			// click 'save' button after a brief timeout
-			setTimeout( function(){
-				$('input[value="Save"]').click();
-			}, 500);
-		});
-	}
+	// saves action state, then click save
+	chrome.runtime.sendMessage(mObj, function(response) {
+		// click 'save' button after a brief timeout
+		setTimeout( function(){
+			$('input[value="Save"]').click();
+		}, 500);
+	});
+}
+
+/**
+ * Function saves action state (to inform advanced search page we're ready to
+ * import the next client), then redirects user to advanced search page
+ * 
+ */
+function importNextClientRedirect() {
+	// set up obj to tell advanced search we're ready to import again
+	var mObj = {
+		action: 'store_data_to_chrome_storage_local',
+		dataObj: {
+			'ACTION_STATE': 'SEARCH_FOR_CLIENT',
+			'CLIENT_INDEX': '' // auto increment
+		}
+	};
+
+	// saves action state, then redirects to advanced search
+	chrome.runtime.sendMessage(mObj, function(response) {
+		Utils_NavigateToTab('/Stars/SearchClientDetails/AdvancedSearch');
+	});
 }
 
 /**
@@ -341,3 +379,12 @@ function fillServiceCode( serviceCode, char ) {
 
 	return newCode;
 }
+
+/**
+ * Footnote Comments:
+ * 
+ * A) function reOpenService() removed b/c:
+ *    -> it looks super ugly, and if internet is bad, maay still break.
+ *    -> if a service is 'closed', you can still add a new one of the same type
+ *    -> can't have 2 live servies of the same type, can have two closed of same type
+ */

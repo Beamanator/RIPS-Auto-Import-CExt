@@ -204,6 +204,7 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
                                                 - 2) tells add action ctrl to add action
                             CLIENT_ADD_SERVICE      = tells service ctrl to add service
                             CLIENT_CREATED          = client created, now decide what's next
+                            CLIENT_SKIP_ACTION_DATA = service saved, go to advanced search now
                             ERROR_STATE             = errored state - fix the problem and try again!
                             REGISTER_NEW_CLIENT     = Register new client
                             SEARCH_FOR_CLIENT       = start searching for clients in AdvancedSearch

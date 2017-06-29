@@ -74,6 +74,10 @@ function setServiceDropdown( serviceCode ) {
 		if (optionServiceDesc === serviceDesc.toUpperCase()) {
 			var optionVal = optionElem.value; // 1 - get id
 			$('#ddlServices').val( optionVal ).change(); // 2 - put val in dropdown
+			
+			// may have to use this instead of .change():
+			// location.href="javascript:updateDdlActiontype();";
+			
 			return false; // 3 - break loop
 		}
 	});
