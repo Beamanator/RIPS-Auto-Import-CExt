@@ -118,6 +118,10 @@ function Utils_UrlContains(urlPiece) {
  * @returns - string description of service, or undefined
  */
 function Utils_GetServiceDescFromCode( code ) {
+	// remove beginning and ending whitespace (spaces, \t, \n) from code
+	code = code.trim();
+
+	// set up translation mapping object
 	var map = {										// id's below
 		AEP:	'Adult Education Program',			// 65
 		AFP: 	'PS Adults and Families Program',	// 56

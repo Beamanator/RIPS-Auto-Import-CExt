@@ -176,8 +176,8 @@ function getValuesFromChromeLocalStorage(mObj, responseCallback) {
 /**
  * Function stores data to chrome local storage based off config object (mObj)
  * 
- * @param {any} mObj message object holding data to store
- * @param {any} responseCallback callback function where success message is sent
+ * @param {object} mObj message object holding data to store
+ * @param {function} responseCallback callback function where success message is sent
  */
 function storeToChromeLocalStorage(mObj, responseCallback) {
     var dataObj = mObj.dataObj;
@@ -200,7 +200,7 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
             ACTION_STATE    -	holds the on/off (true / false) value for each field
                             ANALYZE_CLIENT_DUPLICATES = analyze search results
                             CHECK_CLIENT_SERVICES   = check if specific service is live for client
-                            CLIENT_ADD_ACTION       = 1) tells service ctrl to redirect to add action page
+                            CLIENT_ADD_ACTION_DATA  = 1) tells service ctrl to redirect to add action page
                                                 - 2) tells add action ctrl to add action
                             CLIENT_ADD_SERVICE      = tells service ctrl to add service
                             CLIENT_CREATED          = client created, now decide what's next

@@ -27,7 +27,7 @@ function Services_Controller( action ) {
 			break;
 
 		// redirect to add action page
-		case 'CLIENT_ADD_ACTION':
+		case 'CLIENT_ADD_ACTION_DATA':
 			addActionRedirect();
 			break;
 
@@ -301,7 +301,7 @@ function clickSave( actionName ) {
 		var mObj = {
 			action: 'store_data_to_chrome_storage_local',
 			dataObj: {
-				'ACTION_STATE': 'CLIENT_ADD_ACTION'
+				'ACTION_STATE': 'CLIENT_ADD_ACTION_DATA'
 			}
 		};
 	
