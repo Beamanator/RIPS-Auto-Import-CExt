@@ -158,7 +158,7 @@ function Run_CtrlViewActions( action ) {
 /**
  * Function is called when "Import Clients" is hit, so figure out where to go now
  * based on url. If we're not on Advanced Search page, get there. Otherwise, let 
- * Run_AdvancedSearch figure out what to do
+ * Run_CtrlAdvancedSearch figure out what to do
  * 
  */
 function BeginClientImport() {
@@ -168,7 +168,7 @@ function BeginClientImport() {
 		Utils_NavigateToTab('/Stars/SearchClientDetails/AdvancedSearch');
 	} else {
 		// first action in advanced search is to search for clients
-		Run_AdvancedSearch('SEARCH_FOR_CLIENT');
+		Run_CtrlAdvancedSearch('SEARCH_FOR_CLIENT');
 	}
 }
 

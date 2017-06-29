@@ -45,8 +45,8 @@ function FT_getFieldTranslator() {
 		"SERVICE_CASEWORKER":	"Service Caseworker",
 
 		// === ACTIONS: ===
-		"ACTION_NAME":			"Action Name",
-		"ACTION_CODE":			"Action Code", // REQUIRED!!
+		"ACTION_NAME":			"Action Name", // REQUIRED!!
+		// "ACTION_CODE":			"Action Code", // skipping, see footnote A
 		// "ACTION_SERVICE":		"Action Service",
 		"ACTION_DATE":			"Action Date",
 		"ACTION_CASEWORKER":	"Action Caseworker",
