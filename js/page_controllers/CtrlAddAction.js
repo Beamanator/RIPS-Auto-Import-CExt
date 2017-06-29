@@ -11,6 +11,7 @@ function AddAction_Controller( action ) {
 		// Add action :)
 		case 'CLIENT_ADD_ACTION':
 			debugger;
+			// FIXME: do this stuff next!!
 			// addActionRedirect();
 			break;
 

@@ -200,7 +200,8 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
             ACTION_STATE    -	holds the on/off (true / false) value for each field
                             ANALYZE_CLIENT_DUPLICATES = analyze search results
                             CHECK_CLIENT_SERVICES   = check if specific service is live for client
-                            CLIENT_ADD_ACTION       = tells service ctrl to redirect to add action
+                            CLIENT_ADD_ACTION       = 1) tells service ctrl to redirect to add action page
+                                                - 2) tells add action ctrl to add action
                             CLIENT_ADD_SERVICE      = tells service ctrl to add service
                             CLIENT_CREATED          = client created, now decide what's next
                             ERROR_STATE             = errored state - fix the problem and try again!
