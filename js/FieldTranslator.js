@@ -45,8 +45,8 @@ function FT_getFieldTranslator() {
 		"SERVICE_CASEWORKER":	"Service Caseworker",
 
 		// === ACTIONS: ===
-		"ACTION_NAME":			"Action Name",
-		"ACTION_CODE":			"Action Code", // REQUIRED!!
+		"ACTION_NAME":			"Action Name", // REQUIRED!!
+		// "ACTION_CODE":			"Action Code", // skipping, see footnote A
 		// "ACTION_SERVICE":		"Action Service",
 		"ACTION_DATE":			"Action Date",
 		"ACTION_CASEWORKER":	"Action Caseworker",
@@ -72,3 +72,14 @@ function uppercaseObjectValues(obj) {
 
 	return obj;
 }
+
+/**
+ * Footnote Comments:
+ * 
+ * A) Action Code - skipping the need for an action code in favor of easability.
+ *    -> if this was required, users would have to search for action ids or ask
+ *    -> RIPS db admin for codes. Now that this is commented out, they can just
+ *    -> enter the exact action name. New possible issue is entering the action
+ *    -> incorrectly (spelled wrong).
+ * 
+ */

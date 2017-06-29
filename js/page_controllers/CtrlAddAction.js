@@ -78,6 +78,7 @@ function setServiceDropdown( serviceCode ) {
 		}
 	});
 
+	console.log('here - service dropdown val: ', $('#ddlServices').val());
 	debugger;
 
 	// FIXME: next = add action (in separate function)
