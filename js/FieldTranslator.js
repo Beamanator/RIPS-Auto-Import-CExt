@@ -72,3 +72,14 @@ function uppercaseObjectValues(obj) {
 
 	return obj;
 }
+
+/**
+ * Footnote Comments:
+ * 
+ * A) Action Code - skipping the need for an action code in favor of easability.
+ *    -> if this was required, users would have to search for action ids or ask
+ *    -> RIPS db admin for codes. Now that this is commented out, they can just
+ *    -> enter the exact action name. New possible issue is entering the action
+ *    -> incorrectly (spelled wrong).
+ * 
+ */
