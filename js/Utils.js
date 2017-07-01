@@ -18,14 +18,8 @@ function Utils_GetFieldTranslator() {
 	else {
 		var errorMessage = 'Field Translator not found! Cancelling import';
 
-		// set action state to error state
-		var mObj = {
-			action: 'stopped_via_error',
-			message: errorMessage
-		};
-		
-		// send message config (stop auto import) then display an error
-		chrome.runtime.sendMessage(mObj, function(response) {
+		// stop import and flag error message
+		Utils_StopImport( errorMessage, function(response) {
 			ThrowError({
 				message: errorMessage,
 				errMethods: ['mSwal', 'mConsole']
@@ -34,6 +28,32 @@ function Utils_GetFieldTranslator() {
 
 		return;
 	}
+}
+
+/**
+ * Function tells background.js to stop the auto import function via
+ * action 'stopped_via_error', and passes an error message to background.js, then
+ * the chrome runtime callback to caller
+ * 
+ * @param {string} errorMessage - error message to pass to background.js
+ * @param {function} callback - chrome runtime callback sent to caller. if not given,
+ *                              defaults to console.error() fn
+ */
+function Utils_StopImport( errorMessage, callback ) {
+	// take care of defaults
+	if ( !errorMessage )
+		errorMessage = 'stopping import';
+	if ( !callback )
+		callback = function(response) { console.error('error: ', errorMessage ); };
+
+	// set action state to error state
+	var mObj = {
+		action: 'stopped_via_error',
+		message: errorMessage
+	};
+
+	// send message config (stop auto import) then display an error
+	chrome.runtime.sendMessage(mObj, callback);
 }
 
 /**
@@ -145,6 +165,106 @@ function Utils_GetServiceDescFromCode( code ) {
 	return map[code];
 }
 
+/**
+ * Function returns a promise that gets resolved whenever a specified function
+ * returns true. Caller passes in a function and possibly a number (time between
+ * intervals)
+ * 
+ * @param {function} Fcondition - function that must eventually return true
+ * @param {object} params - array of parameters to pass to Fcondition
+ * @param {number} [time=500] - time between each interval call
+ * @param {number} [iter=10] - number of iterations allowed before rejecting
+ * @returns Promise - resolves when Fcondition returns true
+ */
+function Utils_WaitForCondition( Fcondition, params, time = 1000, iter = 5 ) {
+	return new Promise(function(resolve, reject) {
+		var count = 0;
+		
+		var intervalID = setInterval(function() {
+			// -> console logs may not work inside this function
+			count++;
+			
+			// check if condition is true YET
+			if ( Fcondition(params) ) {
+				clearInterval(intervalID);
+				resolve('condition passed');
+			}
+
+			// check if we've passed the desired amount of iterations on setInterval
+			if (count > iter) {
+				clearInterval(intervalID);
+				reject('Condition <' + Fcondition.name + '> never returned true over '
+					+ iter + ' checks, spaced by ' + time + 'ms.');
+			}
+
+		}, time);
+	});
+}
+
+/**
+ * Function inserts value into textbox / date fields using jQuery
+ * 
+ * @param {any} value string or number
+ * @param {string} id html id of element 
+ */
+function Utils_InsertValue(value, id) {
+	// if value exists, throw into field:
+	if (value !== undefined) {
+		// if value starts with a '.', get rid of it:
+		if (value[0] === '.') {
+			value = value.substr(1);
+		}
+
+		$('#' + id).val(value);
+	}
+
+	// if value is undefined, warn user
+	else {
+		console.warn('Warning: id <' + id + '> came with undefined value');
+	}
+}
+
 // =====================================================================================
-//                                 PRIVATE FUNCTIONS
+//                                 UNUSED FUNCTIONS
 // =====================================================================================
+
+/**
+ * Function finds a select element (from input select_selector) using jQuer, then
+ * returns true if the select element has an option element selected, and
+ * returns false if the select element has not been 'populated' / selected
+ * 
+ * UNUSED because it's easier to just check while looping through dropdowns...
+ * for now
+ * 
+ * @param {object} selector_arr - single-element array with jQuery selector
+ * 								  to locate desired select element
+ * @returns {boolean} - if select element has a 'selected' option element
+ */
+function Utils_IsSelectElemPopulated( selector_arr ) {
+	var select_selector = selector_arr[0];
+
+	// if selector_arr has more than 1 element, console log warning (don't quit)
+	if (selector_arr.length > 1)
+		console.warn('Utils_IsSelectElemPopulated has too many elements in arg array');
+
+	// check to make sure input is valid
+	if ( !$(select_selector).is('select') ) {
+		// select_selector is not a select element, so processing will fail! - quit
+		// error should be thrown by calling function
+		return false;
+	}
+
+	// get number of selected items out of given select element's selected options
+	var selectedOptions = $( select_selector + ' option:selected');
+
+	if ( selectedOptions.length === 0 ) {
+		// select element doesn't have any option element selected yet
+		return false;
+	} else if ( selectedOptions.length === 1 && selectedOptions.val() ) {
+		// select element has a selected element populated & it isn't ""
+		return true;
+	} else {
+		console.warn('I think we would be here if more than one option is selected'
+			+ ' which we DIDNT PREPARE FOR??');
+	}
+}

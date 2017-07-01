@@ -223,7 +223,7 @@ function addNewService() {
 
 		// get service data from client object
 		var serviceCode = client[FT['SERVICE_CODE']].toUpperCase();
-		var serviceStart = client[FT['SERVICE_START_DATE']];
+		// var serviceStart = client[FT['SERVICE_START_DATE']]; // TODO: do this stuff
 		var serviceCaseworker = client[FT['SERVICE_CASEWORKER']];
 
 		// get actionName for future reference
@@ -235,6 +235,22 @@ function addNewService() {
 		// set service dropdown to service (using code) and trigger change
 		// -> .change() makes Action dropdown populate
 		$('#lscCodeValue').val( fullServiceCode ).change();
+
+		// if match wasn't found, break import and error
+		if ( $('#lscCodeValue').val() === ''  ) {
+			var errorMessage = 'No match found in Service Description dropdown - '
+			+ 'service code may not be accurate';
+		
+			// stop import and flag error message
+			Utils_StopImport( errorMessage, function(response) {
+				ThrowError({
+					message: errorMessage,
+					errMethods: ['mSwal', 'mConsole']
+				});
+			});
+
+			return;
+		}
 
 		// TODO: add service start date stuff
 
@@ -272,16 +288,10 @@ function addNewService() {
 				var errorMessage = 'Could not find service caseworker from given value "'
 					+ serviceCaseworker + '" - chose not to continue';
 
-				// set action state to error state
-				var mObj2 = {
-					action: 'stopped_via_error',
-					message: errorMessage
-				};
-				
-				// send message config (stop auto import) then display an error
-				chrome.runtime.sendMessage(mObj2, function(response) {
+				// stop auto import, then display an error
+				Utils_StopImport( errorMessage, function(response) {
 					ThrowError({
-						message: 'stopping import',
+						message: errorMessage,
 						errMethods: ['mConsole']
 					});
 				});
@@ -290,6 +300,8 @@ function addNewService() {
 
 		// caseworker was found and successfully added to dropdown!
 		// next = just save!
+		// TODO: make sure service dropdown is populated before clicking save
+		// -> or move all of this into if statement section above
 		else 
 			clickSave( actionName );
 	});

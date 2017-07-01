@@ -91,7 +91,7 @@ function addClientData(clientData, clientIndex) {
  * First name = Name 1
  * Last name = Name 2 - End
  * 
- * @param {string} fullName 
+ * @param {string} fullName - client's full name that needs to be parsed
  * @returns {number} 1 if fullName doesn't exist (error)
  */
 function fullNameInsert(fullName) {
@@ -107,24 +107,6 @@ function fullNameInsert(fullName) {
 
 	$("#LFIRSTNAME").val( firstName );
 	$("#LSURNAME").val( lastName );
-}
-
-/**
- * Function inserts value into textbox / date fields using jQuery
- * 
- * @param {any} value string or number
- * @param {string} id html id of element 
- */
-function insertValue(value, id) {
-	// if value exists, throw into field:
-	if (value !== undefined) {
-		// if value starts with a '.', get rid of it:
-		if (value[0] === '.') {
-			value = value.substr(1);
-		}
-
-		$('#' + id).val(value);
-	}
 }
 
 /**
@@ -159,15 +141,15 @@ function insertClientDetails(client) {
 	// ============= Required Fields: =============
 
 	// Name:
-	insertValue( client[FT['CLIENT_FIRST_NAME']],	'LFIRSTNAME' 	); // *REQ
-	insertValue( client[FT['CLIENT_LAST_NAME']],	'LSURNAME' 		); // *REQ
+	Utils_InsertValue( client[FT['CLIENT_FIRST_NAME']],	'LFIRSTNAME' 	); // *REQ
+	Utils_InsertValue( client[FT['CLIENT_LAST_NAME']],	'LSURNAME' 		); // *REQ
 
 	// Logic if one column contains full name
 	fullNameInsert( client[FT['CLIENT_FULL_NAME']] ); 	// *REQ - Full Name - Custom logic
 
-	insertValue( client[FT['UNHCR_CASE_NO']],	'UNHCRIdentifier' 	); // *REQ
-	insertValue( client[FT['MAIN_PHONE_NO']],	'CDAdrMobileLabel' 	); // *REQ
-	insertValue( client[FT['DOB']],				'LDATEOFBIRTH' 		); // *REQ
+	Utils_InsertValue( client[FT['UNHCR_CASE_NO']],	'UNHCRIdentifier' 	); // *REQ
+	Utils_InsertValue( client[FT['MAIN_PHONE_NO']],	'CDAdrMobileLabel' 	); // *REQ
+	Utils_InsertValue( client[FT['DOB']],				'LDATEOFBIRTH' 		); // *REQ
 
 	// Dropdowns:
 	// -> getDC() from DropdownCodeContainer.js
@@ -178,18 +160,18 @@ function insertClientDetails(client) {
 
 	// ================ Textboxes: ================
 	
-	insertValue( client[FT['OTHER_PHONE_NO']],	'CDAdrTelLabel' 		);
-	insertValue( client[FT['ADDRESS1']],		'LADDRESS1' 		);
-	insertValue( client[FT['ADDRESS2']],		'LADDRESS2' 		);
-	insertValue( client[FT['ADDRESS3']],		'LADDRESS3' 		);
-	insertValue( client[FT['ADDRESS4']],		'LADDRESS4' 		);
-	insertValue( client[FT['EMAIL']],			'CDLongField1' 		);
-	insertValue( client[FT['APPT_SLIP_NO']],	'CDIdentifier1' 		);
-	insertValue( client[FT['CARITAS_NO']],		'CDIdentifier2' 		);
-	insertValue( client[FT['CRS_NO']],			'CDIdentifier3' 		);
-	insertValue( client[FT['IOM_NO']],			'CDIdentifier4' 		);
-	insertValue( client[FT['MSF_NO']],			'CDIdentifier5' 		);
-	insertValue( client[FT['STARS_STUDENT_NO']],'CDIdentifier6' 		);
+	Utils_InsertValue( client[FT['OTHER_PHONE_NO']],	'CDAdrTelLabel' 		);
+	Utils_InsertValue( client[FT['ADDRESS1']],		'LADDRESS1' 		);
+	Utils_InsertValue( client[FT['ADDRESS2']],		'LADDRESS2' 		);
+	Utils_InsertValue( client[FT['ADDRESS3']],		'LADDRESS3' 		);
+	Utils_InsertValue( client[FT['ADDRESS4']],		'LADDRESS4' 		);
+	Utils_InsertValue( client[FT['EMAIL']],			'CDLongField1' 		);
+	Utils_InsertValue( client[FT['APPT_SLIP_NO']],	'CDIdentifier1' 		);
+	Utils_InsertValue( client[FT['CARITAS_NO']],		'CDIdentifier2' 		);
+	Utils_InsertValue( client[FT['CRS_NO']],			'CDIdentifier3' 		);
+	Utils_InsertValue( client[FT['IOM_NO']],			'CDIdentifier4' 		);
+	Utils_InsertValue( client[FT['MSF_NO']],			'CDIdentifier5' 		);
+	Utils_InsertValue( client[FT['STARS_STUDENT_NO']],'CDIdentifier6' 		);
 
 	// ================ Checkboxes: ================ -> Click if client valie is true
 
@@ -206,8 +188,8 @@ function insertClientDetails(client) {
 
 	// ================ Dates: ================ -> I think this is all free text
 
-	insertValue( client[FT['DATE_REG']],		'CDDateRegisteredLabel' 	);
-	insertValue( client[FT['DATE_ARRIVAL']],	'CDDateEntryCountryLabel' 	);
+	Utils_InsertValue( client[FT['DATE_REG']],		'CDDateRegisteredLabel' 	);
+	Utils_InsertValue( client[FT['DATE_ARRIVAL']],	'CDDateEntryCountryLabel' 	);
 
 	// client[FT['COUNTRY_OF_ORIGIN']] !== u ? $("#LCOUNTRYOFORIGIN").val( client[FT['COUNTRY_OF_ORIGIN']] ); // Country of Origin
 	// client[FT['ETHNIC_ORIGIN']] 	!== u ? $("#LETHNICORIGIN").val( 	client[FT['ETHNIC_ORIGIN']] ); // Ethnic Origin

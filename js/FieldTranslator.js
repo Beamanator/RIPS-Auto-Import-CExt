@@ -41,14 +41,14 @@ function FT_getFieldTranslator() {
 		// === SERVICES: ===
 		// "SERVICE_NAME":			"Service Name",
 		"SERVICE_CODE":			"Service Code", // REQUIRED!!
-		"SERVICE_START_DATE":	"Service Start Date",
+		"SERVICE_START_DATE":	"Service Start Date", // TODO: probably not ready yet?
 		"SERVICE_CASEWORKER":	"Service Caseworker",
 
 		// === ACTIONS: ===
 		"ACTION_NAME":			"Action Name", // REQUIRED!!
 		// "ACTION_CODE":			"Action Code", // skipping, see footnote A
 		// "ACTION_SERVICE":		"Action Service",
-		"ACTION_DATE":			"Action Date",
+		"ACTION_DATE":			"Action Date", // TODO: probably not ready yet?
 		"ACTION_CASEWORKER":	"Action Caseworker",
 		"ACTION_NOTES":			"Attendance Notes"
 
