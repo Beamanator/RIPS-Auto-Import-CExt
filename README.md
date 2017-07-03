@@ -27,6 +27,6 @@ Notes about Service / Action table:
 1) If "Service Code" is populated but "Action Name" column is omitted, service will be added, then action data will be skipped.
 
 # Testing Scenarios:
-| Client Data Description (list) |Expected Outcome| Pass / Fail |
-|:------------------------------:|----------------|-------------|
-|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created||
+|#| Client Data Description (list) |Expected Outcome| Pass / Fail |
+|:-:|------------------------------|----------------|-------------|
+|1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created||
