@@ -18,6 +18,11 @@ function Services_Controller( action ) {
 	}
 }
 
+/**
+ * Function gets ready for next client, a.k.a. redirects user to Advanced Search
+ * page - after getting action state and client index ready
+ * 
+ */
 function nextClientRedirect() {
 	// store action state (searching for next client), then redirect
 	var mObj = {
