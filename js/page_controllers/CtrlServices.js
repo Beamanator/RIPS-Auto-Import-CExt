@@ -184,7 +184,7 @@ function searchServiceInTable( serviceDesc, actionName ) {
 
 			// saves action state, then redirects to add action page
 			chrome.runtime.sendMessage(mObj, function(response) {
-				Utils_NavigateToTab( '/Stars/MatterAction/CreateNewAction' );
+				addActionRedirect();
 			});
 		}
 
@@ -361,7 +361,7 @@ function importNextClientRedirect() {
 
 	// saves action state, then redirects to advanced search
 	chrome.runtime.sendMessage(mObj, function(response) {
-		Utils_NavigateToTab('/Stars/SearchClientDetails/AdvancedSearch');
+		Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
 	});
 }
 
@@ -370,7 +370,7 @@ function importNextClientRedirect() {
  * 
  */
 function addActionRedirect() {
-	Utils_NavigateToTab('/Stars/MatterAction/CreateNewAction');
+	Utils_NavigateToTab( Utils_GetTabHref('AddAction') );
 }
 
 /**

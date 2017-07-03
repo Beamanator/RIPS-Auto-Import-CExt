@@ -65,8 +65,42 @@ function Utils_StopImport( errorMessage, callback ) {
  * @param {string} tab_href - url piece that is contained within an anchor tag on the
  *                            left-hand navigation menu
  */
-function Utils_NavigateToTab(tab_href) {
-	$('a[href="' + tab_href + '"]')[0].click();
+function Utils_NavigateToTab( tab_href ) {
+	if ( tab_href !== undefined)
+		$('a[href="' + tab_href + '"]')[0].click();
+	else
+		console.warn('Utils_NavigateToTab received invalid tab href');
+}
+
+/**
+ * Function converts passed-in tab name to url piece that RIPS holds as a
+ * location for each tab in navigation menu (left panel)
+ * 
+ * @param {string} tabName - name of tab you want url piece for 
+ * @returns tab's href (location) - (or undefined if tabName is incorrect)
+ */
+function Utils_GetTabHref( tabName ) {
+	// create map for tab name to url piece
+	var map = {
+		'Registration': 			'/Stars/Registration/Registration',
+		// 'ClientBasicInformation': 	'/Stars/ClientDetails/ClientDetails', // not used
+
+		'AddAction': 			'/Stars/MatterAction/CreateNewAction',
+		'Services': 			'/Stars/ClientDetails/ClientServicesList',
+		// 'ViewActions': 			'/Stars/MatterAction/MatterActionsList', // not used
+
+		'AdvancedSearch': 		'/Stars/SearchClientDetails/AdvancedSearch'
+	};
+
+	// get tab href from map
+	var tab_href = map[tabName];
+
+	// error if tabName is incorrect (or map is incorrect)
+	if ( tab_href == undefined )
+		console.error('tab name not defined in url map');
+	
+	// return tab href
+	return tab_href;
 }
 
 /**

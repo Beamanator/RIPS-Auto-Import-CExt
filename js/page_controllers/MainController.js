@@ -165,7 +165,7 @@ function BeginClientImport() {
 	var url = Utils_GetPageURL();
 
 	if ( url.indexOf('SearchClientDetails/AdvancedSearch') === -1 ) {
-		Utils_NavigateToTab('/Stars/SearchClientDetails/AdvancedSearch');
+		Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
 	} else {
 		// first action in advanced search is to search for clients
 		Run_CtrlAdvancedSearch('SEARCH_FOR_CLIENT');
@@ -220,7 +220,7 @@ function MainContent_DoNextStep() {
 		
 			// saves action state, then redirects to advanced search
 			chrome.runtime.sendMessage(mObj2, function(response) {
-				Utils_NavigateToTab('/Stars/SearchClientDetails/AdvancedSearch');
+				Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
 			});
 		}
 
@@ -236,7 +236,7 @@ function MainContent_DoNextStep() {
 		
 			// after saving action state, redirect to services page
 			chrome.runtime.sendMessage(mObj2, function(response) {
-				Utils_NavigateToTab('/Stars/ClientDetails/ClientServicesList');
+				Utils_NavigateToTab( Utils_GetTabHref('Services') );
 			});
 		}
 	});

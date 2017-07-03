@@ -95,7 +95,7 @@ function processSearchResults() {
 			
 			// once data returns, navigate to registration page
 			chrome.runtime.sendMessage(mObj, function(response) {
-				Utils_NavigateToTab('/Stars/Registration/Registration');
+				Utils_NavigateToTab( Utils_GetTabHref('Registration') );
 			});
 		} else {
 			// error -> not sure where we're at anymore.
@@ -130,7 +130,7 @@ function processSearchResults() {
 			// once data returns, navigate back to advanced search
 			// TODO: probably only navigate if there are more clients to run though?
 			chrome.runtime.sendMessage(mObj, function(response) {
-				Utils_NavigateToTab('/Stars/SearchClientDetails/AdvancedSearch');
+				Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
 			});
 		} else {
 			// only found 1 client - this is hopefully our client!
@@ -156,7 +156,7 @@ function processSearchResults() {
 			// 	{'ACTION_STATE': 'READY_FOR_CLIENT'}
 			// ])
 			// .then(function(results) {
-			// 	Utils_NavigateToTab('/Stars/Registration/Registration');
+			// 	Utils_NavigateToTab( Utils_GetTabHref('Registration') );
 			// });
 		} else {
 			// no alert means there were probably some duplicates
@@ -176,7 +176,7 @@ function processSearchResults() {
 					{'DUPLICATE_CLIENT_STARS_ID': id}
 				])
 				.then(function(results) {
-					Utils_NavigateToTab('/Stars/SearchClientDetails/AdvancedSearch');
+					Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
 				});
 			} else {
 				// only found 1 client - this is hopefully our client!

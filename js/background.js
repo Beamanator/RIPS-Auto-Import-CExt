@@ -206,6 +206,7 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
                             CLIENT_CREATED          = client created, now decide what's next
                             CLIENT_SKIP_ACTION_DATA = service saved, go to advanced search now
                             ERROR_STATE             = errored state - fix the problem and try again!
+                            NEXT_CLIENT_REDIRECT    = redirect to advanced search & increment client index
                             REGISTER_NEW_CLIENT     = Register new client
                             SEARCH_FOR_CLIENT       = start searching for clients in AdvancedSearch
                                                 - enter UNHCR #, click "search"

@@ -227,6 +227,7 @@ function setActionDropdown( client, FT ) {
 	}
 
 	// caseworker has been successfully added, now click save
+	// or, possibly, no caseworker was given & none were added
 	else {
 		clickSave();
 	}
@@ -248,14 +249,13 @@ function clickSave() {
 	var mObj = {
 		action: 'store_data_to_chrome_storage_local',
 		dataObj: {
-			'ACTION_STATE': 'SEARCH_FOR_CLIENT',
-			'CLIENT_INDEX': '' // auto increment client index
+			'ACTION_STATE': 'NEXT_CLIENT_REDIRECT'
 		}
 	};
 	
 	// saves action state, then click save
 	chrome.runtime.sendMessage(mObj, function(response) {
-		// click 'save' button after a brief timeout
+		// click 'save' button after a brief timeout -> redirects to "View Actions"
 		$('input[value="Save"]').click();
 	});
 }
