@@ -28,5 +28,7 @@ Notes about Service / Action table:
 
 # Testing Scenarios:
 |#| Client Data Description (list) |Expected Outcome| Pass / Fail |
-|:-:|------------------------------|----------------|-------------|
+|-|------------------------------|----------------|-------------|
 |1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created||
+|2|Only Required Reg data, no services / actions|Client created, not redirected to services / actions pages||
+|3|Only Required Reg data (missing name), no services / actions|Error in Registration page, import stopped, ACTION_STATE set to error||
