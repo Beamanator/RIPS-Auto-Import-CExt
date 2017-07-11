@@ -33,3 +33,4 @@ Notes about Service / Action table:
 |2|Only Required Reg data, no services / actions|Client created, not redirected to services / actions pages||
 |3|Only Required Reg data (missing name), no services / actions|Error in Registration page, import stopped, ACTION_STATE set to error||
 |4|First Name / Last Name vs Full Name|Scenarios should put names in correct positions||
+|5|Full Name has 2 names|First name goes in first name box, all others go in 'surname' box||
