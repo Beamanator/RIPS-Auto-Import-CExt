@@ -7,9 +7,9 @@ Fields required for Registration page, and example data: (incomplete)
 
 | Full Name | Gender | Date of Birth | Nationality | blah |
 |-----------|--------|---------------|-------------|------|
-|Test Bob 1 |    M   |  .10/28/2010  |             |      |
-|           |        |               |             |      |
-|           |        |               |             |      |
+|Test Bob 1 | Male   |  .10/28/2010  |             |      |
+|Test Jill  | Female |               |             |      |
+|Test Bob 2 | Other  |               |             |      |
 
 Notes about Registration table:
 1) Full name - first name goes into "First name", all others go into "Surname"
