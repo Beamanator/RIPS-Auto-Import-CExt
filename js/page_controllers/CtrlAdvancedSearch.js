@@ -61,10 +61,12 @@ function searchForDuplicates() {
 
 		// now get UNHCR number & put it in #HoRefNo
 		var client = clientData[clientIndex];
-		var FT = FT_getFieldTranslator();
+		var FTr = Utils_GetFieldTranslator( 'Search' );
+		if (!FTr)
+			return; // error handling in Utils function
 		
 		// put UNHCR number into textbox
-		$("#HoRefNo").val( client[FT['UNHCR_CASE_NO']] );
+		$("#" + FTr['UNHCR NUMBER']).val( client['UNHCR NUMBER'] );
 
 		// store next action state before clicking 'search'
 		var mObj2 = {
@@ -88,7 +90,7 @@ function processSearchResults() {
 		if ( Utils_UrlContains('SearchClientDetails/AdvancedSearch') ) {
 			// no client found, so need to make a new one!
 			// -> Next action is REGISTER_NEW_CLIENT
-			mObj = {
+			var mObj = {
 				action: 'store_data_to_chrome_storage_local',
 				dataObj: {'ACTION_STATE': 'REGISTER_NEW_CLIENT'}
 			};
@@ -118,7 +120,7 @@ function processSearchResults() {
 				.find('td')[1].innerText;
 
 			// throw it into the duplicate UNHCR No store
-			mObj = {
+			var mObj = {
 				action: 'store_data_to_chrome_storage_local',
 				dataObj: {
 					'ACTION_STATE': 'SEARCH_FOR_CLIENT', // start searching anew
@@ -137,8 +139,19 @@ function processSearchResults() {
 			// assuming we want to automatically choose this client as our client:
 			$('.table.table-striped.grid-table tbody tr')[0].click();
 
-			// client is already available, ask MainContent what to do next
-			MainContent_DoNextStep();
+			// Client is already available, redirect to Client Basic Information
+			// to check if extra client data needs to be saved
+			var mObj = {
+				action: 'store_data_to_chrome_storage_local',
+				dataObj: {
+					'ACTION_STATE': 'CHECK_CLIENT_BASIC_DATA'
+				}
+			};
+
+			// once action state is stored, navigate to CBI
+			chrome.runtime.sendMessage(mObj, function(response) {
+				Utils_NavigateToTab( Utils_GetTabHref('ClientBasicInformation') );
+			});
 		}
 	}
 
@@ -164,7 +177,6 @@ function processSearchResults() {
 
 			var numDuplicates = $('.table.table-striped.grid-table').find('tr.grid-row').length;
 
-			// debugger;
 
 			if (numDuplicates > 1) {
 				// grab the STARS number of the first row, throw it into the duplicate stars id store
@@ -191,28 +203,6 @@ function processSearchResults() {
 		}
 	}, 1000);*/
 }
-
-// function AdvancedSearch_ImportNextClient() {
-// 	// First check if the window is at the Advanced Search page in RIPS
-// 	if ( !Utils_UrlContains('SearchClientDetails/AdvancedSearch') )
-// 		return;
-
-// 	// Next, get client index and client data:
-// 	getMultipleValuesFromStorage(['CLIENT_DATA', 'CLIENT_INDEX'])
-// 	.then(function(values) {
-// 		// Next, get data & index, then search for client existence
-// 		var clientData = values[0];
-// 		var clientIndex = values[1];
-
-// 		searchForDuplicates(clientData, clientIndex);
-// 	})
-// 	.catch(function(err) {
-// 		ThrowError({
-// 			message: err,
-// 			errMethods: ['mConsole', 'mAlert']
-// 		});
-// 	});
-// }
 
 // ===================== INTERNAL FUNCTIONS ========================
 

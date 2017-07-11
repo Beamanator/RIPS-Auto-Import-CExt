@@ -179,7 +179,7 @@ function BeginClientImport() {
  * - if SERVICE_CODE is found in client data, go to services page.
  * - else, go back to advanced search page and to next client.
  * 
- * Called by: AdvancedSearch.js, ClientBasicInformation.js
+ * Called by: ClientBasicInformation.js
  */
 function MainContent_DoNextStep() {
 	// 1) get client data & index again
@@ -198,13 +198,13 @@ function MainContent_DoNextStep() {
 
 		var client = clientData[clientIndex];
 
-		// get field translator		
-		var FT = Utils_GetFieldTranslator();
-		if (!FT) return; // basically quit doing anything else!
+		// get field translator
+		var FTs = Utils_GetFieldTranslator( 'Service' );
+		if (!FTs) return; // basically quit doing anything else!
 
 		// 2) get service code column from spreadsheet data
 		// (service code is only required field for any service or action entering)
-		var serviceCode = client[FT['SERVICE_CODE']];
+		var serviceCode = client['SERVICE CODE'];
 
 		// 3.A) if there is no service code, go back to advanced search page to process
 		// next client.
@@ -236,178 +236,8 @@ function MainContent_DoNextStep() {
 		
 			// after saving action state, redirect to services page
 			chrome.runtime.sendMessage(mObj2, function(response) {
-				Utils_NavigateToTab( Utils_GetTabHref('Services') );
+				Utils_NavigateToTab(Utils_GetTabHref( 'Services' ));
 			});
 		}
 	});
 }
-
-
-
-// function to localize where messages are sent
-// Options:
-// 		1 = console.log (default)
-//  	2 = alert()
-// 		3 = both (console.log then alert)
-// function message(text, option) {
-// 	if (!text) return;
-// 	else {
-// 		if (option === 1) {
-// 			console.log(text);
-// 		} else if (option === 2) {
-// 			alert(text);
-// 		} else if (option === 3) {
-// 			console.log(text);
-// 			alert(text);
-// 		} else {
-// 			// default message method - no valid 'option' specified
-// 			console.log(text);
-// 		}
-// 	}
-// }
-
-
-
-// save data to local storage
-// @Returns a promise after value(s) have been saved
-// format of valueList:
-// 	[
-// 		{'key1': 'value1'},
-// 		{'key2': 'value2'}
-// 	]
-// function updateStorageLocal(valueList) {
-// 	var storePromises = [];
-// 	// Check that valueList contains some values.
-// 	if (!valueList || valueList.length < 1) {
-// 		message('Error: No value specified to update');
-// 		// TODO: add null promise here?
-// 		return;
-// 	}
-
-// 	// loop through array valueList:
-// 	for (var i = 0; i < valueList.length; i++) {
-// 		var valueObj = valueList[i];
-
-// 		// tempCount counts # of key / value pairs inside valueObj. If there's more than one, error and quit.
-// 		var tempCount = 0;
-
-// 		// vars to store key : value pair from valueObj.
-// 		var key, value;
-
-// 		// get key & value in 'valueObj':
-// 		for (var k in valueObj) {
-// 			tempCount++;
-// 			if (tempCount > 1) {
-// 				reject('Error: Invalid format of valueList - Cannot store to local storage', 3);
-// 				return;
-// 			}
-
-// 			key = k; value = valueObj[k];
-// 		}
-
-// 		/* ============== EXPLANATION FOR KEYS =============
-// 				CLIENT_INDEX  - holds the index of the current client to add
-// 				ACTION_STATE  -	holds the current state of the import.
-// 								CLIENT_ACTION_ADDED 	= added an action to the client
-// 								CLIENT_ACTION_SERVICE_SELECTED
-// 														= selected service from dropdown in add action page
-
-// 								CLIENT_CREATED 			= saved a client to the RIPS database
-
-// 								CLIENT_SERVICE_ADDED 	= added service to client
-// 								CLIENT_SERVICE_NEEDED	= client needs AEP service.
-// 								CLIENT_SERVICE_REOPENED = service 'Adult Education Program' reopened
-
-// 		*/
-// 		switch (key) {
-// 			case 'CLIENT_INDEX':
-// 				// console.log('updating client index with:', value, '<-');
-// 				if (value != undefined && value !== '') {
-// 					storePromises.push( saveValueToStorage('CLIENT_INDEX', value) );
-// 				} else {
-// 					storePromises.push(
-// 						getValueFromStorage('CLIENT_INDEX')
-// 						.then(function(clientIndex) {
-// 							if (clientIndex === undefined || clientIndex === '') clientIndex = 0;
-// 							else if (typeof clientIndex != 'number') clientIndex = parseInt(clientIndex);
-// 							return saveValueToStorage('CLIENT_INDEX', clientIndex + 1);
-// 						})
-// 					);
-// 				}
-// 				break;
-// 			case 'ACTION_STATE':
-// 				var actionState = value;
-// 				storePromises.push(
-// 					saveValueToStorage('ACTION_STATE', actionState)
-// 				);
-// 				break;
-// 			case 'CLIENT_DATA_LENGTH':
-// 				var clientArrayLength = value;
-// 				storePromises.push(
-// 					saveValueToStorage('CLIENT_DATA_LENGTH', clientArrayLength)
-// 				);
-// 				break;
-// 			case 'CLIENT_DATA':
-// 				var clientArray = value;
-// 				storePromises.push(
-// 					saveValueToStorage('CLIENT_DATA', clientArray)
-// 				);
-// 				break;
-// 			case 'DUPLICATE_CLIENT_STARS_ID':
-// 				storePromises.push(
-// 					getValueFromStorage('DUPLICATE_CLIENT_STARS_ID')
-// 					.then(function(dupClientString) {
-// 						if (value === '') {
-// 							return saveValueToStorage('DUPLICATE_CLIENT_STARS_ID', '-');
-// 						} else {
-// 							dupClientString += (value + ',');
-// 							return saveValueToStorage('DUPLICATE_CLIENT_STARS_ID', dupClientString);
-// 						}
-// 					})
-// 				);
-// 				break;
-// 		}
-// 	}
-
-// 	return Promise.all(storePromises);
-// }
-
-// Function returns a promise w/ a message stating the key / value pair were stored successfully
-// maybe do some type of validation on input / output.
-// function saveValueToStorage(key, value) {
-// 	return new Promise( function(resolve, reject) {
-// 		var obj = {};
-// 		obj[key] = value;
-
-// 		chrome.storage.local.set(obj, function() {
-// 			// successful
-// 			resolve('Saved: ' + key + ':' + value);
-// 		});
-// 	});
-// }
-
-// // Function returns a promise w/ the value from chrome data storage key:value pair
-// // maybe do some type of validation on input / output.
-// // change out from 'value' to {key: 'value'} - REQUIRES LOTS OF REFACTORING
-// function getValueFromStorage(key) {
-// 	return new Promise( function(resolve, reject) {
-// 		chrome.storage.local.get(key, function(item) {
-// 			// successful
-// 			resolve(item[key]);
-// 		});
-// 	});
-// }
-
-// // Function returns a promise (promise.all) with the returned values from given keys
-// function getMultipleValuesFromStorage(keys) {
-// 	var promises = [];
-
-// 	for (var i in keys) {
-// 		promises.push( getValueFromStorage(keys[i]) );
-// 	}
-
-// 	return Promise.all(promises);
-// }
-
-
-

@@ -303,7 +303,7 @@ function getDC(cl, FT, field) {
 			}
 			code = getCode( obj[val], 46) // Default = 46 - '-STATELESS-'
 			break;
-		case 'MAIN_LANGUAGE':
+		case 'MAIN LANGUAGE':
 			obj = {
 				'Amharic': 55,
 				'Arabic': 56,

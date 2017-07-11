@@ -57,22 +57,21 @@ function registerNewClient() {
  * @param {number} clientIndex - index of specific client from clientData array
  */
 function addClientData(clientData, clientIndex) {
-	// get data ready for 
 	var client = clientData[clientIndex];
 
 	// TODO: pass in FB config here (future)
-	var success = insertClientDetails(client);
+	var success = insertRequiredClientDetails(client);
 
 	if (success) {
-		// setup Client Index key to update
+		// next check if there is more data to save in CBI
 		var mObj = {
 			action: 'store_data_to_chrome_storage_local',
 			dataObj: {
-				'ACTION_STATE': 'CLIENT_CREATED'
+				'ACTION_STATE': 'CHECK_CLIENT_BASIC_DATA'
 			}
 		};
 
-		// save keys in local storage
+		// save action state in local storage
 		chrome.runtime.sendMessage(mObj, function(response) {
 			// Here we click the 'save button'
 			// -> redirects to Client Basic Information
@@ -82,8 +81,45 @@ function addClientData(clientData, clientIndex) {
 			// redirects to CBI
 		});
 	} else {
-		console.error('Unsuccessful insertion of client data on page');
+		// TODO: totally stop client import (Utils)?
+		console.error('Unsuccessful insertion of client data on page. Error' +
+			' in insertRequiredClientDetails()');
 	}
+}
+
+/**
+ * Function adds all available client details (in client object) onto registration page
+ * (clicking save is done elsewhere)
+ * 
+ * @param {object} client - client object to import
+ * @returns {boolean} true if successful (no internal errors), false if unsuccessful
+ */
+function insertRequiredClientDetails(client) {
+	// =============== get FieldTranslator ================
+	var FTr = Utils_GetFieldTranslator( 'Required' );
+
+	// if FT wasn't found, return false (quit).
+	if (!FTr)
+		return false;
+
+	// === Add Required fields to form ===
+	// Name:
+	Utils_InsertValue( client['FIRST NAME'], FTr['FIRST NAME'] );
+	Utils_InsertValue( client['LAST NAME'],  FTr['LAST NAME'] );
+
+	// Logic if one column contains full name
+	fullNameInsert( client['FULL NAME'], FTr['FIRST NAME'], FTr['LAST NAME'] ); 	// *REQ - Full Name - Custom logic
+
+	Utils_InsertValue( client['UNHCR NUMBER'],	FTr['UNHCR NUMBER'] );
+	Utils_InsertValue( client['PHONE NUMBER'],	FTr['PHONE NUMBER'] );
+	Utils_InsertValue( client['DATE OF BIRTH'], FTr['DATE OF BIRTH']);
+
+	// Dropdowns:
+	Utils_InsertValue( client['GENDER'], 		FTr['GENDER'] );
+	Utils_InsertValue( client['NATIONALITY'], 	FTr['NATIONALITY'] );
+	Utils_InsertValue( client['MAIN LANGUAGE'], FTr['MAIN LANGUAGE'] );
+
+	return true; // true = didn't run into internal errors
 }
 
 /**
@@ -92,9 +128,11 @@ function addClientData(clientData, clientIndex) {
  * Last name = Name 2 - End
  * 
  * @param {string} fullName - client's full name that needs to be parsed
+ * @param {string} firstNameID - element ID of first name
+ * @param {string} lastNameID - element ID of last name
  * @returns {number} 1 if fullName doesn't exist (error)
  */
-function fullNameInsert(fullName) {
+function fullNameInsert( fullName, firstNameID, lastNameID ) {
 	if (!fullName) return 1;
 
 	// new version
@@ -105,102 +143,6 @@ function fullNameInsert(fullName) {
 	// var firstName = fullName.substr(0, fullName.lastIndexOf(" "));
 	// var lastName = fullName.substr(fullName.lastIndexOf(" ") + 1);
 
-	$("#LFIRSTNAME").val( firstName );
-	$("#LSURNAME").val( lastName );
-}
-
-/**
- * Function checks boxes that need to be checked!
- * 
- * @param {boolean} value if true, checks box. if false, doesn't do anything
- * @param {string} id html id of element
- */
-function checkBox(value, id) {
-	if (value === true) 	 {	$("input#" + id).click();	}
-}
-
-/**
- * Function adds all available client details (in client object) onto registration page
- * (clicking save is done elsewhere)
- * 
- * @param {object} client - client object to import
- * @returns {boolean} true if successful, false if unsuccessful
- */
-function insertClientDetails(client) {
-	console.log('remove this comment when all client details can be imported!');
-
-	// var u = undefined;
-
-	// =============== get FieldTranslator from FieldTranslator.js =============
-	var FT = Utils_GetFieldTranslator();
-
-	// if FT wasn't found, return false (quit).
-	if (!FT)
-		return false;
-
-	// ============= Required Fields: =============
-
-	// Name:
-	Utils_InsertValue( client[FT['CLIENT_FIRST_NAME']],	'LFIRSTNAME' 	); // *REQ
-	Utils_InsertValue( client[FT['CLIENT_LAST_NAME']],	'LSURNAME' 		); // *REQ
-
-	// Logic if one column contains full name
-	fullNameInsert( client[FT['CLIENT_FULL_NAME']] ); 	// *REQ - Full Name - Custom logic
-
-	Utils_InsertValue( client[FT['UNHCR_CASE_NO']],	'UNHCRIdentifier' 	); // *REQ
-	Utils_InsertValue( client[FT['MAIN_PHONE_NO']],	'CDAdrMobileLabel' 	); // *REQ
-	Utils_InsertValue( client[FT['DOB']],				'LDATEOFBIRTH' 		); // *REQ
-
-	// Dropdowns:
-	// -> getDC() from DropdownCodeContainer.js
-
-	$("#LGENDER").val( 			getDC( client, FT, 'GENDER' ) 		); // *REQ - Gender
-	$("#LNATIONALITY").val( 	getDC( client, FT, 'NATIONALITY' ) 	); // *REQ - Nationality
-	$('#LMAINLANGUAGE').val(	getDC( client, FT, 'MAIN_LANGUAGE' )); // *REQ - Main Language
-
-	// ================ Textboxes: ================
-	
-	Utils_InsertValue( client[FT['OTHER_PHONE_NO']],	'CDAdrTelLabel' 		);
-	Utils_InsertValue( client[FT['ADDRESS1']],		'LADDRESS1' 		);
-	Utils_InsertValue( client[FT['ADDRESS2']],		'LADDRESS2' 		);
-	Utils_InsertValue( client[FT['ADDRESS3']],		'LADDRESS3' 		);
-	Utils_InsertValue( client[FT['ADDRESS4']],		'LADDRESS4' 		);
-	Utils_InsertValue( client[FT['EMAIL']],			'CDLongField1' 		);
-	Utils_InsertValue( client[FT['APPT_SLIP_NO']],	'CDIdentifier1' 		);
-	Utils_InsertValue( client[FT['CARITAS_NO']],		'CDIdentifier2' 		);
-	Utils_InsertValue( client[FT['CRS_NO']],			'CDIdentifier3' 		);
-	Utils_InsertValue( client[FT['IOM_NO']],			'CDIdentifier4' 		);
-	Utils_InsertValue( client[FT['MSF_NO']],			'CDIdentifier5' 		);
-	Utils_InsertValue( client[FT['STARS_STUDENT_NO']],'CDIdentifier6' 		);
-
-	// ================ Checkboxes: ================ -> Click if client valie is true
-
-	checkBox( client[FT[ 'CB_CARE' 				]], 'IsCBLabel1' ); // CARE
-	checkBox( client[FT[ 'CB_CRS' 				]], 'IsCBLabel2' ); // CRS
-	checkBox( client[FT[ 'CB_EFRRA_ACSFT' 		]], 'IsCBLabel3' ); // EFRRA/ACSFT
-	checkBox( client[FT[ 'CB_IOM' 				]], 'IsCBLabel4' ); // IOM
-	checkBox( client[FT[ 'CB_MSF' 				]], 'IsCBLabel5' ); // MSF
-	checkBox( client[FT[ 'CB_PSTIC' 			]], 'IsCBLabel6' ); // PSTIC
-	checkBox( client[FT[ 'CB_REFUGEE_EGYPT' 	]], 'IsCBLabel7' ); // Refugee Egypt
-	checkBox( client[FT[ 'CB_SAVE_THE_CHILDREN'	]], 'IsCBLabel8' ); // Save the Children
-	checkBox( client[FT[ 'CB_UNICEF_TDH' 		]], 'IsCBLabel9' ); // UNICEF / TdH
-	checkBox( client[FT[ 'CB_OTHER' 			]], 'IsCBLabel10'); // Other Service Provider
-
-	// ================ Dates: ================ -> I think this is all free text
-
-	Utils_InsertValue( client[FT['DATE_REG']],		'CDDateRegisteredLabel' 	);
-	Utils_InsertValue( client[FT['DATE_ARRIVAL']],	'CDDateEntryCountryLabel' 	);
-
-	// client[FT['COUNTRY_OF_ORIGIN']] !== u ? $("#LCOUNTRYOFORIGIN").val( client[FT['COUNTRY_OF_ORIGIN']] ); // Country of Origin
-	// client[FT['ETHNIC_ORIGIN']] 	!== u ? $("#LETHNICORIGIN").val( 	client[FT['ETHNIC_ORIGIN']] ); // Ethnic Origin
-	// client[FT['SECOND_LANGUAGE']] 	!== u ? $("#LSECONDLANGUAGE").val( 	client[FT['SECOND_LANGUAGE']] ); // Second Language
-	// client[FT['MARITAL_STATUS']] 	!== u ? $("#LMARITALSTATUS").val( 	client[FT['MARITAL_STATUS']] ); // Marital Status
-	// client[FT['Religion']] 			!== u ? $("#Dropdown1").val( 		client[FT['Religion']] ); // Religion
-	// client[FT['UNHCR_STATUS']] 		!== u ? $("#Dropdown2").val( 		client[FT['UNHCR_STATUS']] ); // UNHCR Status
-	// client[FT['SOURCE_OF_REFERRAL']] !== u ? $("#Dropdown3").val( 		client[FT['SOURCE_OF_REFERRAL']] ); // Source of Referral
-	// client[FT['CITY_OF_ORIGIN']] 	!== u ? $("#Dropdown4").val( 		client[FT['CITY_OF_ORIGIN']] ); // City/Village of Origin
-	// client[FT['EMPLOYMENT_STATUS']] !== u ? $("#Dropdown5").val( 		client[FT['EMPLOYMENT_STATUS']] ); // Employment Status
-	// client[FT['NEIGHBORHOOD']] 		!== u ? $("#Dropdown6").val( 		client[FT['NEIGHBORHOOD']] ); // Neighborhood
-
-	return true; // true = successful
+	$("#" + firstNameID).val( firstName );
+	$("#" + lastNameID).val( lastName );
 }

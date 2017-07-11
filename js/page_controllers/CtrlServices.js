@@ -68,16 +68,14 @@ function startServiceSearch() {
 
 		var client = clientData[clientIndex];
 
-		var FT = Utils_GetFieldTranslator();
-		if (!FT) return; // let Utils handle everything - and quit!
-
 		// get service code from client object
-		var serviceCode = client[FT['SERVICE_CODE']];
+		var serviceCode = client['SERVICE CODE'];
 
 		// get service description from map - to match with table
 		var serviceDesc = Utils_GetServiceDescFromCode( serviceCode );
 
-		var actionName = client[FT['ACTION_NAME']];
+		// get action name for later
+		var actionName = client['ACTION NAME'];
 
 		// if service description doesn't exist, id didn't match mapping
 		if (!serviceDesc) {
@@ -105,7 +103,7 @@ function startServiceSearch() {
 		}
 	});
 	
-	console.log('commented out real useful code below [in file]:');
+	// console.log('commented out real useful code below [in file]:');
 }
 
 /**
@@ -218,26 +216,26 @@ function addNewService() {
 
 		var client = clientData[clientIndex];
 
-		var FT = Utils_GetFieldTranslator();
-		if (!FT) return; // let Utils handle everything - and quit!
+		// get service field translator
+		var FTs = Utils_GetFieldTranslator( 'Service' );
+		if (!FTs) return; // let Utils handle everything - and quit!
 
 		// get service data from client object
-		var serviceCode = client[FT['SERVICE_CODE']].toUpperCase();
-		// var serviceStart = client[FT['SERVICE_START_DATE']]; // TODO: do this stuff
-		var serviceCaseworker = client[FT['SERVICE_CASEWORKER']];
+		var serviceCode = client['SERVICE CODE'].toUpperCase();
+		// var serviceStart = client[FTs['SERVICE_START_DATE']]; // TODO: do this stuff
+		var serviceCaseworker = client['SERVICE CASEWORKER'];
 
 		// get actionName for future reference
-		var actionName = client[FT['ACTION_NAME']];
+		var actionName = client['ACTION NAME'];
 
 		// get 6-character code (fill with spaces on right)
 		var fullServiceCode = fillServiceCode( serviceCode, ' ' );
 
-		// set service dropdown to service (using code) and trigger change
-		// -> .change() makes Action dropdown populate
-		$('#lscCodeValue').val( fullServiceCode ).change();
+		// set service dropdown to service (using service code)
+		var serviceFound = Utils_InsertValue( fullServiceCode, FTs['SERVICE CODE'], 2 );
 
 		// if match wasn't found, break import and error
-		if ( $('#lscCodeValue').val() === ''  ) {
+		if ( !serviceFound ) {
 			var errorMessage = 'No match found in Service Description dropdown - '
 			+ 'service code may not be accurate';
 		
@@ -255,25 +253,29 @@ function addNewService() {
 		// TODO: add service start date stuff
 
 		// --- add caseworker in, if defined in client data ---
+		var caseworkerFound = false;
 		if ( serviceCaseworker ) {
-			// 1) loop through caseworker dropdown
-			$('select#CASEWORKERID option').each(function(rowIndex, optionElem) {
-				// get CW from current option element
-				var optionCW = optionElem.innerText.trim().toUpperCase();
+			caseworkerFound = Utils_InsertValue( serviceCaseworker,
+				FTs['SERVICE CASEWORKER'], 1 );
 
-				// if this cw matches client cw:
-				// 1) get id (option value), 2) put it in, 3) and break loop!
-				if (optionCW === serviceCaseworker.toUpperCase()) {
-					var optionVal = optionElem.value; // 1 - get id
-					$('select#CASEWORKERID').val( optionVal ); // 2 - put val in dropdown
-					return false; // 3 - break loop
-				}
-			});
+			// 1) loop through caseworker dropdown
+			// $('select#CASEWORKERID option').each(function(rowIndex, optionElem) {
+			// 	// get CW from current option element
+			// 	var optionCW = optionElem.innerText.trim().toUpperCase();
+
+			// 	// if this cw matches client cw:
+			// 	// 1) get id (option value), 2) put it in, 3) and break loop!
+			// 	if (optionCW === serviceCaseworker.toUpperCase()) {
+			// 		var optionVal = optionElem.value; // 1 - get id
+			// 		$('select#CASEWORKERID').val( optionVal ); // 2 - put val in dropdown
+			// 		return false; // 3 - break loop
+			// 	}
+			// });
 		}
 
 		// if select box val is empty, didn't find caseworker
 		// -> give user an option to continue or not
-		if ( serviceCaseworker && $('select#CASEWORKERID').val( ) === '') {
+		if ( serviceCaseworker && !caseworkerFound ) {
 			var message = 'Could not find caseworker from given value "'
 				+ serviceCaseworker + '" - continue import?\n\nNOTE: This warning'
 				+ ' will pop up for every service with this invalid caseworker';

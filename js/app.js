@@ -73,7 +73,6 @@
 				
 				// send message config (store data) then tell MainContent to GO!
 				chrome.runtime.sendMessage(mObj, function(response) {
-					debugger;
 					chrome.tabs.sendMessage(activeTab.id, {
 						"message": "begin_client_import"
 					});

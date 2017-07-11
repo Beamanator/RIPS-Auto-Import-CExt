@@ -43,11 +43,8 @@ function startAddActionData() {
 
 		var client = clientData[clientIndex];
 
-		var FT = Utils_GetFieldTranslator();
-		if (!FT) return; // let Utils handle everything - and quit!
-
 		// set correct value in service dropdown
-		setServiceDropdown( client, FT );
+		setServiceDropdown( client, );
 	});
 }
 
@@ -56,36 +53,43 @@ function startAddActionData() {
  * function that adds action data
  * 
  * @param {object} client - current client data object
- * @param {object} FT - Field translator from Utils_GetFieldTranslator
  */
-function setServiceDropdown( client, FT ) {
-	// first have to set service dropdown, so get service code.
-	var serviceCode = client[FT['SERVICE_CODE']];
+function setServiceDropdown( client ) {
+	// first get Field translator for service data
+	var FTa = Utils_GetFieldTranslator( 'Action' );
+	if (!FTa) return; // let Utils handle everything - and quit!
+
+	// next have to set service dropdown, so get service code.
+	var serviceCode = client['SERVICE CODE'];
 
 	// translate service code into service description:
 	var serviceDesc = Utils_GetServiceDescFromCode( serviceCode );
 
-	var matchFound = false;
+	// set service dropdown to service (using service code)
+	var matchFound = Utils_InsertValue( serviceDesc, FTa['SERVICE CODE'], 1 );
 
-	// loop through options on page to find the desired option value
-	$('select#ddlServices > option').each(function(index, optionElem) {
-		// get service description from current option element
-		var optionServiceDesc = optionElem.innerText.trim().toUpperCase();
+	// load action from service dropdown
+	location.href="javascript:updateDdlActiontype();";
 
-		// if this option service desc matches desired service desc:
-		// 1) get id (option value), 2) put it in, 3) and break loop!
-		if (optionServiceDesc === serviceDesc.toUpperCase()) {
-			matchFound = true;
+	// // loop through options on page to find the desired option value
+	// $('select#' + FTs['SERVICE CODE'] + ' > option').each(function(index, optionElem) {
+	// 	// get service description from current option element
+	// 	var optionServiceDesc = optionElem.innerText.trim().toUpperCase();
 
-			var optionVal = optionElem.value; // 1 - get id
-			$('#ddlServices').val( optionVal ); // 2 - put val in dropdown
+	// 	// if this option service desc matches desired service desc:
+	// 	// 1) get id (option value), 2) put it in, 3) and break loop!
+	// 	if (optionServiceDesc === serviceDesc.toUpperCase()) {
+	// 		matchFound = true;
+
+	// 		var optionVal = optionElem.value; // 1 - get id
+	// 		$('#ddlServices').val( optionVal ); // 2 - put val in dropdown
 			
-			// may have to use this instead of .change():
-			location.href="javascript:updateDdlActiontype();";
+	// 		// may have to use this instead of .change():
+	// 		location.href="javascript:updateDdlActiontype();";
 			
-			return false; // 3 - break loop
-		}
-	});
+	// 		return false; // 3 - break loop
+	// 	}
+	// });
 
 	// check that the dropdown did get populated (error if it didn't)
 	if ( !matchFound ) {
@@ -109,7 +113,7 @@ function setServiceDropdown( client, FT ) {
 	)
 	.then(function(successMessage) {
 		// action dropdown has been populated by RIPS function! now move on
-		setActionDropdown( client, FT ); 
+		setActionDropdown( client ); 
 	})
 	.catch(function(err) {
 		var errorMessage = err;
@@ -129,34 +133,38 @@ function setServiceDropdown( client, FT ) {
  * saving redirect page to "View Actions"
  * 
  * @param {object} client - client object
- * @param {object} FT - field translator object for translating spreadsheet data
- *                      into usable form data
  * @returns - only returns early if an error is found
  */
-function setActionDropdown( client, FT ) {
+function setActionDropdown( client ) {
+	// first get Field translator for action data
+	var FTa = Utils_GetFieldTranslator( 'Action' );
+	if (!FTa) return; // let Utils handle everything - and quit!
+
 	// get action data from client data object
-	var actionName = client[FT['ACTION_NAME']];
-	// var actionDate = client[FT['ACTION_DATE']]; // TODO: deal with date stuff
-	var actionCaseworker = client[FT['ACTION_CASEWORKER']];
-	var actionNotes = client[FT['ACTION_NOTES']];
+	var actionName = client['ACTION NAME'];
 
-	var foundMatch = false;
+	// var actionDate = client[FT['ACTION DATE']]; // TODO: deal with date stuff
+	var actionCaseworker = client['ACTION CASEWORKER'];
+	var actionNotes = client['ACTION NOTES'];
 
+	// find and insert action into dropdown
+	var foundMatch = Utils_InsertValue( actionName, FTa['ACTION NAME'], 1 );
+	
 	// loop through action dropdown to find action that matches
-	$('select#ddlActions > option').each(function(index, optionElem) {
-		// get action name from current option element
-		var optionActionName = optionElem.innerText.trim().toUpperCase();
+	// $('select#' + FTa['ACTION NAME'] + ' > option').each(function(index, optionElem) {
+	// 	// get action name from current option element
+	// 	var optionActionName = optionElem.innerText.trim().toUpperCase();
 
-		// if this option action name matches desired action name:
-		// 1) get id (option value), 2) put it in, 3) and break loop!
-		if (optionActionName === actionName.toUpperCase()) {
-			foundMatch = true;
+	// 	// if this option action name matches desired action name:
+	// 	// 1) get id (option value), 2) put it in, 3) and break loop!
+	// 	if (optionActionName === actionName.toUpperCase()) {
+	// 		foundMatch = true;
 
-			var optionVal = optionElem.value; // 1 - get id
-			$('select#ddlActions').val( optionVal ); // 2 - put val in dropdown
-			return false; // 3 - break loop
-		}
-	});
+	// 		var optionVal = optionElem.value; // 1 - get id
+	// 		$('select#ddlActions').val( optionVal ); // 2 - put val in dropdown
+	// 		return false; // 3 - break loop
+	// 	}
+	// });
 
 	// check that match was found
 	if ( !foundMatch ) {
@@ -174,34 +182,42 @@ function setActionDropdown( client, FT ) {
 		return;
 	}
 
+	debugger;
+
 	// add Attendance Notes information:
-	$('iframe')
-		.contents()
-		.find('body')
-		.append('<p>' + actionNotes + '</p>');
+	if ( actionNotes ) {
+		$('iframe')
+			.contents()
+			.find('body')
+			.append('<p>' + actionNotes + '</p>');
+	}
 
 	// TODO: add date data - id: DATE_OF_ACT
 
 	// --- add caseworker in, if defined in client data ---
+	var caseworkerFound = false;
 	if ( actionCaseworker ) {
-		// 1) loop through caseworker dropdown
-		$('select#CASEWORKERID option').each(function(rowIndex, optionElem) {
-			// get CW from current option element
-			var optionCW = optionElem.innerText.trim().toUpperCase();
+		caseworkerFound = Utils_InsertValue( actionCaseworker,
+			FTa['ACTION CASEWORKER'], 1)
 
-			// if this cw matches client cw:
-			// 1) get id (option value), 2) put it in, 3) and break loop!
-			if (optionCW === actionCaseworker.toUpperCase()) {
-				var optionVal = optionElem.value; // 1 - get id
-				$('select#CASEWORKERID').val( optionVal ); // 2 - put val in dropdown
-				return false; // 3 - break loop
-			}
-		});
+		// 1) loop through caseworker dropdown
+		// $('select#' + FTa['ACTION CASEWORKER'] + ' option').each(function(rowIndex, optionElem) {
+		// 	// get CW from current option element
+		// 	var optionCW = optionElem.innerText.trim().toUpperCase();
+
+		// 	// if this cw matches client cw:
+		// 	// 1) get id (option value), 2) put it in, 3) and break loop!
+		// 	if (optionCW === actionCaseworker.toUpperCase()) {
+		// 		var optionVal = optionElem.value; // 1 - get id
+		// 		$('select#CASEWORKERID').val( optionVal ); // 2 - put val in dropdown
+		// 		return false; // 3 - break loop
+		// 	}
+		// });
 	}
 
 	// if select box val is empty, didn't find caseworker
 	// -> give user an option to continue or not
-	if ( actionCaseworker && $('select#CASEWORKERID').val( ) === '') {
+	if ( actionCaseworker && !caseworkerFound ) {
 		var message = 'Could not find caseworker from given value "'
 			+ actionCaseworker + '" - continue import?\n\nNOTE: This warning'
 			+ ' will pop up for every action with this invalid caseworker';
@@ -242,9 +258,6 @@ function setActionDropdown( client, FT ) {
  * 
  */
 function clickSave() {
-	// set action state to advanced search, then click save
-	debugger;
-
 	// store action state, then click 'save'
 	var mObj = {
 		action: 'store_data_to_chrome_storage_local',

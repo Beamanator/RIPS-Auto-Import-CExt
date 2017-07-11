@@ -5,7 +5,7 @@
  * 
  * @param {string} action 
  */
-function Services_Controller( action ) {
+function ViewActions_Controller( action ) {
 	switch(action) {
 		// redirect to advanced search to start importing next client
 		case 'NEXT_CLIENT_REDIRECT':
