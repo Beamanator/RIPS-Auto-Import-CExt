@@ -19,8 +19,7 @@ Fields required for Add Action page, and example data: (incomplete)
 
 | Service Code (*) | Action Name (*) | Action Date | Action Caseworker | Attendance Notes |
 |:----------------:|-----------------|-------------|-------------------|------------------|
-|        RSD       | Other           |             | abeaman           |                  |
-|                  |                 |             |                   |                  |
+| RSD, UYBP, GROUPS, etc| Other           |             | abeaman           |                  |
 |                  |                 |             |                   |                  |
 
 Notes about Service / Action table:
