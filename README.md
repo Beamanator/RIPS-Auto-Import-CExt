@@ -1,8 +1,6 @@
 # RIPS-Auto-Import-CExt
 Adds automatic import functionality to RIPS
 
-Currently working on converting to more structured file format
-
 *Exact* Fields required for **Registration page**, and example data: (incomplete)
 
 | Full Name | Gender | Date of Birth | Nationality | Main Language | Phone Number | UNHCR number|
