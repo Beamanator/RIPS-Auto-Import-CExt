@@ -21,9 +21,10 @@ Fields available for Client Basic Information page, and example data: (incomplet
 ** Figure out how best to display CBI data table**
 
 Fields available for **Services** page, and example data: (incomplete)
+
 | Service Code (*) | Service Caseworker |
 |------------------|--------------------|
-|MAP, RST, UCY     |    abeaman         |
+| MAP, RST, UCY    |    abeaman         |
 
 Notes about Services table:
 1) *Service Code* - The only required column for this page.
