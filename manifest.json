@@ -5,12 +5,6 @@
 
 	"description": "RIPS Extension - Enables automatic client data import. Checks for existing client data before importing new client info.",
 
-	/*
-		TODO:
-			Registration.js:
-				- Add rest of client data to import [insertClientDetails()]
-	*/
-
 	"permissions": [
 		"storage",
 		"tabs"
@@ -58,19 +52,14 @@
 	"background": {
 		"page": "html/background.html"
 	},
+	"options_page": "html/options.html",
 	"browser_action": {
 		"default_icon": {
 			// change to "32": "img/icon32.ico" before publishing! 
 			"48": "img/icon48.png" // unpacked exts need .png to see icon :)
-		},
-		"default_popup": "html/ImportPage.html"
+		}//,
+		// "default_popup": "html/ImportPage.html"
 	},
-	// "web_accessible_resources": [
-	// 	"testclientlist.json",
-	// 	"testclient.json",
-	// 	"CEPListTest1.json",
-	// 	"CEPListTestCurrent.json"
-	// ],
 	"icons": {
 		"48": "img/icon48.png",
     	"128": "img/icon128.png"

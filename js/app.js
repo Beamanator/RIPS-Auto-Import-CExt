@@ -30,11 +30,11 @@
 				+ '\tDate of UNHCR Reg, Country of Origin, Ethnic origin,\n'
 				+ '\tSecond Language, Marital Status, Address 1, Caritas No,\n'
 				+ '\tService Code (+ more), Action Code (+ more)';
-		Ctrl.clientCount = 0;
+		// Ctrl.clientCount = 0;
 		// Ctrl.auto = true;
 
 		// initialize arrays
-		Ctrl.headerList = [];
+		Ctrl.headerArr = [];
 		Ctrl.dataArray = [];
 		Ctrl.widthArray = [];
 
@@ -59,8 +59,23 @@
 			console.log('data to import:',Ctrl.dataArray);
 			// TODO: add some validation for required fields (maybe in "Create Table" function)
 
-			chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-				var activeTab = tabs[0];
+			chrome.tabs.query({
+				currentWindow: true,
+				url: 'http://rips.247lib.com/Stars/*'
+			}, function(tabs) {
+
+				// error if too many or too few tabs found w/ RIPS open
+				if (tabs.length === 0) {
+					console.error('No RIPS tabs are open right now!' +
+						'Must open 1 for data import to work.');
+					return;
+				}
+				if (tabs.length > 1) {
+					console.error('Too many RIPS tabs open! Found: ' + tabs.length);
+					return;
+				}
+
+				var targetTab = tabs[0];
 
 				var mObj = {
 					action: 'store_data_to_chrome_storage_local',
@@ -73,22 +88,11 @@
 				
 				// send message config (store data) then tell MainContent to GO!
 				chrome.runtime.sendMessage(mObj, function(response) {
-					chrome.tabs.sendMessage(activeTab.id, {
+					chrome.tabs.sendMessage(targetTab.id, {
 						"message": "begin_client_import"
 					});
 				});
 			});
-
-			/* 
-				If fatal error is present, don't allow user to import clients
-				possible fatal errors:
-					1) <none>
-			*/
-			// if (!Ctrl.admissionDateFormatError) {
-				// countButtonClick('import_students');
-			// } else {
-			// 	console.log('FATAL ERROR! No importing allowed. Fix errors!');
-			// }
 		}
 		// ============================================================================
 
@@ -113,43 +117,11 @@
 				alert('Chrome data has been cleared');
 			});
 
+			Ctrl.clientData = '';
 		}
 		// ============================================================================
 
 		// ================================= FIREBASE =================================
-		
-
-		// Make sure user is signed in to google / give extension permission! :D
-		// Ctrl.Signin = function() {
-		// 	// $('button#signin').toggleClass('disabled-button');
-		// 	// $('button#signin').prop('disabled', true);
-
-		// 	var currentUser = firebase.auth().currentUser;
-
-		// 	if (currentUser) {
-		// 		// set Ctrl.username to username!
-		// 		console.log('signed in already, don\'t auth again');
-		// 		Ctrl.username = currentUser.displayName;
-		// 	} else {
-		// 		console.log('not signed in -> ask Google to authenticate');
-		// 		userAuth(true);
-		// 	}
-		// }
-
-		// Sign user out of Google
-		// Ctrl.Signout = function() {
-		// 	firebase.auth().signOut().then(function() {
-		// 		// $('button#signin').toggleClass('disabled-button');
-		// 		// $('button#signin').prop('disabled', false);
-
-		// 		// Ctrl.username = '';
-		// 	}, function(error) {
-		// 	  	ThrowError({
-		// 	  		message: error,
-		// 	  		errMethods: ['mConsole', 'mAlert']
-		// 	  	});
-		// 	});
-		// }
 
 		// get number of client records changed via firebase databasea:
 		// function getClientCount() {
@@ -224,28 +196,27 @@
 			var data = Ctrl.clientData;
 			var delim, dataObj;
 
+			// get best delimiter from client data
 			delim = getDelim(data);
 
 			// if no delim found, quit.
-			if ( delim === undefined ) return;
+			if ( delim === '' ) return;
 
+			// look for some basic errors in client data structure
 			if ( foundErrors(data) ) return;
-			else {
-				// convert data from text to array of objects (json-like)
-				dataObj = convertData(data, delim);
-			}
 
-			if (dataObj.errors !== 0) return;
-			else displayError(""); // remove error message
+			// convert data from string to array of objects (json-like)
+			dataObj = convertData(data, delim);
+
+			if (dataObj.errorCount) return;
+			else displayError([]); // remove error message
 
 			// give angular the data from dataObj
-			Ctrl.headerList = dataObj.headerList;
-			// Ctrl.dataArray = dataObj.dataArray;
-
+			Ctrl.headerArr = dataObj.headerArr;
 			Ctrl.dataArray = dataObj.dataArray
 
-			// initialize width array for columns
-			fillWidthArray(dataObj.headerList.length);
+			// initialize width array for column css
+			initColWidthArray(dataObj.headerArr.length);
 		};
 
 		// these functions deal with widths of columns in the table
@@ -255,29 +226,41 @@
 
 		// ====================== INTERNAL FUNCTIONS =======================
 
-		function fillWidthArray(size) {
+		/**
+		 * Initialize array of widths for parsed client data table
+		 * 
+		 * @param {number} size - size of array to fill with widths
+		 */
+		function initColWidthArray(size) {
 			for (var i = 0; i < size; i++) {
 				Ctrl.widthArray.push(100);
 			}
 		}
 
-		// convert data from text to array of objects [like json]
-		// if there's an error, send that error to the page & return 1
+		/**
+		 * Function converts data from string format to array of client objects.
+		 * If there are errors, display them at the end
+		 * 
+		 * @param {string} data - client data in string format
+		 * @param {any} delim - delimiter to use to parse client data
+		 * @returns - obj with error count and data arrays
+		 */
 		function convertData(data, delim) {
 			// first element in dataArray is # of errors
-			var dataArray = [0];
+			// var dataArray = [0];
+
+			// ===== CREATE VARS HERE TO BE USED LATER =====
+
+			// returnObj holds all data we will need in next stages of import
 			var returnObj = {
-				errors: 0,
-				headerList: [],
+				errorCount: 0,
+				headerArr: [],
 				dataArray: []
 			}
 
-			var rows = data.split("\n");
+			var errArr = [];
 
-			// remove final row if it's only a \n  character (rows[index] will just be "")
-			if (rows[rows.length - 1] === "") rows.pop();
-
-			/*
+			/**
 				headerKeys will contain headers related to rows like this:
 				{
 					0: FirstName
@@ -286,31 +269,53 @@
 					3: Nationality
 					... etc
 				}
-			*/
+				built off 0,1,2 to be used with row indices later
+			 */
 			var headerKeys = {};
+
+			// ===== START DATA PROCESSING =====
+
+			var rows = data.split("\n");
+
+			// remove final row if it's only a '\n'  character (rows[index] will just be "")
+			if (rows[rows.length - 1] === "") rows.pop();
 
 			// setup headerKeys:
 			var headerRow = rows[0].split(delim);
-			returnObj.headerList = headerRow;
+			returnObj.headerArr = headerRow;
 
-			var numColumns = headerRow.length;
+			/**
+			 * === NOTE: ===
+			 * Cannot look for matching header fields here BECAUSE Vulnerabilities
+			 * Are dynamically added to translator when on client basic information
+			 * page. THEREFORE, don't check here, just check when importing clients
+			 */ 
 
+			// create keys for header Obj -> ALL UPPERCASE :)
 			for (var i = 0; i < headerRow.length; i++) {
 				headerKeys[i] = headerRow[i].toUpperCase();
 			}
 
 			// setup the rest of the data (non-header)
+			// start at rowIndex = 1 because index 0 is header row
 			for (var rowIndex = 1; rowIndex < rows.length; rowIndex++) {
 				var row = rows[rowIndex].split(delim);
 
-				if (row.length !== numColumns) {
+				// check row length matches header row length
+				if (row.length !== headerRow.length) {
 					// Error in # of delims between this row and header row.
-					displayError("ROW " + (rowIndex + 1) + " HAS DIFFERENT # OF COLUMNS THAN HEADER");
-					returnObj.errors = returnObj.errors + 1;
+					errArr.push("ROW #" + (rowIndex + 1) + " HAS DIFFERENT # " +
+						"OF COLUMNS THAN HEADER");
+					returnObj.errorCount += 1;
+
+					// error row, so skip processing this row
+					continue;
 				}
 
 				var clientObj = {};
 
+				// loop through cells in row (client cells), build client obj,
+				// add client obj to returnObj
 				for (var cellIndex = 0; cellIndex < row.length; cellIndex++) {
 					var cell = row[cellIndex];
 					var propName = headerKeys[cellIndex];
@@ -321,35 +326,49 @@
 				returnObj.dataArray.push(clientObj);
 			}
 
+			// display errors
+			if (errArr.length > 0)
+				displayError(errArr);
+
 			return returnObj;
 		}
 
-		// look for basic errors (more than 1 line of data)
+		/**
+		 * Function searches given data for basic errors. Current errors checked:
+		 * 1) Only 1 line of data (throws error)
+		 * 
+		 * @param {string} data - client data in string format (delimited)
+		 * @returns - true / false if error found
+		 */
 		function foundErrors(data) {
 			// look for "\n" in data. if there aren't any, create an error
 			if (data.indexOf("\n") === -1) {
-				displayError("ONLY 1 LINE OF DATA - NEED TITLE ROW + DATA ROW!");
-				return 1;
+				displayError(["ONLY 1 LINE OF DATA - NEED TITLE ROW + DATA ROW!"]);
+				return true;
 			}
+
+			return false;
 		}
 
-		/*
-			Return delim from data.
-			Priority:
-				tab (\t)
-				comma (,)
-		*/
+		/**
+		 * Function finds and returns delim found from pasted client data.
+		 * Priority:
+		 * 1) Tab (\t)
+		 * 2) Comma (,)
+		 * 
+		 * @param {string} data - data string to find delim in
+		 * @returns - delimiter (string) used in data string
+		 */
 		function getDelim(data) {
-
 			if (data === undefined) return;
 
 			var tab1 = data.indexOf("\t");
 			var com1 = data.indexOf(",");
 
+			// if no tabs or commas exist, throw error
 			if (tab1 === -1 && com1 === -1) {
-				displayError("CLIENT DATA MUST HAVE TABS OR COMMAS BETWEEN CELL DATA");
-			} else {
-				// displayError("");
+				displayError(["CLIENT DATA MUST HAVE TABS OR COMMAS BETWEEN COLUMNS OF DATA"]);
+				return '';
 			}
 
 			if (tab1 !== -1) {
@@ -360,12 +379,20 @@
 				return ",";
 			}
 
-			return "";
+			return '';
 		}
 
-		// display warning message in all uppercase
-		function displayError(message) {
-			Ctrl.errorMessage = message.toUpperCase();
+		/**
+		 * Function sets angular variable to passed-in array of warning strings
+		 * to be displayed on the page
+		 * 
+		 * @param {object} messages - array of strings (warning messages) 
+		 */
+		function displayError(messages) {
+			if (messages === '')
+				messages = []
+
+			Ctrl.errorMessages = messages;
 		}
 	};
 

@@ -1,3 +1,4 @@
+/* Data table -> Column styling */
 div[class^="col-"] {
     border: solid 1px black;
     display: inline-block;
@@ -9,13 +10,18 @@ div[class^="col-"]:nth-child(odd) {
     background-color: #fff;
 }
 
-div#table-containers {
+/* Data table -> Overall table style */
+div#data-table-container {
     clear: left;
     white-space: nowrap;
     overflow-x: scroll;
 }
+/* div#data-table-container div.row {
+      style="width: {{ ctrl.getWidth($index) }}px; -> in html code  
+}*/
 
-div.table-buttons {
+/* Data table -> plus / minus botton container */
+div.data-table-buttons {
     /*width: 100px;*/
     display: inline-block;
     padding-bottom: 5px;
@@ -23,19 +29,11 @@ div.table-buttons {
     border: solid 1px black;
     background-color: #fff;
 }
-div.table-buttons:nth-child(even) {
+div.data-table-buttons:nth-child(even) {
     background-color: #bfbfbf;
 }
 
-div#full-import {
-    float: left;
-    width: 800px;
-}
-
-button.disabled-button {
-    color: #adadad;
-}
-
+/* Data table buttons -> plus and minus */
 button.table-buttons-minus {
     width: 35px;
     margin-left: 12px;
@@ -45,6 +43,24 @@ button.table-buttons-plus {
     margin-right: 15px;
 }
 
+/* Container for full import elements */
+div#full-import {
+    float: left;
+    width: 800px;
+}
+
+/* Error message displayed below client data textarea */
+div#error-message-display {
+    color: red;
+    border: solid 2px red;
+    margin: 5px;
+    padding: 5px;
+}
+
+/* Styles for full page (body & full-container div) */
+div#full-container {
+    margin-left: 20px;
+}
 body {
-    width: 800px; /* 800px is max width */
+    width: 1000px; /* 800px is max width for popup */
 }

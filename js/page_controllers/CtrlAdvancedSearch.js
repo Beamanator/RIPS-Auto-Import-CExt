@@ -76,7 +76,7 @@ function searchForDuplicates() {
 			}
 		};
 	
-		// send message obj, then click 'save' (refreshes page)
+		// send message obj, then click 'search' (refreshes page)
 		chrome.runtime.sendMessage(mObj2, function(response) {
 			$('input[value="Search"]').click();
 		});
@@ -157,6 +157,7 @@ function processSearchResults() {
 
 	// wait 1 second and check if alert pops up.
 	// NOTE: as of March 15, 2017 - I haven't seen any alerts on this page recently
+	// NOTE: as of August 7, 2017 - Popups occur when > 100 results AND when 0 results
 	/*setTimeout( function(){
 		if ( $('.sweet-alert').hasClass('visible') ) {
 			// alert was generated, meaning there weren't any clients found.
@@ -205,32 +206,3 @@ function processSearchResults() {
 }
 
 // ===================== INTERNAL FUNCTIONS ========================
-
-
-// function StartImport( clientData ) {
-// 	// set up local variables
-// 	// var clientJson;
-// 	// Get client Json:
-// 	// getClientJson()
-// 	// .then(function(result) {
-// 		// received client Json.
-// 		// clientJson = result;
-
-// 	getValueFromStorage('CLIENT_INDEX')
-// 	.then(function(clientIndex) {
-// 		if (clientIndex === undefined || clientIndex === '') clientIndex = 0;
-// 		if ( clientIndex >= clientData.length) {
-// 			updateStorageLocal([
-// 				{'ACTION_STATE': 'ERROR_STATE'}
-// 			])
-// 			.then(function(results) {
-// 				('OUT OF BOUNDS! Done searching.');
-// 			});	
-// 		}
-// 		// received CLIENT_INDEX from store. Now look for it in RIPS
-// 		checkExistence(clientJson, clientIndex);
-// 	})
-// 	.catch(function(err) {
-// 		message(err);
-// 	});
-// }

@@ -348,6 +348,7 @@ function Utils_SetDropdownValue( valToMatch, elemID, searchMethod=1 ) {
 
 		// search method doesn't exist, so quit with found = false still
 		else {
+			console.warn('Invalid searchMethod:', searchMethod);
 			return false;
 		}
 

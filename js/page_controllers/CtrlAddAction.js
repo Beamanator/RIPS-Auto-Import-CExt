@@ -149,22 +149,6 @@ function setActionDropdown( client ) {
 
 	// find and insert action into dropdown
 	var foundMatch = Utils_InsertValue( actionName, FTa['ACTION NAME'], 1 );
-	
-	// loop through action dropdown to find action that matches
-	// $('select#' + FTa['ACTION NAME'] + ' > option').each(function(index, optionElem) {
-	// 	// get action name from current option element
-	// 	var optionActionName = optionElem.innerText.trim().toUpperCase();
-
-	// 	// if this option action name matches desired action name:
-	// 	// 1) get id (option value), 2) put it in, 3) and break loop!
-	// 	if (optionActionName === actionName.toUpperCase()) {
-	// 		foundMatch = true;
-
-	// 		var optionVal = optionElem.value; // 1 - get id
-	// 		$('select#ddlActions').val( optionVal ); // 2 - put val in dropdown
-	// 		return false; // 3 - break loop
-	// 	}
-	// });
 
 	// check that match was found
 	if ( !foundMatch ) {

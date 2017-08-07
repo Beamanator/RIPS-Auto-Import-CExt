@@ -14,11 +14,10 @@
 function FT_getAllTranslator(flag_getElemID=true) {
 	// if flag_getElemID is true, get item 0 (id) from arrays, else get item 1
 	// (column name)
-	var item = flag_getElemID ? 0 : 1;
+	// var item = flag_getElemID ? 0 : 1;
 
-	return uppercaseObjectValues({
-		
-	});
+	// NOT sure when this will be needed yet
+	// -> Can only be used on CBI if we want Vulnerabilities
 }
 
 function FT_getSearchTranslator() {
@@ -79,7 +78,7 @@ function FT_getActionTranslator(flag_getElemID=true) {
 }
 
 // gets optional client data translation (for client basic information page)
-function FT_getOptionalTranslator(flag_getElemID=true) {
+function FT_getOptionalTranslator() {
 	// same comment as above fn
 	// var item = flag_getElemID ? 0 : 1;
 
@@ -122,8 +121,8 @@ function FT_getOptionalTranslator(flag_getElemID=true) {
 		"RELIGION":				'Dropdown1',
 		"UNHCR STATUS":			'Dropdown2',
 		"SOURCE OF REFERRAL": 	'Dropdown3',
-		"CITY OF ORIGIN": 			'Dropdown4',
-		"VILLAGE OF ORIGIN":    	'Dropdown4',
+		"CITY OF ORIGIN": 		'Dropdown4',
+		"VILLAGE OF ORIGIN":    'Dropdown4',
 		"EMPLOYMENT STATUS": 	'Dropdown5',
 		"NEIGHBORHOOD": 		'Dropdown6',
 		"HIGHEST EDUCATION": 	'Dropdown7',
@@ -149,6 +148,7 @@ function FT_getOptionalTranslator(flag_getElemID=true) {
  * Doesn't explicitly return new object because object itself was changed
  * 
  * @param {object} obj - object that will get dependent and vuln translator
+ * @param {boolean} override - override need for page to be CBI
  */
 function appendHiddenCBITranslators( obj ) {
 	// make sure caller is on 'ClientDetails/ClientDetails' page (CBI)
