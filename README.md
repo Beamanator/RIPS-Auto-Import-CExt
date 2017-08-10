@@ -42,6 +42,7 @@ Notes about Add Action table:
 # Testing Scenarios:
 |#| Client Data Description (list) |Expected Outcome| Last Pass (Version #) |
 |-|------------------------------|----------------|-------------|
+|0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Timestamp|RLAP Phase 1 - everything but actions|v0.1.0|
 |1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created||
 |2|First Name / Last Name vs Full Name|Scenarios should put names in correct positions||
 |3|Full Name has 2 names|First name goes in first name box, all others go in 'surname' box||
