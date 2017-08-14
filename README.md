@@ -1,12 +1,12 @@
 # RIPS-Auto-Import-CExt
 Adds automatic import functionality to RIPS
 
-*Exact* Fields required for **Registration page**, and example data: (incomplete)
+## *Exact* Fields required for Registration page, and example data:
 
 | Full Name | Gender | Date of Birth | Nationality | Main Language | Phone Number | UNHCR number|
 |-----------|--------|---------------|-------------|---------------|-----------|------------|
 |Test Bob 1 | Male   |   1-Mar-2000  | -STATELESS- | Arabic        |01234567890|123-99C12345|
-|Test Jill  | Female |  19-Feb-1943  |    Iraq     | Fur, English   |01112223333|000-00C00000|
+|Test Jill  | Female |  19-Feb-1943  |    Iraq     | Fur, English  |01112223333|000-00C00000|
 |Test Bob 2 | Other  |  .14/04/2001  |    Sudan    | Amharic       |05555555555|1234/1234|
 
 Notes about Registration table:
@@ -19,24 +19,68 @@ Notes about Registration table:
 6) *Phone Number* - Should be 11 digits (Validation handled by RIPS Validation Extension).
 7) *UNHCR Number* - Should be format: ###-##C#####  (Validation handled by RIPS Validation Extension).
 
-Fields available for Client Basic Information page, and example data: (incomplete)
+## Fields available for Client Basic Information page, and example data: (*incomplete*)
 
-** Figure out how best to display CBI data table**
+Current Contact Details (free text):
 
-Fields available for **Services** page, and example data: (incomplete)
+| Address1 | Address2 | Other Phone Number | Email Address |
+|----------|----------|--------------------|---------------|
+| Street   | Zip      | 0123456789         | spamalotmucho@gmail.com|
+
+Background (Dropdown boxes):
+
+| Country of Origin | Ethnic Origin | Second Language | Marital Status |
+|-------------------|---------------|-----------------|----------------|
+| Bahrain           |    Bari       |   Nuer          |  Single        |
+
+Other Information (Text boxes):
+
+| Appointment Slip Number | Caritas Number | IOM Number | CRS Number | StARS Student Number | MSF Number |
+|-------------------------|-----------------|------------|-----------|-----------------------|-----------|
+| 555-AP12345678          |      ?          |    ?       |    ?     |        ?               |    ?     |
+
+Other Information (Dropdown boxes):
+
+| Religion | UNHCR Status| Source of Referral | City of Origin / Village of Origin | Employment Status | Neighborhood | Highest Education |
+|-----------|------------|-------------------|--------------------------------------|-----------------|--------------|-----------------------------|
+
+Other Information (Checkboxes):
+
+| CARE | CRS | EFRRA/ACSFT | IOM | MSF | PSTIC | Refuge Egypt | Save the Children | UNICEF/TdH | Other Service Provider |
+|------|------|-------------|-----|----|-------|--------------|-------------------|------------|------------------------|
+
+Other Information (Dates):
+
+| Date of Arrival in Egypt | Date of UNHCR Registration | RSD Date | Last RSD Update (from dropdown box) |
+|--------------------------|----------------------------|----------|-------------------------------------|
+
+Fields in separate tabs:
+
+| Urgent Notes | Important Information | Family Size | UNHCR Case Size | Direct Beneficiaries | Indirect Beneficiaries |
+|--------------|------------------------|------------|-----------------|----------------------|------------------------|
+
+Vulnerability Data:
+
+| Vulnerability Notes | Vulnerability Name |
+|---------------------|--------------------|
+
+Notes about "Optional" tables above:
+1) *Vulnerability name* - make sure vulnerability is spelled exactly correct
+
+## Fields available for Services page, and example data:
 
 | Service Code (*) | Service Caseworker | Service Start Date |
 |------------------|--------------------|--------------------|
-| MAP, RST, UCY    |    abeaman         |  1-Mar-2017        |
+| MAP, RST, UCY    |  abeaman           |  1-Mar-2017        |
 
 Notes about Services table:
 1) *Service Code* - The only required column for this page.
 2) *Service Caseworker* - RIPS defaults to adding logged-in user as caseworker for new services. If import user would like a different user added to new services, this column is where the caseworker should be specified.
 3) *Service Start Date* - Should always be in format above: Day-Month-Year, where Day and Month are numbers and Month is a 3-letter string.
 
-Fields available for **Add Action** page, and example data: (incomplete)
+## Fields available for Add Action page, and example data: (incomplete - DON'T USE UNTIL PHASE 2)
 
-| Service Code (*) | Action Name (*) | Action Date | Action Caseworker | Attendance Notes |
+| Service Code (*) | Action Name (*) | Action Date (not ready) | Action Caseworker | Attendance Notes |
 |:----------------:|-----------------|-------------|-------------------|------------------|
 | RSD, UYBP, GROUPS, etc| Other      |             | abeaman           |                  |
 |                  |                 |             |                   |                  |
@@ -44,7 +88,7 @@ Fields available for **Add Action** page, and example data: (incomplete)
 Notes about Add Action table:
 1) If "Service Code" is populated but "Action Name" column is omitted, service will be added, then action data will be skipped.
 
-# Testing Scenarios:
+### Testing Scenarios:
 |#| Client Data Description (list) |Expected Outcome| Last Pass (Version #) |
 |-|------------------------------|----------------|-------------|
 |0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Timestamp|RLAP Phase 1 - everything but actions|v0.1.0|
