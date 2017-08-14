@@ -463,7 +463,8 @@ function Utils_SetDateValue( date, elemID ) {
  * 
  * @param {string} valToMatch - value to look for in dropdown (select) element
  * @param {string} elemID - html id of select element to search through
- * @param {number} [searchMethod=1] - 1 = by innerText, 2 = by elem value
+ * @param {number} [searchMethod=1] - 1 = by innerText (lang)
+ * 									- 2 = by elem value
  * @returns success (true / false) in finding the valToMatch variable
  */
 function Utils_SetDropdownValue( valToMatch, elemID, searchMethod=1 ) {

@@ -98,14 +98,7 @@ function addClientData(clientData, clientIndex) {
  * 
  * @param {object} client - client object to import
  * @param {number} ci - index of specific client being imported
- * @returns {boolean} true if successful (no internal errors), false if unsuccessful
- */
-/**
- * 
- * 
- * @param {any} client 
- * @param {any} ci 
- * @returns 
+ * @returns {boolean} - true if successful (no internal errors), false if unsuccessful
  */
 function insertRequiredClientDetails(client, ci) {
 	// =============== get FieldTranslator ================
@@ -119,7 +112,7 @@ function insertRequiredClientDetails(client, ci) {
 
 	let f_n; // shortener for field_name variables
 
-	return Utils_CheckErrors([
+	let pass = Utils_CheckErrors([
 		// === Add Required fields to form ===
 		[ NameInsert( client, FTr ), 'NAME' ],
 		
@@ -132,42 +125,10 @@ function insertRequiredClientDetails(client, ci) {
 		// Dropdowns:
 		[ Utils_InsertValue( client[ f_n='GENDER' ], 		FTr[f_n] ), f_n ],
 		[ Utils_InsertValue( client[ f_n='NATIONALITY' ], 	FTr[f_n] ), f_n ],
-		[ Utils_InsertValue( client[ f_n='MAIN LANGUAGE' ],	FTr[f_n] ), f_n ]
+		[ LanguageInsert( client[ f_n='MAIN LANGUAGE' ],	FTr, ci  ), f_n ]
 	], ci);
 
-	// TODO: remove below commented out version if above version works
-	// Utils_CheckErrors([
-	// 	// === Add Required fields to form ===
-	// 	// Name:
-	// 	[Utils_InsertValue( client['FIRST NAME'], FTr['FIRST NAME'] ),
-	// 		'FIRST NAME'],
-	// 	[Utils_InsertValue( client['LAST NAME'],  FTr['LAST NAME'] ),
-	// 		'LAST NAME'],
-
-	// 	// Logic if one column contains full name
-	// 	[fullNameInsert( client['FULL NAME'], FTr['FIRST NAME'], FTr['LAST NAME'] ),
-	// 		'FULL NAME'],
-
-	// 	[Utils_InsertValue( client['UNHCR NUMBER'],	FTr['UNHCR NUMBER'] ),
-	// 		'UNHCR NUMBER'],
-	// 	[Utils_InsertValue( client['PHONE NUMBER'],	FTr['PHONE NUMBER'] ),
-	// 		'PHONE NUMBER'],
-
-	// 	// update / format DOB, then inserting into form
-	// 	[DOBInsert( client['DATE OF BIRTH'], FTr['DATE OF BIRTH'] ),
-	// 		'DATE OF BIRTH'],
-	// 	// Utils_InsertValue( client['DATE OF BIRTH'], FTr['DATE OF BIRTH']);
-
-	// 	// Dropdowns:
-	// 	[Utils_InsertValue( client['GENDER'], 		FTr['GENDER'] ),
-	// 		'GENDER'],
-	// 	[Utils_InsertValue( client['NATIONALITY'], 	FTr['NATIONALITY'] ),
-	// 		'NATIOINALITY'],
-	// 	[Utils_InsertValue( client['MAIN LANGUAGE'], FTr['MAIN LANGUAGE'] ),
-	// 		'MAIN LANGUAGE']
-	// ], ci);
-
-	// return true; // true = didn't run into internal errors
+	return pass;
 }
 
 // ========================= DATA INTERPRETERS ========================
@@ -233,4 +194,43 @@ function NameInsert(client, FTr) {
 	}
 
 	return pass;
+}
+
+/**
+ * Function inserts client's language data into RIPS form. Primary goal is to store
+ * main language, but if user has main and seconary language data in the cell
+ * (separated by a comma), enters both into form.
+ * 
+ * @param {string} langValue - language(s) that client speaks (only 2 get saved)
+ * @param {object} FTr - Field Translator object for Required data
+ * @param {number} ci - index of client being imported
+ * @returns {boolean} - true/false success of insert(s)
+ */
+function LanguageInsert(langValue, FTr, ci) {
+	// check if langValue has comma in it -> if yes, have to insert second lang into
+	// 'Second Language" dropdown.
+	if (langValue.indexOf(',') !== -1) {
+		let langArr = langValue.split(',');
+
+		let lang1 = langArr[0].trim();
+		let lang2 = langArr[1].trim();
+
+		// throw warning error if more than 2 languages were found in column
+		if (langArr.length > 2) {
+			Utils_AddError('Client #' + (ci + 1) + ' - Warning: Only 2 of ' +
+				langArr.length + ' languages from "' + langValue +
+				'" will be saved.');
+		}
+
+		// return overall success of adding both languages to client
+		return (
+			Utils_InsertValue( lang1, FTr['MAIN LANGUAGE'] ) &&
+			Utils_InsertValue( lang2, FTr['SECOND LANGUAGE'] )
+		);
+	}
+
+	// if no comma, only 1 language so just insert it straight away.
+	else {
+		return Utils_InsertValue( langValue, FTr['MAIN LANGUAGE'] );
+	}
 }

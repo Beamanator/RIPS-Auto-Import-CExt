@@ -35,7 +35,7 @@ function FT_getRequiredTranslator(flag_getElemID=true) {
 		// ====================== REQUIRED FIELDS: =====================
 		"FIRST NAME": 	'LFIRSTNAME',
 		"LAST NAME": 	'LSURNAME',
-		// "FULL NAME":	'NO ELEM ID! HANDLE SEPARATELY!',
+		// "FULL NAME":	'NO ELEM ID! HANDLED SEPARATELY IN NAMEINSERT()!',
 		
 		"DATE OF BIRTH":	'LDATEOFBIRTH',
 		"GENDER": 			'LGENDER',
@@ -43,7 +43,10 @@ function FT_getRequiredTranslator(flag_getElemID=true) {
 
 		"MAIN LANGUAGE":	'LMAINLANGUAGE',
 		"PHONE NUMBER": 	'CDAdrMobileLabel',
-		"UNHCR NUMBER": 	'UNHCRIdentifier'
+		"UNHCR NUMBER": 	'UNHCRIdentifier',
+
+		// ONLY USED WHEN MULTIPLE LANGUAGES IN MAIN LANGUAGE COLUMN!
+		"SECOND LANGUAGE": 		'LSECONDLANGUAGE' // MATCH PAIR IN OPTIONAL TRANSLATOR
 	};
 }
 
@@ -111,7 +114,7 @@ function FT_getOptionalTranslator() {
 		// Background:
 		"COUNTRY OF ORIGIN": 	'LCOUNTRYOFORIGIN',
 		"ETHNIC ORIGIN": 		'LETHNICORIGIN',
-		"SECOND LANGUAGE": 		'LSECONDLANGUAGE',
+		"SECOND LANGUAGE": 		'LSECONDLANGUAGE', // MATCH PAIR IN REQUIRED TRANSLATOR
 		"MARITAL STATUS": 		'LMARITALSTATUS',
 		// other information
 		"RELIGION":				'Dropdown1',
