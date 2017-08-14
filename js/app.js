@@ -11,6 +11,27 @@
 	// };
 	// firebase.initializeApp(config);
 
+	// TODO: see if this works inside controller, so can be output in HTML
+	// Listener tracks any changes to local storage in background's console 
+	// Got code here: https://developer.chrome.com/extensions/storage
+	chrome.storage.onChanged.addListener(function(changes, namespace) {
+		for (let key in changes) {
+			var storageChange = changes[key];
+
+			console.log('Storage key "%s" in namespace "%s" changed. ' +
+				'Old value was "%s", new value is: ',
+				key,
+				namespace,
+				storageChange.oldValue,
+				storageChange.newValue
+			);
+
+			if (key === 'ADD_MESSAGE') {
+				console.error( storageChange.newValue );
+			}
+		}
+	});
+
     // Angular setup:
 	angular.module('RIPSImportPageApp', [])
 	.controller('MainController', MainController);
@@ -19,6 +40,11 @@
 	MainController.$inject = ['$q', '$scope'];
 	function MainController($q, $scope) {
 		var Ctrl = this;
+
+		// chrome.runtime.onMessage.addListener(function(mObj, MessageSender, sendResponse) {
+		// 	debugger;
+		// 	console.log('message heard in options.js:', mObj);
+		// });
 
 		// Initial page data
 		Ctrl.textareaWelcome = 'Client details here (delimited by commas \",\" or tabs)'

@@ -195,9 +195,6 @@ function searchServiceInTable( serviceDesc, actionName ) {
 /**
  * Function adds a new service and caseworker (if needed) to client, updates
  * ACTION_STATE, then clicks save
- * 
- * // TODO: add start date
- * 
  */
 function addNewService() {
 	// get client data (interested in service data)
@@ -222,7 +219,7 @@ function addNewService() {
 
 		// get service data from client object
 		var serviceCode = client['SERVICE CODE'].toUpperCase();
-		// var serviceStart = client[FTs['SERVICE_START_DATE']]; // TODO: do this stuff
+		var serviceStart = client['SERVICE START DATE'];
 		var serviceCaseworker = client['SERVICE CASEWORKER'];
 
 		// get actionName for future reference
@@ -232,31 +229,50 @@ function addNewService() {
 		var fullServiceCode = fillServiceCode( serviceCode, ' ' );
 
 		// set service dropdown to service (using service code)
-		var serviceFound = Utils_InsertValue( fullServiceCode, FTs['SERVICE CODE'], 2 );
+		var serviceFound = Utils_CheckErrors([
+			[ Utils_InsertValue( fullServiceCode, FTs['SERVICE CODE'], 2 ), 'SERVICE CODE']
+		], clientIndex);
 
 		// if match wasn't found, break import and error
 		if ( !serviceFound ) {
 			var errorMessage = 'No match found in Service Description dropdown - '
 			+ 'service code may not be accurate';
 		
+			// skip client
+			Utils_SkipClient(errorMessage, clientIndex);
+
 			// stop import and flag error message
-			Utils_StopImport( errorMessage, function(response) {
-				ThrowError({
-					message: errorMessage,
-					errMethods: ['mSwal', 'mConsole']
-				});
-			});
+			// Utils_StopImport( errorMessage, function(response) {
+			// 	console.log('error adding service code');
+			// 	// ThrowError({
+			// 	// 	message: errorMessage,
+			// 	// 	errMethods: ['mSwal', 'mConsole']
+			// 	// });
+			// });
 
 			return;
 		}
 
-		// TODO: add service start date stuff
+		// ======== Service Start Date ========
+		// Add service start date
+		let dateSuccess = Utils_CheckErrors([
+			[ Utils_InsertValue( serviceStart, FTs['SERVICE START DATE'], 3 ),
+				'SERVICE START DATE' ]
+		], clientIndex)
+		
+		// check if error exists here, but don't do anything exciting about it
+		if (!dateSuccess)
+			console.warn('Service Start Date not successful');
 
+		// ======== Caseworker ==========
 		// --- add caseworker in, if defined in client data ---
+		// Note: Caseworker automatically set as logged-in user!
 		var caseworkerFound = false;
 		if ( serviceCaseworker ) {
-			caseworkerFound = Utils_InsertValue( serviceCaseworker,
-				FTs['SERVICE CASEWORKER'], 1 );
+			caseworkerFound = Utils_CheckErrors([
+				[ Utils_InsertValue( serviceCaseworker, FTs['SERVICE CASEWORKER'], 1 ),
+					'SERVICE CASEWORKER']
+			], clientIndex);
 
 			// 1) loop through caseworker dropdown
 			// $('select#CASEWORKERID option').each(function(rowIndex, optionElem) {
@@ -276,28 +292,33 @@ function addNewService() {
 		// if select box val is empty, didn't find caseworker
 		// -> give user an option to continue or not
 		if ( serviceCaseworker && !caseworkerFound ) {
-			var message = 'Could not find caseworker from given value "'
-				+ serviceCaseworker + '" - continue import?\n\nNOTE: This warning'
-				+ ' will pop up for every service with this invalid caseworker';
-			var moveOn = confirm(message);
+			// var message = 'Could not find caseworker from given value "'
+			// 	+ serviceCaseworker + '" - continue import?\n\nNOTE: This warning'
+			// 	+ ' will pop up for every service with this invalid caseworker';
 
-			// if user wants to continue, click save and continue import
-			if (moveOn)
-				clickSave( actionName );
+			// var moveOn = confirm(message);
+
+			// // if user wants to continue, click save and continue import
+			// if (moveOn)
+			// 	clickSave( actionName );
 			
-			// if user doesn't want to move on, stop the import
-			else {
+			// // if user doesn't want to move on, stop the import
+			// else {
 				var errorMessage = 'Could not find service caseworker from given value "'
-					+ serviceCaseworker + '" - chose not to continue';
+					+ serviceCaseworker + '" - skipping client';
+
+				// skip client
+				Utils_SkipClient(errorMessage, clientIndex);
 
 				// stop auto import, then display an error
-				Utils_StopImport( errorMessage, function(response) {
-					ThrowError({
-						message: errorMessage,
-						errMethods: ['mConsole']
-					});
-				});
-			}
+				// Utils_StopImport( errorMessage, function(response) {
+				// 	console.log('error adding service caseworker');
+				// 	// ThrowError({
+				// 	// 	message: errorMessage,
+				// 	// 	errMethods: ['mConsole']
+				// 	// });
+				// });
+			// }
 		}
 
 		// caseworker was found and successfully added to dropdown!

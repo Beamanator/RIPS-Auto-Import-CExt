@@ -44,7 +44,7 @@ function startAddActionData() {
 		var client = clientData[clientIndex];
 
 		// set correct value in service dropdown
-		setServiceDropdown( client, );
+		setServiceDropdown( client, clientIndex );
 	});
 }
 
@@ -53,8 +53,9 @@ function startAddActionData() {
  * function that adds action data
  * 
  * @param {object} client - current client data object
+ * @param {number} ci - index of specific client being imported
  */
-function setServiceDropdown( client ) {
+function setServiceDropdown( client, ci ) {
 	// first get Field translator for service data
 	var FTa = Utils_GetFieldTranslator( 'Action' );
 	if (!FTa) return; // let Utils handle everything - and quit!
@@ -66,7 +67,9 @@ function setServiceDropdown( client ) {
 	var serviceDesc = Utils_GetServiceDescFromCode( serviceCode );
 
 	// set service dropdown to service (using service code)
-	var matchFound = Utils_InsertValue( serviceDesc, FTa['SERVICE CODE'], 1 );
+	var matchFound = Utils_CheckErrors([
+		[ Utils_InsertValue( serviceDesc, FTa['SERVICE CODE'], 1 ), 'SERVICE CODE' ]
+	], ci);
 
 	// load action from service dropdown
 	location.href="javascript:updateDdlActiontype();";
@@ -94,17 +97,20 @@ function setServiceDropdown( client ) {
 	// check that the dropdown did get populated (error if it didn't)
 	if ( !matchFound ) {
 		var errorMessage = 'No match found in Services dropdown - service'
-			+ ' code may not be accurate';
+			+ ' code may not be accurate. Skipping client.';
 		
-		// stop import and flag error message
-		Utils_StopImport( errorMessage, function(response) {
-			ThrowError({
-				message: errorMessage,
-				errMethods: ['mSwal', 'mConsole']
-			});
-		});
+		// skip to importing next client
+		Utils_SkipClient(errorMessage, ci);
 
-		return;
+		// Utils_StopImport( errorMessage, function(response) {
+		// 	console.log('skipping client');
+		// 	// ThrowError({
+		// 	// 	message: errorMessage,
+		// 	// 	errMethods: ['mSwal', 'mConsole']
+		// 	// });
+		// });
+
+		// return;
 	}
 
 	// wait until Actions select box is populated before continuing
@@ -113,12 +119,13 @@ function setServiceDropdown( client ) {
 	)
 	.then(function(successMessage) {
 		// action dropdown has been populated by RIPS function! now move on
-		setActionDropdown( client ); 
+		setActionDropdown( client, ci ); 
 	})
 	.catch(function(err) {
 		var errorMessage = err;
 
-		// stop import and flag error message
+		// action not found after setting service dropdown -> internet must
+		// not be doing well, so stop import. (Full Stop OK)
 		Utils_StopImport( errorMessage, function(response) {
 			ThrowError({
 				message: errorMessage,
@@ -133,9 +140,10 @@ function setServiceDropdown( client ) {
  * saving redirect page to "View Actions"
  * 
  * @param {object} client - client object
+ * @param {number} ci - index of specific client being imported
  * @returns - only returns early if an error is found
  */
-function setActionDropdown( client ) {
+function setActionDropdown( client, ci ) {
 	// first get Field translator for action data
 	var FTa = Utils_GetFieldTranslator( 'Action' );
 	if (!FTa) return; // let Utils handle everything - and quit!
@@ -143,30 +151,34 @@ function setActionDropdown( client ) {
 	// get action data from client data object
 	var actionName = client['ACTION NAME'];
 
-	// var actionDate = client[FT['ACTION DATE']]; // TODO: deal with date stuff
+	// var actionDate = client['ACTION DATE']; // TODO: deal with date stuff
 	var actionCaseworker = client['ACTION CASEWORKER'];
 	var actionNotes = client['ACTION NOTES'];
 
 	// find and insert action into dropdown
-	var foundMatch = Utils_InsertValue( actionName, FTa['ACTION NAME'], 1 );
+	var foundMatch = Utils_CheckErrors([
+		[ Utils_InsertValue( actionName, FTa['ACTION NAME'], 1 ), 'ACTION NAME' ]
+	], ci);
 
 	// check that match was found
 	if ( !foundMatch ) {
 		var errorMessage = 'No match found in Action dropdown - action name'
-			+ ' may not be accurate';
-		
+			+ ' may not be accurate. Skipping Client.';
+
+		// Skip importing this client
+		Utils_SkipClient(errorMessage, ci);
+
 		// stop import and flag error message
-		Utils_StopImport( errorMessage, function(response) {
-			ThrowError({
-				message: errorMessage,
-				errMethods: ['mSwal', 'mConsole']
-			});
-		});
+		// Utils_StopImport( errorMessage, function(response) {
+		// 	console.log('skipping client');
+		// 	// ThrowError({
+		// 	// 	message: errorMessage,
+		// 	// 	errMethods: ['mSwal', 'mConsole']
+		// 	// });
+		// });
 
 		return;
 	}
-
-	debugger;
 
 	// add Attendance Notes information:
 	if ( actionNotes ) {
@@ -181,8 +193,10 @@ function setActionDropdown( client ) {
 	// --- add caseworker in, if defined in client data ---
 	var caseworkerFound = false;
 	if ( actionCaseworker ) {
-		caseworkerFound = Utils_InsertValue( actionCaseworker,
-			FTa['ACTION CASEWORKER'], 1)
+		caseworkerFound = Utils_CheckErrors([ 
+			[ Utils_InsertValue( actionCaseworker, FTa['ACTION CASEWORKER'], 1),
+				'ACTION CASEWORKER']
+		], ci);
 
 		// 1) loop through caseworker dropdown
 		// $('select#' + FTa['ACTION CASEWORKER'] + ' option').each(function(rowIndex, optionElem) {
@@ -202,28 +216,33 @@ function setActionDropdown( client ) {
 	// if select box val is empty, didn't find caseworker
 	// -> give user an option to continue or not
 	if ( actionCaseworker && !caseworkerFound ) {
-		var message = 'Could not find caseworker from given value "'
-			+ actionCaseworker + '" - continue import?\n\nNOTE: This warning'
-			+ ' will pop up for every action with this invalid caseworker';
-		var moveOn = confirm(message);
+		// var message = 'Could not find caseworker from given value "'
+		// 	+ actionCaseworker + '" - continue import?\n\nNOTE: This warning'
+		// 	+ ' will pop up for every action with this invalid caseworker';
 
-		// if user wants to continue, click save and continue import
-		if (moveOn)
-			clickSave();
+		// var moveOn = confirm(message);
+
+		// // if user wants to continue, click save and continue import
+		// if (moveOn)
+		// 	clickSave();
 		
-		// if user doesn't want to move on, stop the import
-		else {
+		// // if user doesn't want to move on, stop the import
+		// else {
 			var errorMessage = 'Could not find service caseworker from given value "'
-				+ actionCaseworker + '" - chose not to continue';
+				+ actionCaseworker + '" - skipping client';
+
+			// skip current client
+			Utils_SkipClient(errorMessage, ci);
 
 			// stop auto import, then display an error
-			Utils_StopImport( errorMessage, function(response) {
-				ThrowError({
-					message: errorMessage,
-					errMethods: ['mSwal', 'mConsole']
-				});
-			});
-		}
+			// Utils_StopImport( errorMessage, function(response) {
+			// 	console.log('skipping client');
+			// 	// ThrowError({
+			// 	// 	message: errorMessage,
+			// 	// 	errMethods: ['mSwal', 'mConsole']
+			// 	// });
+			// });
+		// }
 	}
 
 	// caseworker has been successfully added, now click save

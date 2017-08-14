@@ -60,7 +60,7 @@ function addClientData(clientData, clientIndex) {
 	var client = clientData[clientIndex];
 
 	// TODO: pass in FB config here (future)
-	var success = insertRequiredClientDetails(client);
+	var success = insertRequiredClientDetails(client, clientIndex);
 
 	if (success) {
 		// next check if there is more data to save in CBI
@@ -78,12 +78,17 @@ function addClientData(clientData, clientIndex) {
 			$('input#regClient').click();
 
 			// Deciding what to do next is not needed because page automatically
-			// redirects to CBI
+			// redirects to CBI, which is where do-next is calculated
 		});
 	} else {
-		// TODO: totally stop client import (Utils)?
-		console.error('Unsuccessful insertion of client data on page. Error' +
-			' in insertRequiredClientDetails()');
+		let msg = 'Client #' + (clientIndex + 1) +
+			': Unsuccessful insertion of client data on Registration page.';
+
+		// Note: specific error is thrown in insertRequiredClientDetails
+		console.error(msg);
+
+		// add error to stack and navigate back to Advanced Search to import next
+		Utils_SkipClient(msg, clientIndex);
 	}
 }
 
@@ -92,35 +97,80 @@ function addClientData(clientData, clientIndex) {
  * (clicking save is done elsewhere)
  * 
  * @param {object} client - client object to import
+ * @param {number} ci - index of specific client being imported
  * @returns {boolean} true if successful (no internal errors), false if unsuccessful
  */
-function insertRequiredClientDetails(client) {
+/**
+ * 
+ * 
+ * @param {any} client 
+ * @param {any} ci 
+ * @returns 
+ */
+function insertRequiredClientDetails(client, ci) {
 	// =============== get FieldTranslator ================
 	var FTr = Utils_GetFieldTranslator( 'Required' );
 
 	// if FT wasn't found, return false (quit).
-	if (!FTr)
+	if (!FTr) {
+		Utils_AddError('"Required" Field Translator not found');
 		return false;
+	}
 
-	// === Add Required fields to form ===
-	// Name:
-	Utils_InsertValue( client['FIRST NAME'], FTr['FIRST NAME'] );
-	Utils_InsertValue( client['LAST NAME'],  FTr['LAST NAME'] );
+	let f_n; // shortener for field_name variables
 
-	// Logic if one column contains full name
-	fullNameInsert( client['FULL NAME'], FTr['FIRST NAME'], FTr['LAST NAME'] ); 	// *REQ - Full Name - Custom logic
+	return Utils_CheckErrors([
+		// === Add Required fields to form ===
+		[ NameInsert( client, FTr ), 'NAME' ],
+		
+		[ Utils_InsertValue( client[ f_n='UNHCR NUMBER' ],	FTr[f_n] ), f_n ],
+		[ Utils_InsertValue( client[ f_n='PHONE NUMBER' ],	FTr[f_n] ), f_n ],
 
-	Utils_InsertValue( client['UNHCR NUMBER'],	FTr['UNHCR NUMBER'] );
-	Utils_InsertValue( client['PHONE NUMBER'],	FTr['PHONE NUMBER'] );
-	Utils_InsertValue( client['DATE OF BIRTH'], FTr['DATE OF BIRTH']);
+		// Date:
+		[ Utils_InsertValue( client[ f_n='DATE OF BIRTH' ], FTr[f_n], 3 ), f_n ],
 
-	// Dropdowns:
-	Utils_InsertValue( client['GENDER'], 		FTr['GENDER'] );
-	Utils_InsertValue( client['NATIONALITY'], 	FTr['NATIONALITY'] );
-	Utils_InsertValue( client['MAIN LANGUAGE'], FTr['MAIN LANGUAGE'] );
+		// Dropdowns:
+		[ Utils_InsertValue( client[ f_n='GENDER' ], 		FTr[f_n] ), f_n ],
+		[ Utils_InsertValue( client[ f_n='NATIONALITY' ], 	FTr[f_n] ), f_n ],
+		[ Utils_InsertValue( client[ f_n='MAIN LANGUAGE' ],	FTr[f_n] ), f_n ]
+	], ci);
 
-	return true; // true = didn't run into internal errors
+	// TODO: remove below commented out version if above version works
+	// Utils_CheckErrors([
+	// 	// === Add Required fields to form ===
+	// 	// Name:
+	// 	[Utils_InsertValue( client['FIRST NAME'], FTr['FIRST NAME'] ),
+	// 		'FIRST NAME'],
+	// 	[Utils_InsertValue( client['LAST NAME'],  FTr['LAST NAME'] ),
+	// 		'LAST NAME'],
+
+	// 	// Logic if one column contains full name
+	// 	[fullNameInsert( client['FULL NAME'], FTr['FIRST NAME'], FTr['LAST NAME'] ),
+	// 		'FULL NAME'],
+
+	// 	[Utils_InsertValue( client['UNHCR NUMBER'],	FTr['UNHCR NUMBER'] ),
+	// 		'UNHCR NUMBER'],
+	// 	[Utils_InsertValue( client['PHONE NUMBER'],	FTr['PHONE NUMBER'] ),
+	// 		'PHONE NUMBER'],
+
+	// 	// update / format DOB, then inserting into form
+	// 	[DOBInsert( client['DATE OF BIRTH'], FTr['DATE OF BIRTH'] ),
+	// 		'DATE OF BIRTH'],
+	// 	// Utils_InsertValue( client['DATE OF BIRTH'], FTr['DATE OF BIRTH']);
+
+	// 	// Dropdowns:
+	// 	[Utils_InsertValue( client['GENDER'], 		FTr['GENDER'] ),
+	// 		'GENDER'],
+	// 	[Utils_InsertValue( client['NATIONALITY'], 	FTr['NATIONALITY'] ),
+	// 		'NATIOINALITY'],
+	// 	[Utils_InsertValue( client['MAIN LANGUAGE'], FTr['MAIN LANGUAGE'] ),
+	// 		'MAIN LANGUAGE']
+	// ], ci);
+
+	// return true; // true = didn't run into internal errors
 }
+
+// ========================= DATA INTERPRETERS ========================
 
 /**
  * Function strips a full name into first & last, then adds to form
@@ -133,7 +183,7 @@ function insertRequiredClientDetails(client) {
  * @returns {number} 1 if fullName doesn't exist (error)
  */
 function fullNameInsert( fullName, firstNameID, lastNameID ) {
-	if (!fullName) return 1;
+	if (!fullName) return false;
 
 	// new version
 	var firstName = fullName.substr(0, fullName.indexOf(" "));
@@ -143,6 +193,44 @@ function fullNameInsert( fullName, firstNameID, lastNameID ) {
 	// var firstName = fullName.substr(0, fullName.lastIndexOf(" "));
 	// var lastName = fullName.substr(fullName.lastIndexOf(" ") + 1);
 
-	$("#" + firstNameID).val( firstName );
-	$("#" + lastNameID).val( lastName );
+	// TODO: don't user checkErrors b/c that one throws errors too!
+	let pass = (
+		Utils_InsertValue( firstName, firstNameID ) &&
+		Utils_InsertValue( lastName, lastNameID )
+	);
+
+	return pass;
+}
+
+/**
+ * Function attempts to insert a name into RIPS - using either full-name logic
+ * or first & last name logic.
+ * 
+ * @param {object} client - client data object being imported into RIPS
+ * @param {object} FTr - required field translator from FieldTranslator.js
+ * @returns {boolean} - true / false if inserts succeeded
+ */
+function NameInsert(client, FTr) {
+	if (!client || !FTr) return false;
+
+	let pass = true;
+
+	// if client name comes from ONE column ('FULL NAME')
+	if (client['FULL NAME']) {
+		// Logic if one column contains full name
+		pass = fullNameInsert( client['FULL NAME'],
+							FTr['FIRST NAME'], FTr['LAST NAME'] );
+	}
+
+	// else, name comes from multiple columns ('FIRST / LAST NAME')
+	else {
+		let f_n; // shortener for field_name variables
+
+		pass = (
+			Utils_InsertValue( client[f_n='FIRST NAME'], FTr[f_n] ) &&
+			Utils_InsertValue( client[f_n='LAST NAME'],  FTr[f_n] )
+		);
+	}
+
+	return pass;
 }

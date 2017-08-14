@@ -65,6 +65,8 @@ function Utils_GetFieldTranslator( type, flag_getElemID ) {
  * action 'stopped_via_error', and passes an error message to background.js, then
  * the chrome runtime callback to caller
  * 
+ * // TODO: convert to a function that skips client, not stopping entire import
+ * 
  * @param {string} errorMessage - error message to pass to background.js
  * @param {function} callback - chrome runtime callback sent to caller. if not given,
  *                              defaults to console.error() fn
@@ -73,8 +75,9 @@ function Utils_StopImport( errorMessage, callback ) {
 	// take care of defaults
 	if ( !errorMessage )
 		errorMessage = 'stopping import';
+
 	if ( !callback )
-		callback = function(response) { console.error('error: ', errorMessage ); };
+		callback = function(r) { console.error('error: ', errorMessage); };
 
 	// set action state to error state
 	var mObj = {
@@ -84,6 +87,37 @@ function Utils_StopImport( errorMessage, callback ) {
 
 	// send message config (stop auto import) then display an error
 	chrome.runtime.sendMessage(mObj, callback);
+}
+
+/**
+ * Function skips current client being imported by completing the following steps:
+ * 1) Adds skip error to stack
+ * 2) resets action state to 'SEARCH_FOR_CLIENT'
+ * 3) increments client index
+ * 4) redirects to Advanced Search to import next client
+ * 
+ * @param {string} message - message to be added to stack
+ * @param {number} ci - index of client being imported
+ */
+function Utils_SkipClient( message, ci ) {
+	if (!message)
+		message = 'Skipping Client #' + (ci + 1);
+
+	// add error to stack, then navigate to advanced search page again
+	Utils_AddError(message, function(response) {
+		var mObj = {
+			action: 'store_data_to_chrome_storage_local',
+			dataObj: {
+				'ACTION_STATE': 'SEARCH_FOR_CLIENT',
+				'CLIENT_INDEX': '' // auto increment
+			}
+		};
+
+		// saves action state, then redirects to advanced search
+		chrome.runtime.sendMessage(mObj, function(response) {
+			Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
+		});
+	});
 }
 
 /**
@@ -270,43 +304,149 @@ function Utils_WaitForCondition( Fcondition, params, time = 1000, iter = 5 ) {
  * OR if given 'id' corresponds to a select element, call special
  * insert function
  * 
+ * Throw errors (Utils_AddError) will not occur in this function -> function
+ * returns success / fail, so errors handled by caller
+ * 
  * @param {any} value - string or number
  * @param {string} id - html id of element
- * @param {number} searchMethod - method # for searching dropdown boxes
- * @returns true if successfully found something to insert into form, false otherwise
+ * @param {number} configParam  - (1,2) = methods for searching select elements
+ * 								- (3)   = method for adding date element
+ * @returns true if successfully found something and added it to form, false otherwise
  */
-function Utils_InsertValue(value, id, searchMethod) {
+function  Utils_InsertValue(value, id, configParam) {
+	let success = false;
+
+	let $elem = $('#' + id);
+
+	// check if value or id are undefined
+	if (!value || !id) {
+		console.warn('Warning: value <' + value + '> or id <' + id +
+			'> are undefined');
+		success = false;
+	}
+
 	// if value exists, throw into field:
-	if (value !== undefined) {
+	else {
 		// if id is for a select element, call special fn
-		if ( $('#' + id).is('select') ) {
-			return Utils_SetDropdownValue( value, id, searchMethod );
+		if ( $elem.is('select') ) {
+			success = Utils_SetDropdownValue( value, id, configParam );
 		}
 
 		// else if id is for a checkbox (input[type="checkbox"]) element,
 		// call special fn
-		else if ( $('#' + id).is('input[type="checkbox"]')  ) {
-			return Utils_SetCheckboxValue( value, id );
+		else if ( $elem.is('input[type="checkbox"]')  ) {
+			success = Utils_SetCheckboxValue( value, id );
+		}
+
+		// if configParam is set to 3, use date fuction to validate and insert
+		// date into form
+		else if ( $elem.is('input') && configParam === 3 ) {
+			success = Utils_SetDateValue( value, id );
 		}
 
 		// else, we don't need special function
 		else {
-			// if value starts with a '.', get rid of it:
-			if (value[0] === '.') {
+			// if value starts with a '.', get rid of it (for dates):
+			if (value[0] === '.')
 				value = value.substr(1);
+			
+			if ($elem.length !== 1)
+				success = false;
+			
+			else {
+				$elem.val(value);
+				success = true;
 			}
-
-			$('#' + id).val(value);
-
-			return true;
 		}
 	}
 
-	// if value is undefined, warn user
-	else {
-		console.warn('Warning: id <' + id + '> came with undefined value');
+	return success;
+}
+
+/**
+ * Function inserts given date into form, and (if necessary) converts to necessary
+ * format (DD/MM/YYYY)
+ * 
+ * @param {string} date - date of birth from client object
+ * @param {string} elemID - element ID of date input box
+ * @returns {boolean} - true / false if date is valid and was inserted successfully
+ */
+function Utils_SetDateValue( date, elemID ) {
+	if (!date || !elemID) {
+		Utils_AddError('ERROR: Date data not found');
 		return false;
 	}
+
+	// remove beginning '.' if present
+	if (date[0] === '.') {
+		date = date.substr(1);
+	}
+
+	// check if date is timestamp like: 7/31/2017  4:25:37 PM (service start date)
+	// check for at least 1 space ' ' and at least 1 ':' to guess date is this fmt
+	// -> if has ' ' and ':', take string before ' ' as date
+	// -> Timestamps should all be converted to '02-Jan-2000' before import works!
+	if (date.trim().indexOf(' ') !== -1 && date.indexOf(':') !== -1) {
+		date = date.split(' ')[0];
+	}
+	
+	var newDate,
+		$elem = $('#' + elemID);
+
+	// if date contains 3 '-' chars, assume format is like: '1-Mar-2017'
+	if ( date.split('-').length === 3 ) {
+		let dateArr = date.split('-');
+
+		let d = parseInt( dateArr[0] );
+		let m = Utils_GetMonthNumberFromName( dateArr[1] );
+		let y = parseInt( dateArr[2] );
+
+		if (!m || m === '') {
+			// TODO: throw error
+			Utils_AddError('ERROR! ');
+			return false;
+		}
+
+		// Don't need to add beginning '0' because RIPS doesn't care
+		newDate = '' + d + '/' + m + '/' + y;
+	}
+
+	// If date contains 3 '/' chars, valid if format is like: 'DD/MM/YYYY'
+	// Not allowing format 'MM/DD/YYYY' b/c too difficult to allow both and avoid
+	// 	inaccurate data
+	else if ( date.split('/').length === 3 ) {
+		let dateArr = date.split('/');
+
+		let d = parseInt( dateArr[0] );
+		let m = parseInt( dateArr[1] );
+		let y = parseInt( dateArr[2] );
+
+		if ( d < 1 || d > 31 ) {
+			Utils_AddError('ERROR <Date>: Day (' + d + ') out of range!');
+			return false;
+		} else if ( m < 1 || m > 12 ) {
+			Utils_AddError('ERROR <Date>: Month (' + m + ') out of range!');
+			return false;
+		} else if ( y < 1900 || y > ((new Date()).getUTCFullYear() + 1) ) {
+			Utils_AddError('ERROR <Date>: Year (' + y + ') out of range!');
+			return false;
+		} else {
+			newDate = '' + d + '/' + m + '/' + y;
+		}
+	}
+
+	// format doesn't match above options, so invalid
+	else {
+		Utils_AddError('ERROR <Date>: Format is invalid');
+		return false;
+	}
+
+	// insert new Date into form
+	$elem.val(newDate);
+
+	// return true b/c no errors were hit above, and date was inserted!
+	return true;
+	// return Utils_InsertValue( newDate, dobID );
 }
 
 /**
@@ -375,9 +515,16 @@ function Utils_SetDropdownValue( valToMatch, elemID, searchMethod=1 ) {
  * 
  * @param {boolean} value - desired end state of checkbox
  * @param {string} elemID - html element id matching with input[type="checkbox"]
+ * @returns {boolean} - true / false if successfully set checkbox value
  */
 function Utils_SetCheckboxValue( value, elemID ) {
-	var isChecked = $('input#' + elemID).is(':checked');
+	var $elem = $('input#' + elemID);
+
+	// if jQuery found 0 or multiple elements, not successful
+	if ($elem.length !== 1)
+		return false;
+
+	var isChecked = $elem.is(':checked');
 
 	// checkbox should be 'true' / checked
 	if ( value ) {
@@ -385,17 +532,118 @@ function Utils_SetCheckboxValue( value, elemID ) {
 		if ( isChecked ) {}
 
 		// else click it so it becomes checked
-		else $("input#" + elemID).click();
+		else $elem.click();
 	}
 
 	// checkbox should be 'false' / unchecked
 	else {
 		// click so it becomes unchecked
-		if ( isChecked ) $("input#" + elemID).click();
+		if ( isChecked ) $elem.click();
 
 		// else do nothing because already unchecked
 		else {}
 	}
+
+	return true;
+}
+
+/**
+ * Function converts month names into month numbers. Month names can either
+ * be 3 letters (Ex: Jan, Mar, Sep...)
+ * or full names (Ex: January, March, September...)
+ * 
+ * @param {string} month - 3 letter month, or full month name
+ * @returns month number (Jan = 1, Sep = 9, etc...)
+ */
+function Utils_GetMonthNumberFromName( month ) {
+	let monthTransObj = {
+		'JAN': 1,	'JANUARY': 	1,
+		'FEB': 2,	'FEBRUARY': 2,
+		'MAR': 3,	'MARCH': 	3,
+		'APR': 4,	'APRIL': 	4,
+		'MAY': 5,
+		'JUN': 6,	'JUNE': 	6,
+		'JUL': 7,	'JULY': 	7,
+		'AUG': 8,	'AUGUST': 	8,
+		'SEP': 9,	'SEPTEMBER': 9,
+		'OCT': 10,	'OCTOBER': 	10,
+		'NOV': 11,	'NOVEMBER': 11,
+		'DEC': 12,	'DECEMBER': 12
+	};
+
+	return monthTransObj[ month.toUpperCase() ];
+}
+
+/**
+ * Function takes an array of arrays returned from inserting values into forms.
+ * 2D Array looks like this:
+ * [
+ * 		[ {boolean} - true / false if error, {string} - field name ],
+ * 		[ (same as above) ], ...
+ * ]
+ * 
+ * @param {object} fieldArr -2D array shaped as described above
+ * @param {number} ci - client index of client being imported now
+ * @returns {boolean} - true / false if fieldArr contains any errors
+ */
+function Utils_CheckErrors( fieldArr, ci ) {
+	let allPass = true;
+
+	/**
+	 * Plan: 
+	 * 1) loop through all fieldContainers
+	 * 2) In each fieldContainer, check if first value [0] is true / false
+	 *   - if true, it passed so move on.
+	 *   - if false, it failed so build message, throw Utils_AddError with message
+	 * 3) return true if all passed, false if any failed
+	 */
+
+	// 1) loop through fieldContainers
+	for (let i = 0; i < fieldArr.length; i++) {
+		let fieldContainer = fieldArr[i];
+		
+		let fieldPass = fieldContainer[0];
+		let fieldName = fieldContainer[1];
+
+		// 2) check if field didn't pass
+		if (!fieldPass) {
+			allPass = false;
+
+			// create error message
+			let errMsg = 'Error: Field Invalid - Client #' + (ci + 1) +
+				' - Field: <' + fieldName + '>.';
+
+			Utils_AddError(errMsg);
+		}
+
+		// field passed, so move on
+		else {}
+	}
+
+	// 3) return final status - all pass or at least 1 failed
+	return allPass;
+}
+
+/**
+ * Function adds error to chrome store (handled by options.js)
+ * 
+ * @param {string} message - error message to send to options.js
+ * @param {function} callback - (optional) callback function after error is thrown
+ */
+function Utils_AddError( message, callback ) {
+	if (!message || message === '')
+		message = 'Unspecified error!';
+
+	// if no callback function was passed in, tell receiver there's no callback
+	if (!callback)
+		callback = function(r) { console.error('Error:', message); }
+
+	mObj = {
+		action: 'catch_error',
+		message: message
+	};
+
+	chrome.runtime.sendMessage(mObj, callback);
 }
 
 // =====================================================================================

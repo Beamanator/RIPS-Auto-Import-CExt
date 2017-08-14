@@ -42,6 +42,9 @@ chrome.runtime.onMessage.addListener(function(mObj, MessageSender, sendResponse)
     // kill callback if noCallback flag is true
     if (noCallback) sendResponse = undefined;
 
+    // quit early if no action defined (probably an options page messages)
+    if (!action) return;
+
     switch(action) {
         // gets data from chrome's local storage and returns to caller via sendResponse
         case 'get_data_from_chrome_storage_local':
@@ -74,6 +77,12 @@ chrome.runtime.onMessage.addListener(function(mObj, MessageSender, sendResponse)
             stopViaError(mObj, sendResponse);
             break;
 
+        // add error to options page
+        case 'catch_error':
+            catchMessage(mObj, sendResponse);
+            async = true;
+            break;
+
         // ---- NEW ACTIONS GO ABOVE THIS LINE ----
         
         // to use open / close tab, look in Fedena extension code
@@ -95,24 +104,32 @@ chrome.runtime.onMessage.addListener(function(mObj, MessageSender, sendResponse)
     if (async) return true;
 });
 
-// Listener tracks any changes to local storage in background's console 
-// Got code here: https://developer.chrome.com/extensions/storage
-chrome.storage.onChanged.addListener(function(changes, namespace) {
-	for (key in changes) {
-		var storageChange = changes[key];
-		console.log('Storage key "%s" in namespace "%s" changed. ' +
-			'Old value was "%s", new value is: ',
-			key,
-			namespace,
-			storageChange.oldValue,
-			storageChange.newValue
-		);
-	}
-});
-
 // ===============================================================
 //                       main functions
 // ===============================================================
+
+/**
+ * Function gets a message from caller and stores it, triggering options.js
+ * to listen and display some message (if key is ADD_MESSAGE)
+ * 
+ * @param {object} mObj - message config object
+ * @param {function} sendResponse - not used right now
+ */
+function catchMessage(mObj, sendResponse) {
+    var message = mObj.message;
+
+    if (!message)
+        message = 'no message found - using test error message in background.js';
+    
+    var mObj2 = {
+        dataObj: {
+            'ADD_MESSAGE': message
+        }
+    };
+
+    // store data, add_message handled in options.js now
+    storeToChromeLocalStorage(mObj2, sendResponse);
+}
 
 /**
  * Function sets action state as "ERROR_STATE", effectively shutting down the import
@@ -122,7 +139,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
  * saved as ERROR_MESSAGE (if it exists)
  * 
  * @param {object} mObj - message config object from caller
- * @param {function} sendResponse callback function for caller to use to display specific error
+ * @param {function} sendResponse - callback function for caller to use to display specific error
  */
 function stopViaError(mObj, sendResponse) {
     // setup mObj:
@@ -214,6 +231,8 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
                                                 - enter UNHCR #, click "search"
                             WAITING                 = Waiting for import start (hold off)
             
+            ADD_MESSAGE     -   add message to console in options.js
+
             CLIENT_DATA     -   array of client objects
             CLIENT_INDEX    -   index of client being imported now
             
@@ -230,7 +249,15 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
 				storePromises.push(
 					saveValueToStorage('ACTION_STATE', actionState)
 				);
-				break;
+                break;
+                
+            // tells options.js to add message to console :)
+            case 'ADD_MESSAGE':
+                var message = dataValue;
+                storePromises.push(
+                    saveValueToStorage('ADD_MESSAGE', message)
+                );
+                break;
 
             // stores client data directly to local storage
             case 'CLIENT_DATA':

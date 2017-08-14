@@ -49,6 +49,8 @@ $(document).ready(function(){
 		// responses should come back in the same order, so:
 		var action = response['ACTION_STATE'];
 
+		console.log('ACTION!', action);
+
 		// if action indicates we're not ready to automatically continue, quit
 		if (action === "WAITING" || action === "" || action === undefined) {
 			console.log('Action state <' + action + '> indicates time to wait :)');
@@ -94,6 +96,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 	}
 });
 
+console.log('setting up main-controller message listener');
 // Listener for messages from background.js
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 	console.log('heard message in MainContent.js!');

@@ -51,17 +51,12 @@ function FT_getServiceTranslator() {
 	return {
 		// ====================== SERVICES: ======================
 		"SERVICE CODE":			'lscCodeValue', // REQUIRED!
-		"SERVICE CASEWORKER": 	'CASEWORKERID'
-		// TODO: start date probably not ready yet?
-		// "SERVICE START DATE": 'elementID',
+		"SERVICE CASEWORKER": 	'CASEWORKERID',
+		"SERVICE START DATE": 	'DATE_OF_MATTER_START'
 	};
 }
 
-function FT_getActionTranslator(flag_getElemID=true) {
-	// same comment as above fn
-	var item = flag_getElemID ? 0 : 1;
-
-	// TODO: return uppercaseObjectValues({
+function FT_getActionTranslator() {
 	return {
 		// ====================== ACTIONS: ======================
 		"ACTION NAME":			'ddlActions', // REQUIRED!,
@@ -79,12 +74,12 @@ function FT_getActionTranslator(flag_getElemID=true) {
 
 // gets optional client data translation (for client basic information page)
 function FT_getOptionalTranslator() {
-	// same comment as above fn
-	// var item = flag_getElemID ? 0 : 1;
 
 	return appendHiddenCBITranslators({
 		// ====================== OPTIONAL FIELDS: ======================
+		
 		// ====== TEXTBOXES: ======
+
 		// omit names, main phone, unhcr (required)
 		"ADDRESS1": 			'LADDRESS1',
 		"ADDRESS2":				'LADDRESS2',
@@ -109,9 +104,10 @@ function FT_getOptionalTranslator() {
 		"SAVE_THE_CHILDREN":	'IsCBLabel8',
 		"UNICEF_TDH": 			'IsCBLabel9',
 		"OTHER SERVICE PROVIDER":	'IsCBLabel10',
-		// Vulnerability checkboxes in separate function!
+		// Vulnerability checkboxes in separate function! (appendHiddenCBITranslators)
 
 		// ====== DROPDOWNS: ======
+
 		// Background:
 		"COUNTRY OF ORIGIN": 	'LCOUNTRYOFORIGIN',
 		"ETHNIC ORIGIN": 		'LETHNICORIGIN',
@@ -129,6 +125,7 @@ function FT_getOptionalTranslator() {
 		"LAST RSD UPDATE":		'LPRIORITY',
 		
 		// ====== DATES: ======
+
 		"DATE OF ARRIVAL IN EGYPT": 	'CDDateEntryCountryLabel',
 		"DATE OF UNHCR REGISTRATION": 	'CDDateRegisteredLabel',
 		"RSD DATE": 					'LRSDDATE'
@@ -153,14 +150,15 @@ function FT_getOptionalTranslator() {
 function appendHiddenCBITranslators( obj ) {
 	// make sure caller is on 'ClientDetails/ClientDetails' page (CBI)
 	if ( Utils_GetUrlPiece(Utils_GetPageURL()) !==
-		Utils_GetUrlPiece(Utils_GetTabHref('ClientBasicInformation')) )
-			return;
+		Utils_GetUrlPiece( Utils_GetTabHref('ClientBasicInformation')) ) {
+			return obj;
+	}
 
 	// ====== append dependent translator ======:
 	obj["FAMILY SIZE"] = 			'CDDependentStatsLabel1';
-	obj["UNHCR CASE SIZE"] = 		'CDDependentStatsLabel2';
-	obj["DIRECT BENEFICIARIES"] =	'CDDependentStatsLabel3';
-	obj["INDIRECT BENEFICIARIES"] =	'CDDependentStatsLabel4';
+	obj["UNHCR CASE SIZE"] = 		'CDDependentStatsLabel2'; // RLAP ONLY
+	obj["DIRECT BENEFICIARIES"] =	'CDDependentStatsLabel3'; // PS ONLY
+	obj["INDIRECT BENEFICIARIES"] =	'CDDependentStatsLabel4'; // PS ONLY
 
 	// ====== append urgent notes translator ======:
 	obj["URGENT NOTES"]	= 'ClntPanic_PANIC_NOTES';
@@ -188,8 +186,8 @@ function appendHiddenCBITranslators( obj ) {
 		obj[vulnName] = elemId;
 	});
 
-	// shouldn't need to return anything b/c obj passed in was changed!
-	// return obj;
+	// even though passed-in object was changed, still need to return it.
+	return obj;
 }
 
 /**

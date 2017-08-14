@@ -5,9 +5,10 @@
  * 
  * Called by: Run_AdvancedSearch [in MainContent.js]
  * 
- * @param {any} action 
+ * @param {string} action 
  */
 function AdvancedSearch_Controller( action ) {
+	// console.log('in advanced search controller');
 	switch(action) {
 		// Enter client UNHCR and press 'search'
 		case 'SEARCH_FOR_CLIENT':
@@ -61,12 +62,14 @@ function searchForDuplicates() {
 
 		// now get UNHCR number & put it in #HoRefNo
 		var client = clientData[clientIndex];
-		var FTr = Utils_GetFieldTranslator( 'Search' );
-		if (!FTr)
+		var FTs = Utils_GetFieldTranslator( 'Search' );
+		if (!FTs)
 			return; // error handling in Utils function
 		
 		// put UNHCR number into textbox
-		$("#" + FTr['UNHCR NUMBER']).val( client['UNHCR NUMBER'] );
+		Utils_InsertValue( client['UNHCR NUMBER'], FTs['UNHCR NUMBER'],
+			clientIndex )
+		// $("#" + FTs['UNHCR NUMBER']).val( client['UNHCR NUMBER'] );
 
 		// store next action state before clicking 'search'
 		var mObj2 = {
@@ -83,22 +86,64 @@ function searchForDuplicates() {
 	});
 }
 
+/**
+ * Function is called after Search button has been clicked - analyze new state of
+ * the page.
+ * 
+ */
 function processSearchResults() {
+	// TODO: update following 2 URL checks w/ Utils_GetTabHref();
 	// First check if the window is at the Advanced Search page in RIPS
 	if ( !Utils_UrlContains('SearchClientDetails/ClientListSearchResult') ) {
 		// url should have SearchClientDetails/AdvancedSearch
 		if ( Utils_UrlContains('SearchClientDetails/AdvancedSearch') ) {
-			// no client found, so need to make a new one!
-			// -> Next action is REGISTER_NEW_CLIENT
-			var mObj = {
-				action: 'store_data_to_chrome_storage_local',
-				dataObj: {'ACTION_STATE': 'REGISTER_NEW_CLIENT'}
-			};
-			
-			// once data returns, navigate to registration page
-			chrome.runtime.sendMessage(mObj, function(response) {
-				Utils_NavigateToTab( Utils_GetTabHref('Registration') );
-			});
+			// TODO: add popup checker
+			setTimeout( function(){
+				$alert = $('.sweet-alert');
+
+				if ( $alert.hasClass('visible') ) {
+					// alert was generated, meaning there were either 0 clients found
+					// or > 100 results
+					let sweetAlertText = $alert.children('p').text();
+					
+					// Aug 7 2017, these are possible popup texts:
+					let mNoResults = 'There are 0 result have been found.',
+						mManyResults = "Search results more than 100";
+
+					// dismiss popup
+					// $('button.confirm').click();
+
+					// 0 results!
+					if (sweetAlertText === mNoResults) {
+						// no results, so create client on registration page
+						navigateToRegistration();
+					}
+
+					// > 100 results!
+					else if (sweetAlertText === mManyResults) {
+						// throw error
+						Utils_AddError();
+					}
+
+					// WHAT HAPPENED??? Not sure how this text occurred!
+					else {
+						mObj = {
+							action: 'catch_error',
+							message: 'error! how did we get here??'
+						};
+
+						chrome.runtime.sendMessage(mObj);
+					}
+				} else {
+					// Note: as of August 7, 2017
+					// - Popups occur when > 100 results AND when 0 results, so
+					// - there shouldn't be any situation when popup doesn't occur
+					// - and URL is still .../AdvancedSearch
+					// BUT just in case, still navigate to registration
+					navigateToRegistration();
+				}
+			}, 1000);
+
 		} else {
 			// error -> not sure where we're at anymore.
 			ThrowError({
@@ -154,55 +199,24 @@ function processSearchResults() {
 			});
 		}
 	}
-
-	// wait 1 second and check if alert pops up.
 	// NOTE: as of March 15, 2017 - I haven't seen any alerts on this page recently
 	// NOTE: as of August 7, 2017 - Popups occur when > 100 results AND when 0 results
-	/*setTimeout( function(){
-		if ( $('.sweet-alert').hasClass('visible') ) {
-			// alert was generated, meaning there weren't any clients found.
-			// therefore, no duplicates. So now create new client & move to registration page
-			
-			$('button.confirm').click();
-
-			// navigate to Registration page
-			// updateStorageLocal([
-			// 	{'ACTION_STATE': 'READY_FOR_CLIENT'}
-			// ])
-			// .then(function(results) {
-			// 	Utils_NavigateToTab( Utils_GetTabHref('Registration') );
-			// });
-		} else {
-			// no alert means there were probably some duplicates
-			// add to list and move to next client
-
-			var numDuplicates = $('.table.table-striped.grid-table').find('tr.grid-row').length;
-
-
-			if (numDuplicates > 1) {
-				// grab the STARS number of the first row, throw it into the duplicate stars id store
-				var id = $('.table.table-striped.grid-table tbody tr').find('td')[0].innerText;
-
-				updateStorageLocal([
-					{'ACTION_STATE': 'SEARCH_FOR_CLIENT'},
-					{'CLIENT_INDEX': ''},	// let MainContent increment CLIENT_INDEX by 1
-					{'DUPLICATE_CLIENT_STARS_ID': id}
-				])
-				.then(function(results) {
-					Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
-				});
-			} else {
-				// only found 1 client - this is hopefully our client!
-				// assuming we want to automatically choose this client as our client:
-				$('.table.table-striped.grid-table tbody tr')[0].click();
-
-				updateStorageLocal([ {'ACTION_STATE': 'CLIENT_CREATED'} ])
-				.then(function(results) {
-					navigateToTab('/Stars/ClientDetails/ClientServicesList');
-				});
-			}
-		}
-	}, 1000);*/
 }
 
 // ===================== INTERNAL FUNCTIONS ========================
+
+/**
+ * Function extrapolates registration page navigation
+ * 
+ */
+function navigateToRegistration() {
+	var mObj = {
+		action: 'store_data_to_chrome_storage_local',
+		dataObj: {'ACTION_STATE': 'REGISTER_NEW_CLIENT'}
+	};
+	
+	// once data returns, navigate to registration page
+	chrome.runtime.sendMessage(mObj, function(response) {
+		Utils_NavigateToTab( Utils_GetTabHref('Registration') );
+	});
+}

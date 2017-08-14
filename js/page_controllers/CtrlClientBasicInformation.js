@@ -57,7 +57,7 @@ function checkClientBasicData() {
 		var client = clientData[clientIndex];
 
 		// NEXT: put optional client data in form
-		var saveNext = insertOptionalClientDetails( client );
+		var saveNext = insertOptionalClientDetails( client, clientIndex );
 
 		// if saveNext is true, save action state then go to MainContent_DoNextStep()
 		if ( saveNext ) {
@@ -94,9 +94,10 @@ function checkClientBasicData() {
  * as name (client name / applicant name / full name)
  * 
  * @param {object} client - client data object 
+ * @param {number} ci - index of specific client being imported
  * @returns {boolean} true / false if save is needed or not
  */
-function insertOptionalClientDetails( client ) {
+function insertOptionalClientDetails( client, ci ) {
 	var needSave = false;
 	
 	// =============== get FieldTranslator ================
@@ -115,10 +116,13 @@ function insertOptionalClientDetails( client ) {
 		if ( client[key] !== undefined && client[key] !== '') {
 			// translation is available, so:
 			// 1 - add data to form
-			Utils_InsertValue( client[key], FTo[key] );
+			let err = Utils_CheckErrors([
+				[ Utils_InsertValue( client[key], FTo[key] ), key ]
+			], ci);
 
-			// 2 - set needSave to true
-			needSave = true;
+			// 2 - set needSave to true if insert didn't error
+			if (!err)
+				needSave = true;
 		}
 
 		// else, client[key] is undefined or empty string, so do nothing
@@ -127,51 +131,3 @@ function insertOptionalClientDetails( client ) {
 	// tell caller if save needs to happen
 	return needSave;	
 }
-
-
-
-// TODO: figure out how to check the below data automatically (not manually)
-// ================ Textboxes: ================
-
-// Utils_InsertValue( client[FT['OTHER_PHONE_NO']],	'CDAdrTelLabel' 		);
-// Utils_InsertValue( client[FT['ADDRESS1']],		'LADDRESS1' 		);
-// Utils_InsertValue( client[FT['ADDRESS2']],		'LADDRESS2' 		);
-// Utils_InsertValue( client[FT['ADDRESS3']],		'LADDRESS3' 		);
-// Utils_InsertValue( client[FT['ADDRESS4']],		'LADDRESS4' 		);
-// Utils_InsertValue( client[FT['EMAIL']],			'CDLongField1' 		);
-// Utils_InsertValue( client[FT['APPT_SLIP_NO']],	'CDIdentifier1' 		);
-// Utils_InsertValue( client[FT['CARITAS_NO']],		'CDIdentifier2' 		);
-// Utils_InsertValue( client[FT['CRS_NO']],			'CDIdentifier3' 		);
-// Utils_InsertValue( client[FT['IOM_NO']],			'CDIdentifier4' 		);
-// Utils_InsertValue( client[FT['MSF_NO']],			'CDIdentifier5' 		);
-// Utils_InsertValue( client[FT['STARS_STUDENT_NO']],'CDIdentifier6' 		);
-
-// // ================ Checkboxes: ================ -> Click if client valie is true
-
-// checkBox( client[FT[ 'CB_CARE' 				]], 'IsCBLabel1' ); // CARE
-// checkBox( client[FT[ 'CB_CRS' 				]], 'IsCBLabel2' ); // CRS
-// checkBox( client[FT[ 'CB_EFRRA_ACSFT' 		]], 'IsCBLabel3' ); // EFRRA/ACSFT
-// checkBox( client[FT[ 'CB_IOM' 				]], 'IsCBLabel4' ); // IOM
-// checkBox( client[FT[ 'CB_MSF' 				]], 'IsCBLabel5' ); // MSF
-// checkBox( client[FT[ 'CB_PSTIC' 			]], 'IsCBLabel6' ); // PSTIC
-// checkBox( client[FT[ 'CB_REFUGEE_EGYPT' 	]], 'IsCBLabel7' ); // Refugee Egypt
-// checkBox( client[FT[ 'CB_SAVE_THE_CHILDREN'	]], 'IsCBLabel8' ); // Save the Children
-// checkBox( client[FT[ 'CB_UNICEF_TDH' 		]], 'IsCBLabel9' ); // UNICEF / TdH
-// checkBox( client[FT[ 'CB_OTHER' 			]], 'IsCBLabel10'); // Other Service Provider
-
-// // ================ Dates: ================ -> I think this is all free text
-
-// Utils_InsertValue( client[FT['DATE_REG']],		'CDDateRegisteredLabel' 	);
-// Utils_InsertValue( client[FT['DATE_ARRIVAL']],	'CDDateEntryCountryLabel' 	);
-
-// insert Dropdowns eventually (this may not work now!)
-// client[FT['COUNTRY_OF_ORIGIN']] !== u ? $("#LCOUNTRYOFORIGIN").val( client[FT['COUNTRY_OF_ORIGIN']] ); // Country of Origin
-// client[FT['ETHNIC_ORIGIN']] 		!== u ? $("#LETHNICORIGIN").val( 	client[FT['ETHNIC_ORIGIN']] ); // Ethnic Origin
-// client[FT['SECOND_LANGUAGE']] 	!== u ? $("#LSECONDLANGUAGE").val( 	client[FT['SECOND_LANGUAGE']] ); // Second Language
-// client[FT['MARITAL_STATUS']] 	!== u ? $("#LMARITALSTATUS").val( 	client[FT['MARITAL_STATUS']] ); // Marital Status
-// client[FT['Religion']] 			!== u ? $("#Dropdown1").val( 		client[FT['Religion']] ); // Religion
-// client[FT['UNHCR_STATUS']] 		!== u ? $("#Dropdown2").val( 		client[FT['UNHCR_STATUS']] ); // UNHCR Status
-// client[FT['SOURCE_OF_REFERRAL']] !== u ? $("#Dropdown3").val( 		client[FT['SOURCE_OF_REFERRAL']] ); // Source of Referral
-// client[FT['CITY_OF_ORIGIN']] 	!== u ? $("#Dropdown4").val( 		client[FT['CITY_OF_ORIGIN']] ); // City/Village of Origin
-// client[FT['EMPLOYMENT_STATUS']] !== u ? $("#Dropdown5").val( 		client[FT['EMPLOYMENT_STATUS']] ); // Employment Status
-// client[FT['NEIGHBORHOOD']] 		!== u ? $("#Dropdown6").val( 		client[FT['NEIGHBORHOOD']] ); // Neighborhood
