@@ -54,8 +54,6 @@ function Utils_GetFieldTranslator( type, flag_getElemID ) {
 			});
 		});
 
-		// TODO: set action state to error state
-
 		return;
 	}
 }
@@ -64,8 +62,6 @@ function Utils_GetFieldTranslator( type, flag_getElemID ) {
  * Function tells background.js to stop the auto import function via
  * action 'stopped_via_error', and passes an error message to background.js, then
  * the chrome runtime callback to caller
- * 
- * // TODO: convert to a function that skips client, not stopping entire import
  * 
  * @param {string} errorMessage - error message to pass to background.js
  * @param {function} callback - chrome runtime callback sent to caller. if not given,
@@ -77,7 +73,9 @@ function Utils_StopImport( errorMessage, callback ) {
 		errorMessage = 'stopping import';
 
 	if ( !callback )
-		callback = function(r) { console.error('error: ', errorMessage); };
+		callback = function(r) { 
+			Utils_AddError(errorMessage);
+		};
 
 	// set action state to error state
 	var mObj = {

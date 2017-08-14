@@ -79,6 +79,11 @@ function addClientData(clientData, clientIndex) {
 
 			// Deciding what to do next is not needed because page automatically
 			// redirects to CBI, which is where do-next is calculated
+			// HOWEVER, at this point, if a field has been skipped OR a field
+			// is invalid (decided by RIPS Validation Extension), a swal popup
+			// (sweet alert) may show up. Now we will check for it and skip client
+			// if it exists.
+			checkForSwal(clientIndex);
 		});
 	} else {
 		let msg = 'Client #' + (clientIndex + 1) +
@@ -233,4 +238,27 @@ function LanguageInsert(langValue, FTr, ci) {
 	else {
 		return Utils_InsertValue( langValue, FTr['MAIN LANGUAGE'] );
 	}
+}
+
+// ============================== OTHER INTERNAL ================================
+
+function checkForSwal(ci, time=1000) {
+	setTimeout( function(ci) {
+		let $alert = $('.sweet-alert');
+
+		// if alert is visible, skip to next client
+		if ( $alert.hasClass('visible') ) {
+			// now that we know that alert is visible, get error text and
+			// skip to next client.
+			let sweetAlertText = $alert.children('p').text();
+
+			let msg = 'Skipping Client #' + (ci + 1) + '. Fatal error occured ' +
+			'when registering client: ' + sweetAlertText;
+
+			Utils_SkipClient(msg, ci);
+		}
+
+		// if alert isn't visible, don't do anything special
+		else {}
+	}, time, ci);
 }

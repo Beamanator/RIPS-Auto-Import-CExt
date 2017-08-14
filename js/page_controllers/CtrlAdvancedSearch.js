@@ -99,7 +99,7 @@ function processSearchResults() {
 		if ( Utils_UrlContains('SearchClientDetails/AdvancedSearch') ) {
 			// TODO: add popup checker
 			setTimeout( function(){
-				$alert = $('.sweet-alert');
+				let $alert = $('.sweet-alert');
 
 				if ( $alert.hasClass('visible') ) {
 					// alert was generated, meaning there were either 0 clients found
