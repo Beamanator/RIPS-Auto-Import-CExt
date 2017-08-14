@@ -109,6 +109,20 @@
 					</div>
 				</div>
 			</div>
+			<!--[end: Table with parsed client data]  -->
+
+			<!-- Container for Auto import errors -->
+			<div class="container-fluid" id="error-holder"
+				 ng-if="ctrl.importErrors.length"> 
+				<p>Errors during Import:</p>
+				<!-- List of errors -->
+				<ul>
+					<li class="import-error" ng-repeat="err in ctrl.importErrors">
+						{{ err }}
+					</li>
+				</ul>
+			</div>
+			<!-- [end: container for auto import errors] -->
 
     	<!-- [end: full container] -->
 		</div>
