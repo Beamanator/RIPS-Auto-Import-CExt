@@ -4,17 +4,20 @@ Adds automatic import functionality to RIPS
 *Exact* Fields required for **Registration page**, and example data: (incomplete)
 
 | Full Name | Gender | Date of Birth | Nationality | Main Language | Phone Number | UNHCR number|
-|-----------|--------|---------------|-------------|--------|-----------|------------|
-|Test Bob 1 | Male   |  .10/28/2010  | -STATELESS- | Arabic |01234567890|123-99C12345|
-|Test Jill  | Female |               |             |        |01112223333|000-00C00000|
-|Test Bob 2 | Other  |               |             |        |05555555555|555-55C55555|
+|-----------|--------|---------------|-------------|---------------|-----------|------------|
+|Test Bob 1 | Male   |   1-Mar-2000  | -STATELESS- | Arabic        |01234567890|123-99C12345|
+|Test Jill  | Female |  19-Feb-1943  |    Iraq     | Fur, English   |01112223333|000-00C00000|
+|Test Bob 2 | Other  |  .14/04/2001  |    Sudan    | Amharic       |05555555555|1234/1234|
 
 Notes about Registration table:
 1) *Full name* - can be broken into columns "First Name" and "Last Name" if preferred.
-2) *Full name* - first name in column goes into "First name", all other names go into "Surname" box (last name).
-3) *Date of Birth* - '.' in front of DOB is not necessary, but can be included for formattting (it will be removed before being imported).
-4) *Phone Number* - Should be 11 digits (Validation handled by Validation Extension).
-5) *UNHCR Number* - Should be format: ###-##C#####  (Validation handled by Validation Extension).
+1) *Full name* - first name in column goes into "First name" box in RIPS, all other names go into "Surname" box (last name).
+2) *Gender* - Needs to be full gender type, not just "M" / "F".
+3) *Date of Birth* - Preferred format for dates is "DD-Mon-YYYY" where DD and YYYY are numbers, and Mon is a 3-letter string for the month name. Other allowed format is "DD/MM/YYYY - for this format, the '.' in front of the DOB is not necessary, but can be included for formattting (it will be removed before being imported).
+4) *Nationality* - Needs to be country name (ex: Sudan), not actually nationality (ex: Sudanese).
+5) *Main Language* - If there are multiple languages spoken by client, 2nd language will be placed in 'Second Language' dropdown. 3rd and following languages cannot be added to RIPS.
+6) *Phone Number* - Should be 11 digits (Validation handled by RIPS Validation Extension).
+7) *UNHCR Number* - Should be format: ###-##C#####  (Validation handled by RIPS Validation Extension).
 
 Fields available for Client Basic Information page, and example data: (incomplete)
 
@@ -22,12 +25,14 @@ Fields available for Client Basic Information page, and example data: (incomplet
 
 Fields available for **Services** page, and example data: (incomplete)
 
-| Service Code (*) | Service Caseworker |
-|------------------|--------------------|
-| MAP, RST, UCY    |    abeaman         |
+| Service Code (*) | Service Caseworker | Service Start Date |
+|------------------|--------------------|--------------------|
+| MAP, RST, UCY    |    abeaman         |  1-Mar-2017        |
 
 Notes about Services table:
 1) *Service Code* - The only required column for this page.
+2) *Service Caseworker* - RIPS defaults to adding logged-in user as caseworker for new services. If import user would like a different user added to new services, this column is where the caseworker should be specified.
+3) *Service Start Date* - Should always be in format above: Day-Month-Year, where Day and Month are numbers and Month is a 3-letter string.
 
 Fields available for **Add Action** page, and example data: (incomplete)
 
