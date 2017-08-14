@@ -95,7 +95,7 @@ function checkClientBasicData() {
  * 
  * @param {object} client - client data object 
  * @param {number} ci - index of specific client being imported
- * @returns {boolean} true / false if save is needed or not
+ * @returns {boolean} - true / false if save is needed or not
  */
 function insertOptionalClientDetails( client, ci ) {
 	var needSave = false;
@@ -116,12 +116,12 @@ function insertOptionalClientDetails( client, ci ) {
 		if ( client[key] !== undefined && client[key] !== '') {
 			// translation is available, so:
 			// 1 - add data to form
-			let err = Utils_CheckErrors([
+			let pass = Utils_CheckErrors([
 				[ Utils_InsertValue( client[key], FTo[key] ), key ]
 			], ci);
 
 			// 2 - set needSave to true if insert didn't error
-			if (!err)
+			if (pass)
 				needSave = true;
 		}
 
