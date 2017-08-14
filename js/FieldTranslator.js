@@ -99,13 +99,13 @@ function FT_getOptionalTranslator() {
 		// ====== CHECKBOXES: ======
 		"CARE": 		'IsCBLabel1',
 		"CRS": 			'IsCBLabel2',
-		"EFRRA_ACSFT": 	'IsCBLabel3',
+		"EFRRA/ACSFT": 	'IsCBLabel3',
 		"IOM":			'IsCBLabel4',
 		"MSF":			'IsCBLabel5',
 		"PSTIC":		'IsCBLabel6',
-		"REFUGE_EGYPT":	'IsCBLabel7',
-		"SAVE_THE_CHILDREN":	'IsCBLabel8',
-		"UNICEF_TDH": 			'IsCBLabel9',
+		"REFUGE EGYPT":	'IsCBLabel7',
+		"SAVE THE CHILDREN":	'IsCBLabel8',
+		"UNICEF/TDH": 			'IsCBLabel9',
 		"OTHER SERVICE PROVIDER":	'IsCBLabel10',
 		// Vulnerability checkboxes in separate function! (appendHiddenCBITranslators)
 
