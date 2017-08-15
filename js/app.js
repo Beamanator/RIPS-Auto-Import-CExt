@@ -93,12 +93,26 @@
 
 				// error if too many or too few tabs found w/ RIPS open
 				if (tabs.length === 0) {
-					console.error('No RIPS tabs are open right now!' +
-						'Must open 1 for data import to work.');
+					let errMessage = 'No RIPS tabs are open right now!' +
+						' Must open 1 for data import to work.';
+
+					console.error(errMessage);
+
+					$scope.$apply(function() {
+						Ctrl.importErrors.push(errMessage);
+					});
+					
 					return;
-				}
-				if (tabs.length > 1) {
-					console.error('Too many RIPS tabs open! Found: ' + tabs.length);
+				} else if (tabs.length > 1) {
+					let errMessage = 'Too many RIPS tabs open! Found: ' +
+						tabs.length + '.';
+
+					console.error(errMessage);
+					
+					$scope.$apply(function() {
+						Ctrl.importErrors.push(errMessage);	
+					});
+
 					return;
 				}
 
