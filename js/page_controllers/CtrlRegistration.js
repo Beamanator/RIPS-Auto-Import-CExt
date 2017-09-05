@@ -129,7 +129,7 @@ function insertRequiredClientDetails(client, ci) {
 
 		// Dropdowns:
 		[ Utils_InsertValue( client[ f_n='GENDER' ], 		FTr[f_n] ), f_n ],
-		[ Utils_InsertValue( client[ f_n='NATIONALITY' ], 	FTr[f_n] ), f_n ],
+		[ NationalityInsert( client[ f_n='NATIONALITY' ],	FTr, ci  ), f_n ],
 		[ LanguageInsert( client[ f_n='MAIN LANGUAGE' ],	FTr, ci  ), f_n ]
 	], ci);
 
@@ -222,9 +222,10 @@ function LanguageInsert(langValue, FTr, ci) {
 
 		// throw warning error if more than 2 languages were found in column
 		if (langArr.length > 2) {
-			Utils_AddError('Client #' + (ci + 1) + ' - Warning: Only 2 of ' +
-				langArr.length + ' languages from "' + langValue +
-				'" will be saved.');
+			let errMessage = 'Client #' + (ci + 1) + ' - Warning: Only 2 of ' +
+				langArr.length + ' languages from "' + langValue + '" will be saved.';
+
+			Utils_AddError( errMessage );
 		}
 
 		// return overall success of adding both languages to client
@@ -240,8 +241,46 @@ function LanguageInsert(langValue, FTr, ci) {
 	}
 }
 
+/**
+ * Function inserts client's nationality data into RIPS form. Primary goal is to
+ * split away the real nationality from possible supporting data in parentheses.
+ * This function is necessary for Fedena imports since many Fedena nationalities
+ * have extra data in parens that won't match dropdowns in RIPS.
+ * 
+ * @param {string} natValue - nationality of client (from import spreadsheet)
+ * @param {object} FTr - Field Translator object for required data
+ * @param {number} ci - index of client being imported
+ * @returns {boolean} - true/false success of insert
+ */
+function NationalityInsert(natValue, FTr, ci) {
+	let nationality = '';
+
+	// Check if there is a paren in the nationality value
+	if (natValue.split('(').length > 1) {
+		// get first part of nationality, before ()'s.
+		let newNat = natValue.split('(')[0].trim();
+
+		// if newNat is invalid, throw error and return false!
+		if (newNat.length < 2) {
+			let errMessage = 'Client #' + (ci + 1) + ' - Error: Nationality "' +
+				natValue + '" doesn\'t have proper format before parens "()".';
+			
+			Utils_AddError( errMessage );
+			return false;
+		}
+	}
+
+	// no paren, so natValue should be exact nationality desired
+	else
+		nationality = natValue;
+
+	// insert nationality into html form, return success of insert
+	return Utils_InsertValue( nationality, FTr['NATIONALITY'] );
+}
+
 // ============================== OTHER INTERNAL ================================
 
+// TODO: what if error is just a warning? (phone number) Don't skip!
 function checkForSwal(ci, time=1000) {
 	setTimeout( function(ci) {
 		let $alert = $('.sweet-alert');
