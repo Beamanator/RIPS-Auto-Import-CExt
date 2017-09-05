@@ -22,6 +22,7 @@ Notes about Registration table:
 2) *Gender* - Needs to be full gender type, not just "M" / "F".
 3) *Date of Birth* - Preferred format for dates is "DD-Mon-YYYY" where DD and YYYY are numbers, and Mon is a 3-letter string for the month name. Other allowed format is "DD/MM/YYYY - for this format, the '.' in front of the DOB is not necessary, but can be included for formattting (it will be removed before being imported).
 4) *Nationality* - Needs to be country name (ex: Sudan), not actually nationality (ex: Sudanese).
+4) *Nationality* - Text in parenthises excluded (ex: "Egypt (misr)" -> input into RIPS as "Egypt").
 5) *Main Language* - If there are multiple languages spoken by client, 2nd language will be placed in 'Second Language' dropdown. 3rd and following languages cannot be added to RIPS.
 6) *Phone Number* - Should be 11 digits (Validation handled by RIPS Validation Extension).
 7) *UNHCR Number* - Should be format: ###-##C#####  (Validation handled by RIPS Validation Extension).
