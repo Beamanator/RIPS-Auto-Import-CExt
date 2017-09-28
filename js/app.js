@@ -402,7 +402,7 @@
 		 * @returns - delimiter (string) used in data string
 		 */
 		function getDelim(data) {
-			if (data === undefined) return;
+			if (data === undefined || data === '') return '';
 
 			var tab1 = data.indexOf("\t");
 			var com1 = data.indexOf(",");
