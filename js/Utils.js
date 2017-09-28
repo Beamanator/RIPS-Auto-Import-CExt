@@ -151,7 +151,8 @@ function Utils_GetTabHref( tabName ) {
 		'Services': 				'/Stars/ClientDetails/ClientServicesList',
 		// 'ViewActions': 		'/Stars/MatterAction/MatterActionsList', // not used
 
-		'AdvancedSearch': 			'/Stars/SearchClientDetails/AdvancedSearch'
+		'AdvancedSearch': 			'/Stars/SearchClientDetails/AdvancedSearch',
+		'AdvancedSearch-Result': 	'/Stars/SearchClientDetails/ClientListSearchResult'
 	};
 
 	// get tab href from map
