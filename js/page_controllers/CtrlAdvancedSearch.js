@@ -92,12 +92,16 @@ function searchForDuplicates() {
  * 
  */
 function processSearchResults() {
-	// TODO: update following 2 URL checks w/ Utils_GetTabHref();
 	// First check if the window is at the Advanced Search page in RIPS
-	if ( !Utils_UrlContains('SearchClientDetails/ClientListSearchResult') ) {
-		// url should have SearchClientDetails/AdvancedSearch
-		if ( Utils_UrlContains('SearchClientDetails/AdvancedSearch') ) {
-			// TODO: add popup checker
+	// -> Note: we shouldn't be on the search results page.
+	if ( !Utils_UrlContains(Utils_GetTabHref('AdvancedSearch-Result')) ) {
+
+		// Add extra check for Advanced Search, just to be more cautious.
+		if ( Utils_UrlContains(Utils_GetTabHref('AdvancedSearch')) ) {
+			// timeout wait is 1 second (1000 ms)
+			let waitTime = 1000;
+
+			// After a bit of time (waitTime), check for presence of popup on page
 			setTimeout( function(){
 				let $alert = $('.sweet-alert');
 
@@ -125,7 +129,8 @@ function processSearchResults() {
 						Utils_AddError();
 					}
 
-					// WHAT HAPPENED??? Not sure how this text occurred!
+					// WHAT HAPPENED??? Somehow there is a popup but the text
+					// isn't handled here, so we must error!
 					else {
 						mObj = {
 							action: 'catch_error',
@@ -134,7 +139,11 @@ function processSearchResults() {
 
 						chrome.runtime.sendMessage(mObj);
 					}
-				} else {
+				}
+				
+				// No alert is visible, but we're on the 'AdvancedSearch' page, so
+				// obviously we missed something.
+				else {
 					// Note: as of August 7, 2017
 					// - Popups occur when > 100 results AND when 0 results, so
 					// - there shouldn't be any situation when popup doesn't occur
@@ -142,17 +151,23 @@ function processSearchResults() {
 					// BUT just in case, still navigate to registration
 					navigateToRegistration();
 				}
-			}, 1000);
+			}, waitTime);
 
+		// Apparently page isn't 'AdvancedSearch' or 'AdvancedSearch-Result', so
+		// not sure where we are anymore... throw an error please :)
 		} else {
-			// error -> not sure where we're at anymore.
+			let errMessage = 'Moved from Advanced Search page too abruptly :(\n' +
+				'It is recommended to clear data & start over';
+
 			ThrowError({
-				message: 'Moved from Advanced Search page too abruptly :(\n'
-					+ 'It is recommended to clear data & start over',
+				message: errMessage,
 				errMethods: ['mConsole', 'mAlert']
 			});
 		}
-	} else {
+	}
+
+	// page IS 'AdvancedSearch-Results'
+	else {
 		// there are search results!!
 		// first find the number of search results:
 		var numResults = $('.table.table-striped.grid-table')
