@@ -12,10 +12,10 @@ body {
     /* grid-template-columns: 30% 5% 30% 5% 30%; */
     /* grid-template-columns: 33.33% 33.33% 33.33%; */
     /* grid-template-columns: repeat(3, 33.33%); */
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
 
     /* grid-template-rows: auto 20px auto 20px auto; */
-    grid-template-rows: auto auto auto;
+    /* grid-template-rows: auto auto auto; */
     /* grid-template-rows: 80px 180px 80px; */
     /* grid-auto-rows: minmax(200px, auto); */
     /* grid-template-rows: repeat(4, minmax(200px, auto)); */
@@ -24,9 +24,10 @@ body {
     /* grid-row-gap: 20px; */
     grid-gap: 20px;
 
-    grid-template-areas:    "header header header header"
-                            "main main main sidebar"
-                            "footer footer footer footer";
+    grid-template-areas:    "header header header"
+                            "main main sidebar"
+                            "actions actions actions"
+                            "footer footer footer";
 
     /* align all rows or columns with *-items */
     /* align-items: start; */ /* columns */
@@ -39,19 +40,17 @@ body {
     padding: 20px;
 
     /* styles for viewing grid positioning */
-    color: white;
+    color: black;
     border: 1px solid black;
 }
   
 /* specific item styles */
-div.item-1 {
-    color: black;
+div.grid-1-title {
     font-weight: bold;
     font-size: 2em;
 
     /* styles for viewing grid positioning */
     /* background: #b03532; */
-    border: 1px solid black;
     
     /* -> positioning is not needed b/c automatically falls into place now
     grid-column: 1;
@@ -67,54 +66,78 @@ div.item-1 {
     /* align row axis: */
     justify-self: center;
 }
-.item-2 {
-    background: #33a8a5;
+.grid-2 {
+    /* background: #33a8a5; */
     grid-area: main;
 
     display: grid;
 
-    grid-template-columns: 1fr 30%;
-    grid-template-rows: auto auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
     grid-gap: 20px;
 
-    grid-template-areas:    "header header"
-                            "article sidebar";
+    grid-template-areas:    "header"
+                            "textarea"
+                            "actions";
 }
 /* item-3 is for welcome, # created, other settings */
-.item-3 {
-    background: #30997a;
+.grid-1-sidebar {
+    /* background: #30997a; */
     grid-area: sidebar;
 }
-.item-3 p {
-    color: black;
-    font-style: italic;
+.grid-1-sidebar div { padding: 0px; margin: 0px; }
+.grid-1-sidebar span.title { font-style: italic; font-size: 14px; }
+.grid-1-sidebar label { font-size: 13px; font-weight: normal; margin-left: 10px; margin-bottom: 0px; }
+.grid-1-sidebar hr { margin-top: 5px; margin-bottom: 5px; border: 1px dotted #000000; }
+.grid-1-sidebar p {
     font-size: 14px;
     margin: 0px;
 }
+.grid-4 {
+    display: grid;
+    grid-template-columns: 100%;
 
-.item-4 {
+    grid-gap: 20px;
+}
+.grid-4-errors div.error {
+    font-size: 13px;
+    font-weight: bold;
+    margin-left: 10px;
+    color: red;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 20px;
+}
+.grid-3 div {
+    padding: 0px;
+    justify-self: center;
+}
+.grid-3 button {
+    padding: 10px;
+    font-size: 16px;
+}
+.grid-2-actions {
+    /* background: #da6f2b; */
+    grid-area: actions;
+}
+
+.grid-1-footer {
     background: #6a478f;
     grid-area: footer;
 }
-.item-5 {
-    background: #da6f2b;
+.grid-2-title {
     grid-area: header;
-}
-.item-6 {
-    background: #3d8bb1;
-    grid-area: article;
-}
-.item-7 {
-    background: #e03f3f;
-    grid-area: sidebar;
-}
-/* .item-8 {
-    background: #59a627;
-}
-.item-9 {
-    background: #4464a1;
-} */
 
+    justify-self: center;
+}
+div.grid-2-textarea {
+    /* background: #3d8bb1; */
+    grid-area: textarea;
+    padding: 0px;
+}
 
 /* Styles for full page (body & full-container div) */
 div#full-container {
@@ -173,13 +196,5 @@ button.table-buttons-plus {
 div#full-import {
     float: left;
     width: 800px;
-}
-
-/* Error message displayed below client data textarea */
-div#error-message-display {
-    color: red;
-    border: solid 2px red;
-    margin: 5px;
-    padding: 5px;
 }
 

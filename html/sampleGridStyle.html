@@ -18,78 +18,84 @@
   	<body>
 		<!-- test grid thing -->
 		<div class="grid-1">
-			<div class="item-1">
+			<div class="grid-1-title">
 				Welcome to the RIPS Auto Client Import Utility!
 			</div>
-			<div class="item-2">
-				<div class="item-5">5</div>
-				<div class="item-6">6</div>
-				<div class="item-7">7</div>
+
+			<div class="grid-2 grid-1-client-data">
+				<div class="grid-2-title">Paste client Details below:</div>
+				
+				<div class="grid-2-textarea">
+					<textarea rows="10" class="form-control" id="comment"
+						placeholder="client details go here"></textarea>
+				</div>
+
+				<div class="grid-3 grid-2-actions">
+					<div class="grid-3-create-table">
+						<button type="button" class="btn btn-primary">
+							Create Table
+						</button>
+					</div>
+					<div class="grid-3-import">
+						<button type="button" class="btn btn-success">
+							Import Clients
+						</button>
+					</div>
+					<div class="grid-3-reset">
+						<button type="button" class="btn btn-danger">
+							Clear / Reset
+						</button>
+					</div>
+				</div>
 			</div>
-			<div class="item-3">
-				<p>
-					Welcome, {{ ctrl.username }}
-				</p>
-				<p>
-					# Created: {{ctrl.clientCount}}
-				</p>
+			
+			<div class="grid-4 grid-1-sidebar">
+				<div class="grid-4-welcome">
+					<p><span class="title">Welcome,</span>
+						{{ ctrl.username }}</p>
+					<p><span class="title"># Created:</span>
+						{{ctrl.clientCount}}</p>
+				</div>
+
+				<div class="grid-4-settings">
+					<span class="title">Settings</span>
+					<hr>
+					<p>Matching Names</p>
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" value="first_name">
+							First Name
+						</label>
+					</div>
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" value="last_name">
+							Last Name
+						</label>
+					</div>
+					<hr>
+					<p>Data Details</p>
+					<div>
+						<label>Delim: "{{ ctrl.delim }}"</label>
+						<label>New-Line: "\n"</label>
+					</div>
+				</div>
+
+				<div class="grid-4-errors error">
+					<span class="title error">Errors</span>
+					<div class="row error">
+						ERROR: ctrl.errorMessage
+					</div>
+					<div class="row error">
+						ERROR: ctrl.errorMessage
+					</div>
+				</div>
 			</div>
-			<div class="item-4">4</div>
-			<!-- <div class="item-8">8</div> -->
-			<!-- <div class="item-9">9</div> -->
+			
+			<div class="grid-1-footer">
+				Footer
+			</div>
 		</div>
-
-		<!-- Outer container for all grid elements -->
-        <div class="container">
-            <!-- container for Full Import Data -->
-            <div id="full-import">
-          		<h1 style="float:left;">Paste Client Details Below</h1>
-
-                <!-- Sign-in / out buttons for auth go here -->
-
-                <!-- Welcome, clientCount -->
-                <div style="padding-top: 10px;">
-                
-        		    <!-- <span style="padding-left: 30px;">
-						Welcome, {{ ctrl.username }}
-					</span>
-                    </br>
-                    <span style="padding-left: 30px;">
-						# created: {{ctrl.clientCount}}
-					</span> -->
-      		    </div>
-
-                <!-- Past client data here -->
-      		    <textarea class="form-control" rows="7" id="comment"
-        	        placeholder"placeholder"></textarea>
-
-      		    <button type="button" class="btn btn-primary"
-                    style="margin: 10px;">Create Table!</button>
-
-      		    <span>
-        		    <strong>
-          			    Data Details - Delim: "{{ ctrl.delim }}" - New-Line: "\n"
-        		    </strong>
-      		    </span>
-
-      		    <button type="button" class="btn btn-success"
-                    style="margin: 10px">
-                    Import Clients
-                </button>
-
-      		    <button type="button" class="btn btn-danger"
-                    style="margin: 10px">
-                    Clear / Reset
-                </button>
-
-      		    <div class="row"
-        		    style="color: red; border: solid 2px red; margin: 5px; padding: 5px;">
-        		    <strong>
-          			    ERROR: ctrl.errorMessage
-        		    </strong>
-      		    </div>
-    	    </div>
-        </div>
 
     	<!-- Table shown below -->
    		<div class="container-fluid" id="table-containers">
@@ -118,8 +124,5 @@
         		</div>
       		</div>
     	</div>
-
-    	<br>
-
   	</body>
 </html>
