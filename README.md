@@ -5,7 +5,7 @@
 3) Open the "Options page" by clicking on the extension icon in the upper-right corner of Google Chrome.
 4) Copy all contents of client data spreadsheet (including column headers), and paste data into main textbox.
 5) Click "Create Table!" -> A table with parsed data should appear below the button.
-6) Make sure you are logged into RIPS in at only 1 tab on Google Chrome.
+6) Make sure you are logged into RIPS in only 1 tab on Google Chrome.
 7) If everything looks good, click "Import Clients" to start the import!
 
 ## *Exact* Fields required for Registration page, and example data:
