@@ -99,12 +99,12 @@ Notes about Add Action table:
 ### Testing Scenarios:
 |#| Client Data Description (list) |Expected Outcome| Last Pass (Version #) |
 |-|------------------------------|----------------|-------------|
-|0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Timestamp|RLAP Phase 1 - everything but actions|v0.1.0|
-|1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created||
-|2|First Name / Last Name vs Full Name|Scenarios should put names in correct positions||
-|3|Full Name has 2 names|First name goes in first name box, all others go in 'surname' box||
-|4|Only Reg data, no services / actions|Client created, not redirected to services / actions pages||
-|5|Only Reg data (missing name), no services / actions|Error in Registration page, import stopped, ACTION_STATE set to error||
-|6|Reg data, Services data, no action data|Client created (if needed), service added (if needed), moves back to Advanced Search|v0.1.0|
+|0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Service Timestamp|RLAP Phase 1 - everything but actions|v0.1.3|
+|1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created|v0.1.3|
+|2|First Name / Last Name vs Full Name|Scenarios should put names in correct positions|v0.1.3|
+|3|Full Name has > 2 names|First name goes in first name box, all others go in 'surname' box|v0.1.3|
+|4|Only Reg data, no services / actions|Client created, not redirected to services / actions pages|v0.1.3|
+|5|Only Reg data (missing name), no services / actions|Error in Registration page, client skipped, error added to options page|v0.1.3|
+|6|Reg data, Services data, no action data|Client created (if needed), service added (if needed), moves back to Advanced Search|v0.1.3|
 |7|Reg data, Services data, action data|Same as 6, but adds action data before moving back to Advanced Search|v0.1.0 - DOB broken|
 |99|Reg Data, CBI Data, Services data, Action data|Client created (if needed), optional data added and saved, service added (if needed), action added||
