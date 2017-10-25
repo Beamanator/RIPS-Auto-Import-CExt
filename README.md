@@ -5,7 +5,7 @@
 3) Open the "Options page" by clicking on the extension icon in the upper-right corner of Google Chrome.
 4) Copy all contents of client data spreadsheet (including column headers), and paste data into main textbox.
 5) Click "Create Table!" -> A table with parsed data should appear below the button.
-6) Make sure you are logged into RIPS in at only 1 tab on Google Chrome.
+6) Make sure you are logged into RIPS in only 1 tab on Google Chrome.
 7) If everything looks good, click "Import Clients" to start the import!
 
 ## *Exact* Fields required for Registration page, and example data:
@@ -25,7 +25,7 @@ Notes about Registration table:
 4) *Nationality* - Text in parenthises excluded (ex: "Egypt (misr)" -> input into RIPS as "Egypt").
 5) *Main Language* - If there are multiple languages spoken by client, 2nd language will be placed in 'Second Language' dropdown. 3rd and following languages cannot be added to RIPS.
 6) *Phone Number* - Should be 11 digits (Validation handled by RIPS Validation Extension).
-7) *UNHCR Number* - Should be format: ###-##C#####  (Validation handled by RIPS Validation Extension).
+7) *UNHCR Number* - Variety of formats allowed (Validation handled by RIPS Validation Extension).
 
 ## Fields available for Client Basic Information page, and example data: (*incomplete*)
 
@@ -99,12 +99,12 @@ Notes about Add Action table:
 ### Testing Scenarios:
 |#| Client Data Description (list) |Expected Outcome| Last Pass (Version #) |
 |-|------------------------------|----------------|-------------|
-|0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Timestamp|RLAP Phase 1 - everything but actions|v0.1.0|
-|1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created||
-|2|First Name / Last Name vs Full Name|Scenarios should put names in correct positions||
-|3|Full Name has 2 names|First name goes in first name box, all others go in 'surname' box||
-|4|Only Reg data, no services / actions|Client created, not redirected to services / actions pages||
-|5|Only Reg data (missing name), no services / actions|Error in Registration page, import stopped, ACTION_STATE set to error||
-|6|Reg data, Services data, no action data|Client created (if needed), service added (if needed), moves back to Advanced Search|v0.1.0|
+|0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Service Timestamp|RLAP Phase 1 - everything but actions|v0.1.3|
+|1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created|v0.1.3|
+|2|First Name / Last Name vs Full Name|Scenarios should put names in correct positions|v0.1.3|
+|3|Full Name has > 2 names|First name goes in first name box, all others go in 'surname' box|v0.1.3|
+|4|Only Reg data, no services / actions|Client created, not redirected to services / actions pages|v0.1.3|
+|5|Only Reg data (missing name), no services / actions|Error in Registration page, client skipped, error added to options page|v0.1.3|
+|6|Reg data, Services data, no action data|Client created (if needed), service added (if needed), moves back to Advanced Search|v0.1.3|
 |7|Reg data, Services data, action data|Same as 6, but adds action data before moving back to Advanced Search|v0.1.0 - DOB broken|
 |99|Reg Data, CBI Data, Services data, Action data|Client created (if needed), optional data added and saved, service added (if needed), action added||
