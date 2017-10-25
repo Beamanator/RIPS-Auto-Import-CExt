@@ -119,7 +119,7 @@ function catchMessage(mObj, sendResponse) {
     var message = mObj.message;
 
     if (!message)
-        message = 'no message found - using test error message in background.js';
+        message = 'No message found - using test error message in background.js';
     
     var mObj2 = {
         dataObj: {
@@ -153,7 +153,7 @@ function stopViaError(mObj, sendResponse) {
 
     // if mObj has a message attached, add ERROR_MESSAGE
     if (mObj.message)
-        mObj2['dataObj']['ERROR_MESSAGE'] = mObj.message;
+        mObj2.dataObj['ERROR_MESSAGE'] = mObj.message;
 
     // store / clear data:
     storeToChromeLocalStorage(mObj2, sendResponse);
@@ -368,7 +368,7 @@ function clearDataFromChromeLocalStorage(mObj, responseCallback) {
  * 
  */
 function finishClientImport() {
-    console.log('WOOT we\'re done');
+    console.log("WOOT we're done");
 }
 
 // ===============================================================
