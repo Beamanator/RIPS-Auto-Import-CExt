@@ -10,7 +10,7 @@
 
 ## *Exact* Fields required for Registration page, and example data:
 
-| Full Name | Gender | Date of Birth | Nationality | Main Language | Phone Number | UNHCR number|
+| Full Name\* | Gender\* | Date of Birth\* | Nationality\* | Main Language\* | Phone Number\* | UNHCR number\* |
 |-----------|--------|---------------|-------------|---------------|-----------|------------|
 |Test Bob 1 | Male   |   1-Mar-2000  | -STATELESS- | Arabic        |01234567890|123-99C12345|
 |Test Jill  | Female |  19-Feb-1943  |    Iraq     | Fur, English  |01112223333|000-00C00000|
@@ -77,20 +77,21 @@ Notes about "Optional" tables above:
 
 ## Fields available for Services page, and example data:
 
-| Service Code (*) | Service Caseworker | Service Start Date |
+| Service Code\* | Service Caseworker | Service Start Date |
 |------------------|--------------------|--------------------|
-| MAP, RST, UCY    |  abeaman           |  1-Mar-2017        |
+| MAP, RST, UCY, etc |  abeaman           |  1-Mar-2017        |
 
 Notes about Services table:
 1) *Service Code* - The only required column for this page.
 2) *Service Caseworker* - RIPS defaults to adding logged-in user as caseworker for new services. If import user would like a different user added to new services, this column is where the caseworker should be specified.
 3) *Service Start Date* - Should always be in format above: Day-Month-Year, where Day and Month are numbers and Month is a 3-letter string.
 
-## Fields available for Add Action page, and example data: (incomplete - DON'T USE UNTIL PHASE 2)
+## Fields available for Add Action page, and example data:
 
-| Service Code (*) | Action Name (*) | Action Date (not ready) | Action Caseworker | Attendance Notes |
+| Service Code\* | Action Name\* | Action Date (not ready) | Action Caseworker | Attendance Notes |
 |:----------------:|-----------------|-------------|-------------------|------------------|
 | RSD, UYBP, GROUPS, etc| Other      |             | abeaman           |                  |
+|   MAN            | Referred for food & hygiene box || Staff | Awww giggidy, let's get some boxes!|
 |                  |                 |             |                   |                  |
 
 Notes about Add Action table:
@@ -99,12 +100,12 @@ Notes about Add Action table:
 ### Testing Scenarios:
 |#| Client Data Description (list) |Expected Outcome| Last Pass (Version #) |
 |-|------------------------------|----------------|-------------|
-|0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Service Timestamp|RLAP Phase 1 - everything but actions|v0.1.3|
-|1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created|v0.1.3|
-|2|First Name / Last Name vs Full Name|Scenarios should put names in correct positions|v0.1.3|
-|3|Full Name has > 2 names|First name goes in first name box, all others go in 'surname' box|v0.1.3|
-|4|Only Reg data, no services / actions|Client created, not redirected to services / actions pages|v0.1.3|
-|5|Only Reg data (missing name), no services / actions|Error in Registration page, client skipped, error added to options page|v0.1.3|
-|6|Reg data, Services data, no action data|Client created (if needed), service added (if needed), moves back to Advanced Search|v0.1.3|
-|7|Reg data, Services data, action data|Same as 6, but adds action data before moving back to Advanced Search|v0.1.0 - DOB broken|
+|0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Service Timestamp|RLAP Phase 1 - everything but actions|v2.0.0|
+|1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created|v2.0.0|
+|2|First Name / Last Name vs Full Name|Scenarios should put names in correct positions|v2.0.0|
+|3|Full Name has > 2 names|First name goes in first name box, all others go in 'surname' box|v2.0.0|
+|4|Only Reg data, no services / actions|Client created, not redirected to services / actions pages|v2.0.0|
+|5|Only Reg data (missing name), no services / actions|Error in Registration page, client skipped, error added to options page|v2.0.0|
+|6|Reg data, Services data, no action data|Client created (if needed), service added (if needed), moves back to Advanced Search|v2.0.0|
+|7|Reg data, Services data (code, caseworker), action data (name, notes, caseworker)|Same as 6, but adds action data before moving back to Advanced Search|v2.0.0|
 |99|Reg Data, CBI Data, Services data, Action data|Client created (if needed), optional data added and saved, service added (if needed), action added||
