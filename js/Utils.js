@@ -260,7 +260,7 @@ function Utils_GetServiceDescFromCode( code ) {
 		MED:	'PS Medical Access Program',		// 60
 		MONT:	'Montessori Preschool',				// 63
 		NONCLN:	'Non Client Time',					// 39
-		// OUT:	'Community Outreach',				// ??? TODO: fix
+		OUT:	'Community Outreach',				// ???
 		PDC:	'Professional Development Courses',	// 69
 		PRO:	'RLAP Protection',					// 68
 		RSD:	'RLAP RSD',							// 45
