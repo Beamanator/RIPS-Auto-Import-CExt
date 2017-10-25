@@ -120,20 +120,33 @@ function processSearchResults() {
 					// 0 results! No error, just create new client now
 					if (sweetAlertText === mNoResults) {
 						navigateToRegistration();
+						return;
 					}
 
-					// > 100 results! Throw error
-					else if (sweetAlertText === mManyResults) {
-						Utils_SkipClient('Too many clients with ' +
-							'same UNHCR #<Not given>');
-					}
+					// Get client index for better error messages
+					let mObj = {
+						action: 'get_data_from_chrome_storage_local',
+						keysObj: {
+							'CLIENT_INDEX': ''
+						}
+					};
+				
+					chrome.runtime.sendMessage(mObj, function(response) {
+						let clientIndex = response['CLIENT_INDEX'];
 
-					// WHAT HAPPENED??? Somehow there is a popup but the text
-					// isn't handled here, so we must error!
-					else {
-						Utils_SkipClient('Error! Unhandled popup text found on ' +
-							`search page: "${sweetAlertText}"`);
-					}
+						// > 100 results! Throw error, skip client
+						if (sweetAlertText === mManyResults) {
+							Utils_SkipClient('Too many clients with ' +
+								'same UNHCR #<Not given>', clientIndex);
+						}
+
+						// WHAT HAPPENED??? Somehow there is a popup but the text
+						// isn't handled here, so we must error!
+						else {
+							Utils_SkipClient('Error! Unhandled popup text found on ' +
+								`search page: "${sweetAlertText}"`, clientIndex);
+						}
+					});
 				}
 				
 				// No alert is visible, but we're on the 'AdvancedSearch' page, so

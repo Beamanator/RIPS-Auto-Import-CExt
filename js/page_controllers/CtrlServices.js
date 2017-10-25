@@ -236,29 +236,21 @@ function addNewService() {
 		// if match wasn't found, break import and error
 		if ( !serviceFound ) {
 			var errorMessage = 'No match found in Service Description dropdown - '
-			+ 'service code may not be accurate';
+				+ 'service code may not be accurate';
 		
 			// skip client
 			Utils_SkipClient(errorMessage, clientIndex);
-
-			// stop import and flag error message
-			// Utils_StopImport( errorMessage, function(response) {
-			// 	console.log('error adding service code');
-			// 	// ThrowError({
-			// 	// 	message: errorMessage,
-			// 	// 	errMethods: ['mSwal', 'mConsole']
-			// 	// });
-			// });
-
 			return;
 		}
 
 		// ======== Service Start Date ========
 		// Add service start date
-		let dateSuccess = Utils_CheckErrors([
-			[ Utils_InsertValue( serviceStart, FTs['SERVICE START DATE'], 3 ),
-				'SERVICE START DATE' ]
-		], clientIndex)
+		if (serviceStart) {
+			let dateSuccess = Utils_CheckErrors([
+				[ Utils_InsertValue( serviceStart, FTs['SERVICE START DATE'], 3 ),
+					'SERVICE START DATE' ]
+			], clientIndex)
+		}
 		
 		// check if error exists here, but don't do anything exciting about it
 		if (!dateSuccess)

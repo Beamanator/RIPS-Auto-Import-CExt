@@ -43,7 +43,7 @@ function startAddActionData() {
 
 		var client = clientData[clientIndex];
 
-		// set correct value in service dropdown
+		// Next step = set correct value in service dropdown (async)
 		setServiceDropdown( client, clientIndex );
 	});
 }
@@ -71,46 +71,20 @@ function setServiceDropdown( client, ci ) {
 		[ Utils_InsertValue( serviceDesc, FTa['SERVICE CODE'], 1 ), 'SERVICE CODE' ]
 	], ci);
 
-	// load action from service dropdown
-	location.href="javascript:updateDdlActiontype();";
-
-	// // loop through options on page to find the desired option value
-	// $('select#' + FTs['SERVICE CODE'] + ' > option').each(function(index, optionElem) {
-	// 	// get service description from current option element
-	// 	var optionServiceDesc = optionElem.innerText.trim().toUpperCase();
-
-	// 	// if this option service desc matches desired service desc:
-	// 	// 1) get id (option value), 2) put it in, 3) and break loop!
-	// 	if (optionServiceDesc === serviceDesc.toUpperCase()) {
-	// 		matchFound = true;
-
-	// 		var optionVal = optionElem.value; // 1 - get id
-	// 		$('#ddlServices').val( optionVal ); // 2 - put val in dropdown
-			
-	// 		// may have to use this instead of .change():
-	// 		location.href="javascript:updateDdlActiontype();";
-			
-	// 		return false; // 3 - break loop
-	// 	}
-	// });
-
-	// check that the dropdown did get populated (error if it didn't)
+	// if no matches, error and skip client. Skip b/c client data and service
+	// 	were already added - no more steps to take
 	if ( !matchFound ) {
 		var errorMessage = 'No match found in Services dropdown - service'
 			+ ' code may not be accurate. Skipping client.';
 		
 		// skip to importing next client
 		Utils_SkipClient(errorMessage, ci);
+		return;
+	}
 
-		// Utils_StopImport( errorMessage, function(response) {
-		// 	console.log('skipping client');
-		// 	// ThrowError({
-		// 	// 	message: errorMessage,
-		// 	// 	errMethods: ['mSwal', 'mConsole']
-		// 	// });
-		// });
-
-		// return;
+	// load action list from service dropdown - call RIPS code
+	else {
+		location.href="javascript:updateDdlActiontype();";
 	}
 
 	// wait until Actions select box is populated before continuing
@@ -121,17 +95,12 @@ function setServiceDropdown( client, ci ) {
 		// action dropdown has been populated by RIPS function! now move on
 		setActionDropdown( client, ci ); 
 	})
-	.catch(function(err) {
-		var errorMessage = err;
-
+	.catch(function(errorMessage) {
 		// action not found after setting service dropdown -> internet must
-		// not be doing well, so stop import. (Full Stop OK)
-		Utils_StopImport( errorMessage, function(response) {
-			ThrowError({
-				message: errorMessage,
-				errMethods: ['mSwal', 'mConsole']
-			});
-		});
+		// not be doing well, so skip client.
+		// Note: if service is new, it's possible RIPS admin needs to
+		// add necessary actions to the service
+		Utils_SkipClient(errorMessage, ci);
 	});
 }
 
@@ -160,96 +129,46 @@ function setActionDropdown( client, ci ) {
 		[ Utils_InsertValue( actionName, FTa['ACTION NAME'], 1 ), 'ACTION NAME' ]
 	], ci);
 
-	// check that match was found
+	// if action is not found, skip client
 	if ( !foundMatch ) {
-		var errorMessage = 'No match found in Action dropdown - action name'
-			+ ' may not be accurate. Skipping Client.';
+		var errorMessage = 'No match found in Action dropdown '
+			`- action name <${actionName}> may not be accurate.`;
 
 		// Skip importing this client
 		Utils_SkipClient(errorMessage, ci);
-
-		// stop import and flag error message
-		// Utils_StopImport( errorMessage, function(response) {
-		// 	console.log('skipping client');
-		// 	// ThrowError({
-		// 	// 	message: errorMessage,
-		// 	// 	errMethods: ['mSwal', 'mConsole']
-		// 	// });
-		// });
-
 		return;
 	}
+
+	// TODO: add date data - id: DATE_OF_ACT
 
 	// add Attendance Notes information:
 	if ( actionNotes ) {
 		$('iframe')
 			.contents()
 			.find('body')
-			.append('<p>' + actionNotes + '</p>');
+			.append(`<p>${actionNotes}</p>`);
 	}
 
-	// TODO: add date data - id: DATE_OF_ACT
-
 	// --- add caseworker in, if defined in client data ---
-	var caseworkerFound = false;
-	if ( actionCaseworker ) {
-		caseworkerFound = Utils_CheckErrors([ 
+	if ( actionCaseworker ) {		
+		// try to find & select caseworker
+		let caseworkerFound = Utils_CheckErrors([ 
 			[ Utils_InsertValue( actionCaseworker, FTa['ACTION CASEWORKER'], 1),
 				'ACTION CASEWORKER']
 		], ci);
 
-		// 1) loop through caseworker dropdown
-		// $('select#' + FTa['ACTION CASEWORKER'] + ' option').each(function(rowIndex, optionElem) {
-		// 	// get CW from current option element
-		// 	var optionCW = optionElem.innerText.trim().toUpperCase();
+		// if no caseworker was found, skip client
+		if (!caseworkerFound) {
+			var errorMessage = 'Could not find caseworker from ' +
+				`given value "${actionCaseworker}".`;
 
-		// 	// if this cw matches client cw:
-		// 	// 1) get id (option value), 2) put it in, 3) and break loop!
-		// 	if (optionCW === actionCaseworker.toUpperCase()) {
-		// 		var optionVal = optionElem.value; // 1 - get id
-		// 		$('select#CASEWORKERID').val( optionVal ); // 2 - put val in dropdown
-		// 		return false; // 3 - break loop
-		// 	}
-		// });
-	}
-
-	// if select box val is empty, didn't find caseworker
-	// -> give user an option to continue or not
-	if ( actionCaseworker && !caseworkerFound ) {
-		// var message = 'Could not find caseworker from given value "'
-		// 	+ actionCaseworker + '" - continue import?\n\nNOTE: This warning'
-		// 	+ ' will pop up for every action with this invalid caseworker';
-
-		// var moveOn = confirm(message);
-
-		// // if user wants to continue, click save and continue import
-		// if (moveOn)
-		// 	clickSave();
-		
-		// // if user doesn't want to move on, stop the import
-		// else {
-			var errorMessage = 'Could not find service caseworker from given value "'
-				+ actionCaseworker + '" - skipping client';
-
-			// skip current client
 			Utils_SkipClient(errorMessage, ci);
-
-			// stop auto import, then display an error
-			// Utils_StopImport( errorMessage, function(response) {
-			// 	console.log('skipping client');
-			// 	// ThrowError({
-			// 	// 	message: errorMessage,
-			// 	// 	errMethods: ['mSwal', 'mConsole']
-			// 	// });
-			// });
-		// }
+			return;
+		}
 	}
 
-	// caseworker has been successfully added, now click save
-	// or, possibly, no caseworker was given & none were added
-	else {
-		clickSave();
-	}
+	// if we're still here, all import should have gone smoothly. Save action.
+	clickSave();
 }
 
 /**

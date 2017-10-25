@@ -260,6 +260,7 @@ function Utils_GetServiceDescFromCode( code ) {
 		MED:	'PS Medical Access Program',		// 60
 		MONT:	'Montessori Preschool',				// 63
 		NONCLN:	'Non Client Time',					// 39
+		OUT:	'Community Outreach',				// ???
 		PDC:	'Professional Development Courses',	// 69
 		PRO:	'RLAP Protection',					// 68
 		RSD:	'RLAP RSD',							// 45
@@ -276,11 +277,12 @@ function Utils_GetServiceDescFromCode( code ) {
  * returns true. Caller passes in a function and possibly a number (time between
  * intervals)
  * 
- * @param {function} Fcondition - function that must eventually return true
+ * @param {function} Fcondition - function / condition that must eventually return true
  * @param {object} params - array of parameters to pass to Fcondition
- * @param {number} [time=500] - time between each interval call
- * @param {number} [iter=10] - number of iterations allowed before rejecting
- * @returns Promise - resolves when Fcondition returns true
+ * @param {number} [time=1000] - time between each interval call
+ * @param {number} [iter=5] - number of iterations allowed before rejecting
+ * @returns {object} - Promise  - resolve when Fcondition returns true
+ * 								- reject if iterates more than iter variable
  */
 function Utils_WaitForCondition( Fcondition, params, time = 1000, iter = 5 ) {
 	return new Promise(function(resolve, reject) {
@@ -297,10 +299,10 @@ function Utils_WaitForCondition( Fcondition, params, time = 1000, iter = 5 ) {
 			}
 
 			// check if we've passed the desired amount of iterations on setInterval
-			if (count > iter) {
+			else if (count > iter) {
 				clearInterval(intervalID);
-				reject('Condition <' + Fcondition.name + '> never returned true over '
-					+ iter + ' checks, spaced by ' + time + 'ms.');
+				reject(`Condition <${Fcondition.name}> never returned true over ` +
+					`${iter} checks, spaced by ${time}ms.`);
 			}
 
 		}, time);
@@ -470,8 +472,8 @@ function Utils_SetDateValue( date, elemID ) {
  * 
  * @param {string} valToMatch - value to look for in dropdown (select) element
  * @param {string} elemID - html id of select element to search through
- * @param {number} [searchMethod=1] - 1 = by innerText (lang)
- * 									- 2 = by elem value
+ * @param {number} [searchMethod=1] - 1 = by innerText (ex: lang, action)
+ * 									- 2 = by elem 'value' property
  * @returns success (true / false) in finding the valToMatch variable
  */
 function Utils_SetDropdownValue( valToMatch, elemID, searchMethod=1 ) {
@@ -599,14 +601,14 @@ function Utils_CheckErrors( fieldArr, ci ) {
 
 	/**
 	 * Plan: 
-	 * 1) loop through all fieldContainers
-	 * 2) In each fieldContainer, check if first value [0] is true / false
+	 * 1) loop through field containers (fieldArr)
+	 * 2) In each container, check if first value [0] is true / false
 	 *   - if true, it passed so move on.
 	 *   - if false, it failed so build message, throw Utils_AddError with message
 	 * 3) return true if all passed, false if any failed
 	 */
 
-	// 1) loop through fieldContainers
+	// 1) loop through fieldArr
 	for (let i = 0; i < fieldArr.length; i++) {
 		let fieldContainer = fieldArr[i];
 		
@@ -618,10 +620,12 @@ function Utils_CheckErrors( fieldArr, ci ) {
 			allPass = false;
 
 			// create error message
-			let errMsg = 'Error: Field Invalid - Client #' + (ci + 1) +
-				' - Field: <' + fieldName + '>.';
+			let errMsg = `Error: Field Invalid - Client #${ci + 1}` +
+				` - Field: <${fieldName}>.`;
 
 			Utils_AddError(errMsg);
+
+			// Don't skip other fields - let all errors show up here
 		}
 
 		// field passed, so move on
