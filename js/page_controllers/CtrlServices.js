@@ -304,8 +304,8 @@ function addNewService() {
 			
 			// // if user doesn't want to move on, stop the import
 			// else {
-				var errorMessage = 'Could not find service caseworker from given value "'
-					+ serviceCaseworker + '" - skipping client';
+				var errorMessage = 'Could not find service caseworker from given value ' +
+					`"${serviceCaseworker}" - skipping client`;
 
 				// skip client
 				Utils_SkipClient(errorMessage, clientIndex);

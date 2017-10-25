@@ -73,21 +73,43 @@ function addClientData(clientData, clientIndex) {
 
 		// save action state in local storage
 		chrome.runtime.sendMessage(mObj, function(response) {
-			// Here we click the 'save button'
-			// -> redirects to Client Basic Information
-			$('input#regClient').click();
-
 			// Deciding what to do next is not needed because page automatically
 			// redirects to CBI, which is where do-next is calculated
 			// HOWEVER, at this point, if a field has been skipped OR a field
 			// is invalid (decided by RIPS Validation Extension), a swal popup
 			// (sweet alert) may show up. Now we will check for it and skip client
 			// if it exists.
-			checkForSwal(clientIndex);
+			checkForSwal()
+			
+			// success => no fatal error found
+			.then(function(success) {
+				// Here we click the 'save button'
+				// -> redirects to Client Basic Information if data valid
+				$('input[value="Save"].newField').click();
+
+				// check again for Swal
+				checkForSwal()
+				.then(function(success) {
+					// this condition should never be reached because this means
+					// no swal occured. In this case, page will redirect to
+					// CBI if no swal occurs
+				})
+				.catch(function(errMsg) {
+					// error, skip client.
+					Utils_SkipClient(errMsg, clientIndex);
+				});;
+			})
+
+			// error => fatal error found! Skip client
+			.catch(function(errMsg) {
+				Utils_SkipClient(errMsg, clientIndex);
+			});
 		});
-	} else {
-		let msg = 'Client #' + (clientIndex + 1) +
-			': Unsuccessful insertion of client data on Registration page.';
+	}
+	
+	// data was not added successfully, so skip client
+	else {
+		let msg = 'Unsuccessful insertion of client data on Registration page.';
 
 		// Note: specific error is thrown in insertRequiredClientDetails
 		console.error(msg);
@@ -262,7 +284,7 @@ function NationalityInsert(natValue, FTr, ci) {
 
 		// if newNat is invalid, throw error and return false!
 		if (newNat.length < 2) {
-			let errMessage = 'Client #' + (ci + 1) + ' - Error: Nationality "' +
+			let errMessage = `Client #${ci + 1} - Error: Nationality "` +
 				natValue + '" doesn\'t have proper format before parens "()".';
 			
 			Utils_AddError( errMessage );
@@ -280,24 +302,45 @@ function NationalityInsert(natValue, FTr, ci) {
 
 // ============================== OTHER INTERNAL ================================
 
-// TODO: what if error is just a warning? (phone number) Don't skip!
-function checkForSwal(ci, time=1000) {
-	setTimeout( function(ci) {
-		let $alert = $('.sweet-alert');
+/**
+ * Function checks for a swal error on the Registration page (after slight delay)
+ * just in case validation extension threw up a warning after inputting data.
+ * 
+ * @param {number} [time=1000] - amount of time to wait before checking for swal
+ * @returns - Promise which gets resolved if no fatal error, rejected if fatal found
+ */
+function checkForSwal(time=1000) {
+	return new Promise( function(resolve, reject) {
+		// After set amount of time, look for swal error
+		setTimeout( function() {
+			let $alert = $('.sweet-alert');
 
-		// if alert is visible, skip to next client
-		if ( $alert.hasClass('visible') ) {
-			// now that we know that alert is visible, get error text and
-			// skip to next client.
-			let sweetAlertText = $alert.children('p').text();
+			// if alert is visible, skip to next client
+			if ( $alert.hasClass('visible') ) {
+				// now that we know that alert is visible, get error text and
+				// skip to next client.
+				let sweetAlertHeader = $alert.children('h2').text(),
+					sweetAlertText = $alert.children('p').text();
 
-			let msg = 'Skipping Client #' + (ci + 1) + '. Fatal error occured ' +
-			'when registering client: ' + sweetAlertText;
+				// If text "warning" is found at the beginning of the swal error
+				// header, don't skip client - it's just a warning error
+				if (sweetAlertHeader.toUpperCase().indexOf('WARNING') === 0) {
+					// don't log error
+					resolve('success');
+				}
+				
+				// warning popped up, without 'warning' text, so call it fatal
+				else {
+					let msg = 'Error occured when registering client: ' + sweetAlertText;
 
-			Utils_SkipClient(msg, ci);
-		}
+					reject(msg);
+				}
+			}
 
-		// if alert isn't visible, don't do anything special
-		else {}
-	}, time, ci);
+			// if alert isn't visible, don't do anything special
+			else {
+				resolve('success');
+			}
+		}, time);
+	});
 }

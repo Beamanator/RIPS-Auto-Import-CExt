@@ -98,16 +98,25 @@ function Utils_StopImport( errorMessage, callback ) {
  * @param {number} ci - index of client being imported
  */
 function Utils_SkipClient( message, ci ) {
-	if (!message)
-		message = 'Skipping Client #' + (ci + 1);
+	// handle unknown / string client index
+	if (ci == undefined || typeof(ci) !== 'number')
+		ci = '<Unknown>';
+	else
+		ci += 1; // -> add 1 for client #, not index
+	
+	// add client index to message to be helpful
+	if (!message) message = '<Unspecified>';
+
+	message = `Skipping Client #${ci}: ${message}`;
 
 	// add error to stack, then navigate to advanced search page again
-	Utils_AddError(message, function(response) {
+	Utils_AddError( message,
+	function(response) {
 		var mObj = {
 			action: 'store_data_to_chrome_storage_local',
 			dataObj: {
 				'ACTION_STATE': 'SEARCH_FOR_CLIENT',
-				'CLIENT_INDEX': '' // auto increment
+				'CLIENT_INDEX': '' // auto increment via background.js
 			}
 		};
 
@@ -313,9 +322,8 @@ function Utils_WaitForCondition( Fcondition, params, time = 1000, iter = 5 ) {
  * @returns true if successfully found something and added it to form, false otherwise
  */
 function  Utils_InsertValue(value, id, configParam) {
-	let success = false;
-
-	let $elem = $('#' + id);
+	let success = false,
+		$elem = $('#' + id);
 
 	// check if value or id are undefined
 	if (!value || !id) {
@@ -565,7 +573,7 @@ function Utils_GetMonthNumberFromName( month ) {
 		'JUN': 6,	'JUNE': 	6,
 		'JUL': 7,	'JULY': 	7,
 		'AUG': 8,	'AUGUST': 	8,
-		'SEP': 9,	'SEPTEMBER': 9,
+		'SEP': 9,	'SEPTEMBER': 9, 'SEPT': 9,
 		'OCT': 10,	'OCTOBER': 	10,
 		'NOV': 11,	'NOVEMBER': 11,
 		'DEC': 12,	'DECEMBER': 12
