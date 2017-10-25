@@ -70,7 +70,7 @@
 					<strong>
 						ERROR: 
 						<ul>
-							<li ng-repeat="message in ctrl.errorMessages">
+							<li ng-repeat="message in ctrl.errorMessages track by $index">
 								{{ message }}
 							</li>
 						</ul>
