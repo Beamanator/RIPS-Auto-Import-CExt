@@ -3,6 +3,8 @@
  * Controller function for View Actions pages - decides what to do based off of
  * passed in action.
  * 
+ * Called By: None [automatically taken here after adding an action]
+ * 
  * @param {string} action 
  */
 function ViewActions_Controller( action ) {
@@ -14,7 +16,7 @@ function ViewActions_Controller( action ) {
 
 		// Action not handled by controller!
 		default:
-			console.error('invalid action found in CtrlViewAction.js:', action);
+			console.error('Unhandled action found in CtrlViewAction.js:', action);
 	}
 }
 

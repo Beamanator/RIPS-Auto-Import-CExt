@@ -16,7 +16,7 @@ function Registration_Controller( action ) {
 
 		// Action not handled by Registration.js!
 		default:
-			console.error('invalid action found in Registration.js:', action);
+			console.error('Unhandled action found in Registration.js:', action);
 	}
 }
 

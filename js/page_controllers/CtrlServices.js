@@ -38,7 +38,7 @@ function Services_Controller( action ) {
 
 		// Action not handled by controller!
 		default:
-			console.error('invalid action found in CtrlServices.js:', action);
+			console.error('Unhandled action found in CtrlServices.js:', action);
 	}
 }
 

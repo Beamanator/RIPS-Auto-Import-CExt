@@ -22,7 +22,7 @@ function AdvancedSearch_Controller( action ) {
 
 		// Action not handled by AdvancedSearch.js!
 		default:
-			console.error('invalid action found in AdvancedSearch.js:', action);
+			console.error('Unhandled action found in AdvancedSearch.js:', action);
 	}
 }
 

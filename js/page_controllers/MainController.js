@@ -70,7 +70,7 @@ $(document).ready(function(){
 		if (ctrlFunc)
 			ctrlFunc( action );
 		else {
-			console.error('controller function for <' + urlPiece + '> is not defined');
+			console.error('Controller function for <' + urlPiece + '> is not defined');
 		}
 	});
 });
@@ -113,7 +113,7 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 
 		default:
 			ThrowError({
-				message: 'message not handled in MainContent.js: ' + request.message,
+				message: 'Message not handled in MainContent.js: ' + request.message,
 				errMethods: ['mConsole']
 			});
 	}
