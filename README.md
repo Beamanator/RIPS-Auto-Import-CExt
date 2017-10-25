@@ -25,7 +25,7 @@ Notes about Registration table:
 4) *Nationality* - Text in parenthises excluded (ex: "Egypt (misr)" -> input into RIPS as "Egypt").
 5) *Main Language* - If there are multiple languages spoken by client, 2nd language will be placed in 'Second Language' dropdown. 3rd and following languages cannot be added to RIPS.
 6) *Phone Number* - Should be 11 digits (Validation handled by RIPS Validation Extension).
-7) *UNHCR Number* - Should be format: ###-##C#####  (Validation handled by RIPS Validation Extension).
+7) *UNHCR Number* - Variety of formats allowed (Validation handled by RIPS Validation Extension).
 
 ## Fields available for Client Basic Information page, and example data: (*incomplete*)
 
