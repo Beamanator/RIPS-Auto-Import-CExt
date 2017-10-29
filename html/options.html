@@ -117,7 +117,7 @@
 				<p>Errors during Import:</p>
 				<!-- List of errors -->
 				<ul>
-					<li class="import-error" ng-repeat="err in ctrl.importErrors">
+					<li class="import-error" ng-repeat="err in ctrl.importErrors track by $index">
 						{{ err }}
 					</li>
 				</ul>

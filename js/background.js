@@ -119,7 +119,7 @@ function catchMessage(mObj, sendResponse) {
     var message = mObj.message;
 
     if (!message)
-        message = 'No message found - using test error message in background.js';
+        message = 'No message found - using basic error message from background.js';
     
     var mObj2 = {
         dataObj: {

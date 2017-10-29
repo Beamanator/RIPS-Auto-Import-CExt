@@ -64,6 +64,9 @@
 				);
 
 				if (key === 'ADD_MESSAGE') {
+					// adding empty check for case when add_message is cleared (set to '')
+					if (storageChange.newValue == '') return;
+
 					// Add error to array, which adds error to html page.
 					// Since angular variable is changed outside of normal context,
 					// need to use $digest or $apply as below.
@@ -86,51 +89,65 @@
 			console.log('data to import:',Ctrl.dataArray);
 			// TODO: add some validation for required fields (maybe in "Create Table" function)
 
-			chrome.tabs.query({
-				currentWindow: true,
-				url: 'http://rips.247lib.com/Stars/*'
-			}, function(tabs) {
+			// display empty import error array
+			Ctrl.importErrors = [];
 
-				// error if too many or too few tabs found w/ RIPS open
-				if (tabs.length === 0) {
-					let errMessage = 'No RIPS tabs are open right now!' +
-						' Must open 1 for data import to work.';
-
-					console.error(errMessage);
-
-					$scope.$apply(function() {
-						Ctrl.importErrors.push(errMessage);
-					});
-					
-					return;
-				} else if (tabs.length > 1) {
-					let errMessage = 'Too many RIPS tabs open! Found: ' +
-						tabs.length + '.';
-
-					console.error(errMessage);
-					
-					$scope.$apply(function() {
-						Ctrl.importErrors.push(errMessage);	
-					});
-
-					return;
+			// first, clear error array (and more later, if needed)
+			let mObjFirst = {
+				action: 'store_data_to_chrome_storage_local',
+				dataObj: {
+					'ADD_MESSAGE': ''
 				}
+			};
+			chrome.runtime.sendMessage(mObjFirst, function(response) {
+				// then, query tabs for rips urls
+				chrome.tabs.query({
+					currentWindow: true,
+					url: 'http://rips.247lib.com/Stars/*'
+				}, function(tabs) {
 
-				var targetTab = tabs[0];
+					// error if too many or too few tabs found w/ RIPS open
+					if (tabs.length === 0) {
+						let errMessage = 'No RIPS tabs are open right now!' +
+							' Must open 1 for data import to work.';
 
-				var mObj = {
-					action: 'store_data_to_chrome_storage_local',
-					dataObj: {
-						'ACTION_STATE': 'SEARCH_FOR_CLIENT',
-						'CLIENT_DATA': Ctrl.dataArray,
-						'CLIENT_INDEX': 0
+						console.error(errMessage);
+
+						$scope.$apply(function() {
+							Ctrl.importErrors.push(errMessage);
+						});
+						
+						return;
+					} else if (tabs.length > 1) {
+						let errMessage = 'Too many RIPS tabs open! Found: ' +
+							tabs.length + '.';
+
+						console.error(errMessage);
+						
+						$scope.$apply(function() {
+							Ctrl.importErrors.push(errMessage);	
+						});
+
+						return;
 					}
-				};
-				
-				// send message config (store data) then tell MainContent to GO!
-				chrome.runtime.sendMessage(mObj, function(response) {
-					chrome.tabs.sendMessage(targetTab.id, {
-						"message": "begin_client_import"
+
+					// got here if only 1 RIPS tab open (yay)
+					var targetTab = tabs[0];
+
+					var mObj = {
+						action: 'store_data_to_chrome_storage_local',
+						dataObj: {
+							'ACTION_STATE': 'SEARCH_FOR_CLIENT',
+							'CLIENT_DATA': Ctrl.dataArray,
+							'CLIENT_INDEX': 0
+						}
+					};
+					
+					// send message config (store data) then tell MainContent to GO!
+					chrome.runtime.sendMessage(mObj, function(response) {
+						chrome.tabs.sendMessage(targetTab.id, {
+							"message": "begin_client_import"
+						});
 					});
 				});
 			});
@@ -150,7 +167,8 @@
 					'CLIENT_DATA': '',
 					'CLIENT_INDEX': 0,
 					'ACTION_STATE': '',
-					'DUPLICATE_CLIENT_UNHCR_NO': ''
+					'DUPLICATE_CLIENT_UNHCR_NO': '',
+					'ADD_MESSAGE': ''
 				}
 			};
 
@@ -427,6 +445,11 @@
 		/**
 		 * Function sets angular variable to passed-in array of warning strings
 		 * to be displayed on the page. These are displayed pre-import!
+		 * 
+		 * Note: these are not import errors! Ctrl.importErrors is for errors
+		 * that occur DURING import
+		 * 
+		 * TODO: make this more clear by differentiating variable names
 		 * 
 		 * @param {object} messages - array of strings (warning messages) 
 		 */
