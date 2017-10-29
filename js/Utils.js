@@ -252,7 +252,7 @@ function Utils_GetServiceDescFromCode( code ) {
 		AEP:	'Adult Education Program',			// 65
 		AFP: 	'PS Adults and Families Program',	// 56
 		CEP: 	'Children\'s Education Program', 	// 64
-		DAP:	'PS Direct Assistance Program',		// 57
+		DA:		'PS Direct Assistance Program',		// 57 (note: NOT DAP!)
 		DIER:	'PS Drop in and Emergency Response',		// 58
 		EACB:	'Education Access and Capacity Building',	// 66
 		GROUPS:	'PS Groups and Activities',			// 59

@@ -138,6 +138,8 @@ function catchMessage(mObj, sendResponse) {
  * Also, client index and client data are cleared and message (from mObj) is
  * saved as ERROR_MESSAGE (if it exists)
  * 
+ * TODO: phase out this function w/ Utils_SkipClient
+ * 
  * @param {object} mObj - message config object from caller
  * @param {function} sendResponse - callback function for caller to use to display specific error
  */
