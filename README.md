@@ -82,9 +82,31 @@ Notes about "Optional" tables above:
 | MAP, RST, UCY, etc |  abeaman           |  1-Mar-2017        |
 
 Notes about Services table:
-1) *Service Code* - The only required column for this page.
-2) *Service Caseworker* - RIPS defaults to adding logged-in user as caseworker for new services. If import user would like a different user added to new services, this column is where the caseworker should be specified.
-3) *Service Start Date* - Should always be in format above: Day-Month-Year, where Day and Month are numbers and Month is a 3-letter string.
+1) *Service Code* - To determine the correct service code for each service, see table "Service Code -> Description Table" below.
+2) *Service Code* - The only required column for this page.
+3) *Service Caseworker* - RIPS defaults to adding logged-in user as caseworker for new services. If import user would like a different user added to new services, this column is where the caseworker should be specified.
+4) *Service Start Date* - Should always be in format above: Day-Month-Year, where Day and Month are numbers and Month is a 3-letter string.
+
+**Service Code -> Description Table**
+
+| Service Code | Service Description |
+|:------------:|:-------------------:|
+|AFP|PS Adults and Families Program|
+|DA|PS Direct Assistance Program|
+|DIER|PS Drop in and Emergency Response|
+|GROUPS|PS Groups and Activities|
+|MED|PS Medical Access Program|
+|UCY|PS Unaccompanied Children and Youth Program|
+|UYBP|PS Unaccompanied Youth Bridging Program|
+|RST|RLAP Resettlement|
+|PRO|RLAP Protection|
+|RSD|RLAP RSD|
+|AEP|Adult Education Program|
+|CEP|Children's Education Program|
+|EACB|Education Access and Capacity Building|
+|MONT|Montessori Preschool|
+|PDC|Professional Development Courses|
+|OUT|Community Outreach|
 
 ## Fields available for Add Action page, and example data:
 
@@ -95,7 +117,8 @@ Notes about Services table:
 |                  |                 |             |                   |                  |
 
 Notes about Add Action table:
-1) If "Service Code" is populated but "Action Name" column is omitted, service will be added, then action data will be skipped.
+1) *Service Code* - If populated but "Action Name" column is omitted, service will be added, then action data will be skipped.
+2) *Service Code* - This is the same column as above for Services -> don't add 2 columns with "Service Code" title.
 
 ### Testing Scenarios:
 |#| Client Data Description (list) |Expected Outcome| Last Pass (Version #) |
