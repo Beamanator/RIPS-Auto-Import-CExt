@@ -15,7 +15,7 @@
 	angular.module('RIPSImportPageApp', [])
 	.controller('MainController', MainController);
 
-	// controller for popup
+	// controller for options page
 	MainController.$inject = ['$q', '$scope'];
 	function MainController($q, $scope) {
 		var Ctrl = this;
@@ -178,6 +178,12 @@
 
 			Ctrl.clientData = '';
 			Ctrl.importErrors = [];
+			Ctrl.errorMessages = [];
+			Ctrl.delim = '';
+			
+			// data from coverted client data (data-table)
+			Ctrl.headerArr = [];
+			Ctrl.dataArray = [];
 		}
 		// ============================================================================
 
