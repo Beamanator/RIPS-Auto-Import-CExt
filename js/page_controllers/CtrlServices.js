@@ -79,7 +79,9 @@ function startServiceSearch() {
 
 		// if service description doesn't exist, id didn't match mapping
 		if (!serviceDesc) {
-			let errorMessage = `Service code <${serviceCode}> doesn\'t match any service.`;
+			let errorMessage = `Service code <${serviceCode}> doesn\'t match any service.` +
+				' see documentation here: https://github.com/Beamanator/RIPS-Auto-Impo' +
+				'rt-CExt#fields-available-for-services-page-and-example-data';
 		
 			Utils_SkipClient(errorMessage, clientIndex);
 		}

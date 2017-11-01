@@ -56,7 +56,7 @@ div.main-client-data {
 }
 /* sidebar is for welcome, # created, other settings */
 .main-sidebar {
-    background: #30997a;
+    background: #BFBF3F;
     grid-area: sidebar;
 }
 .main-data-table {
