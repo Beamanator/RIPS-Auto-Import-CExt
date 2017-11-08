@@ -60,7 +60,7 @@
 					</div>
 					<div class="actions-import">
 						<button type="button" class="btn btn-success"
-							ng-if="!ctrl.errorMessages.length && ctrl.delim && ctrl.clientData"
+							ng-if="!ctrl.errorMessages.length && !ctrl.importStarted"
 							ng-click="ctrl.importClients()">
 							Import Clients
 						</button>

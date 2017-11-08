@@ -263,7 +263,7 @@ function processSearchResults() {
 				});
 			}
 			
-			// no name matches, but unhcr # matched mostly, so throw error
+			// no name matches, but unhcr # matched something, so throw error
 			else {
 				Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
 					'Needs human intervention.', clientIndex);

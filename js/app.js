@@ -32,6 +32,7 @@
 				+ '\tService Code (+ more), Action Code (+ more)';
 		// Ctrl.clientCount = 0;
 		// Ctrl.auto = true;
+		Ctrl.importStarted = false;
 
 		// initialize arrays
 		Ctrl.headerArr = [];
@@ -119,8 +120,7 @@
 						
 						return;
 					} else if (tabs.length > 1) {
-						let errMessage = 'Too many RIPS tabs open! Found: ' +
-							tabs.length + '.';
+						let errMessage = `Too many RIPS tabs open! Found: ${tabs.length}.`;
 
 						console.error(errMessage);
 						
@@ -133,6 +133,7 @@
 
 					// got here if only 1 RIPS tab open (yay)
 					var targetTab = tabs[0];
+					Ctrl.importStarted = true; // hide button
 
 					var mObj = {
 						action: 'store_data_to_chrome_storage_local',
@@ -173,7 +174,8 @@
 			};
 
 			chrome.runtime.sendMessage(mObj, function(response) {
-				alert('Chrome data has been cleared');
+				// alert('Chrome data has been cleared');
+				console.warn('Chrome data has been cleared');
 			});
 
 			Ctrl.clientData = '';
@@ -359,7 +361,7 @@
 
 			// create keys for header Obj -> ALL UPPERCASE :)
 			for (var i = 0; i < headerRow.length; i++) {
-				headerKeys[i] = headerRow[i].toUpperCase();
+				headerKeys[i] = headerRow[i].trim().toUpperCase();
 			}
 
 			// setup the rest of the data (non-header)
@@ -386,7 +388,7 @@
 					var cell = row[cellIndex];
 					var propName = headerKeys[cellIndex];
 
-					clientObj[propName] = cell;
+					clientObj[propName] = cell.trim();
 				}
 
 				returnObj.dataArray.push(clientObj);
