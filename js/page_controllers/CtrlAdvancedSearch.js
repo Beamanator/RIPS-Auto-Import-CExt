@@ -1,23 +1,26 @@
 // ============================== PAGE CONTROLLER =======================
 /**
- * Controller function for AdvancedSearch.js - decides what to do based off of
- * passed in action.
+ * Controller function for Advanced Search pages - decides what to do based off of
+ * passed in config object.
  * 
  * Called by: Run_AdvancedSearch [in MainContent.js]
  * 
- * @param {string} action 
+ * @param {object} config 
  */
-function AdvancedSearch_Controller( action ) {
-	// console.log('in advanced search controller');
+function AdvancedSearch_Controller( config ) {
+	var action = config.action;
+	var clientIndex = config.clientIndex;
+	var clientData = config.clientData;
+	
 	switch(action) {
 		// Enter client UNHCR and press 'search'
 		case 'SEARCH_FOR_CLIENT':
-			searchForDuplicates();
+			searchForDuplicates(clientIndex, clientData);
 			break;
 
 		// Analyze search results
 		case 'ANALYZE_CLIENT_DUPLICATES':
-			processSearchResults();
+			processSearchResults(clientIndex);
 			break;
 
 		// Action not handled by AdvancedSearch.js!
@@ -34,55 +37,42 @@ function AdvancedSearch_Controller( action ) {
  * 
  * Before the click, set action state to the next step - 'ANALYZE_CLIENT_DUPLICATES'
  * 
+ * @param {number} clientIndex - index of client in all client data
+ * @param {object} clientData - all client data
  */
-function searchForDuplicates() {
-	// setup config obj for background.js - get client data & client index
-	var mObj = {
-		action: 'get_data_from_chrome_storage_local',
-		keysObj: {
-			'CLIENT_INDEX': '',
-			'CLIENT_DATA': ''
+function searchForDuplicates(clientIndex, clientData) {
+	// check if client index is out of range of client data array [done!]
+	if ( clientIndex >= clientData.length ) {
+		var mObj = {
+			action: 'finish_import'
+		};
+
+		chrome.runtime.sendMessage(mObj);
+		return;
+	}
+
+	// now get UNHCR number & put it in #HoRefNo
+	var client = clientData[clientIndex];
+	var FTs = Utils_GetFieldTranslator( 'Search' );
+	if (!FTs)
+		return; // error handling in Utils function
+	
+	// put UNHCR number into textbox
+	Utils_InsertValue( client['UNHCR NUMBER'], FTs['UNHCR NUMBER'],
+		clientIndex )
+	// $("#" + FTs['UNHCR NUMBER']).val( client['UNHCR NUMBER'] );
+
+	// store next action state before clicking 'search'
+	var mObj2 = {
+		action: 'store_data_to_chrome_storage_local',
+		dataObj: {
+			'ACTION_STATE': 'ANALYZE_CLIENT_DUPLICATES'
 		}
 	};
 
-	chrome.runtime.sendMessage(mObj, function(response) {
-		// get data back from response
-		var clientIndex = response['CLIENT_INDEX'];
-		var clientData = response['CLIENT_DATA'];
-
-		// check if client index is out of range of client data array [done!]
-		if ( clientIndex >= clientData.length ) {
-			var mObj = {
-				action: 'finish_import'
-			};
-
-			chrome.runtime.sendMessage(mObj);
-			return;
-		}
-
-		// now get UNHCR number & put it in #HoRefNo
-		var client = clientData[clientIndex];
-		var FTs = Utils_GetFieldTranslator( 'Search' );
-		if (!FTs)
-			return; // error handling in Utils function
-		
-		// put UNHCR number into textbox
-		Utils_InsertValue( client['UNHCR NUMBER'], FTs['UNHCR NUMBER'],
-			clientIndex )
-		// $("#" + FTs['UNHCR NUMBER']).val( client['UNHCR NUMBER'] );
-
-		// store next action state before clicking 'search'
-		var mObj2 = {
-			action: 'store_data_to_chrome_storage_local',
-			dataObj: {
-				'ACTION_STATE': 'ANALYZE_CLIENT_DUPLICATES'
-			}
-		};
-	
-		// send message obj, then click 'search' (refreshes page)
-		chrome.runtime.sendMessage(mObj2, function(response) {
-			$('input[value="Search"]').click();
-		});
+	// send message obj, then click 'search' (refreshes page)
+	chrome.runtime.sendMessage(mObj2, function(response) {
+		$('input[value="Search"]').click();
 	});
 }
 
@@ -90,14 +80,16 @@ function searchForDuplicates() {
  * Function is called after Search button has been clicked - analyze new state of
  * the page.
  * 
+ * @param {number} clientIndex - index of client in all client data
+ * @param {object} clientData - all client data
  */
-function processSearchResults() {
+function processSearchResults(clientIndex, clientData) {
 	// First check if the window is at the Advanced Search page in RIPS
 	// -> Note: we shouldn't be on the search results page.
-	if ( !Utils_UrlContains(Utils_GetTabHref('AdvancedSearch-Result')) ) {
+	if ( !Utils_UrlContains( Utils_GetTabHref('AdvancedSearch-Result'))) {
 
 		// Add extra check for Advanced Search, just to be more cautious.
-		if ( Utils_UrlContains(Utils_GetTabHref('AdvancedSearch')) ) {
+		if ( Utils_UrlContains( Utils_GetTabHref('AdvancedSearch'))) {
 			// timeout wait is 1 second (1000 ms)
 			let waitTime = 1000;
 
@@ -123,30 +115,18 @@ function processSearchResults() {
 						return;
 					}
 
-					// Get client index for better error messages
-					let mObj = {
-						action: 'get_data_from_chrome_storage_local',
-						keysObj: {
-							'CLIENT_INDEX': ''
-						}
-					};
-				
-					chrome.runtime.sendMessage(mObj, function(response) {
-						let clientIndex = response['CLIENT_INDEX'];
+					// > 100 results! Throw error, skip client
+					if (sweetAlertText === mManyResults) {
+						Utils_SkipClient('Too many clients with ' +
+							'same UNHCR #<Not given>', clientIndex);
+					}
 
-						// > 100 results! Throw error, skip client
-						if (sweetAlertText === mManyResults) {
-							Utils_SkipClient('Too many clients with ' +
-								'same UNHCR #<Not given>', clientIndex);
-						}
-
-						// WHAT HAPPENED??? Somehow there is a popup but the text
-						// isn't handled here, so we must error!
-						else {
-							Utils_SkipClient('Error! Unhandled popup text found on ' +
-								`search page: "${sweetAlertText}"`, clientIndex);
-						}
-					});
+					// WHAT HAPPENED??? Somehow there is a popup but the text
+					// isn't handled here, so we must error!
+					else {
+						Utils_SkipClient('Error! Unhandled popup text found on ' +
+							`search page: "${sweetAlertText}"`, clientIndex);
+					}
 				}
 				
 				// No alert is visible, but we're on the 'AdvancedSearch' page, so
@@ -176,99 +156,84 @@ function processSearchResults() {
 
 	// page IS 'AdvancedSearch-Results' -> There ARE results :)
 	else {
-		// get client data, try to match it to row data
-		let mObj = {
-			action: 'get_data_from_chrome_storage_local',
-			keysObj: {
-				'CLIENT_INDEX': '',
-				'CLIENT_DATA': ''
-			}
+		// get client variables
+		let client = clientData[clientIndex];
+		let clientFirstName = client['FIRST NAME'],
+			clientLastName = client['LAST NAME'],
+			clientFullName = client['FULL NAME'],
+			clientUnhcrNo = client['UNHCR NUMBER'];
+
+		// get row data
+		let resultRows = $('.table.table-striped.grid-table')
+			.find('tr.grid-row');
+		let matchedRows = [];
+
+		// properties of each row (in HTML "data-name" attribute):
+		let rowData = {
+			Stars_No: 			"NRU_NO",
+			Unhcr_No: 			"HO_REF_NO",
+			First_Name: 		"ForeName",
+			Last_Name: 			"SurName",
+			Caseworker: 		"CASEWORKER",
+			Nationality: 		"NATIONALITY",
+			Country_Of_Origin: 	"TownBirthDesc"
 		};
-	
-		chrome.runtime.sendMessage(mObj, function(response) {
-			// get data back from response
-			let clientIndex = response['CLIENT_INDEX'];
-			let clientData = response['CLIENT_DATA'];
+		
+		// for every row element, find matching client data
+		for (let rowElem of resultRows) {
+			$this = $(rowElem);
 
-			// get client and match variables
-			let client = clientData[clientIndex];
-			let clientFirstName = client['FIRST NAME'],
-				clientLastName = client['LAST NAME'],
-				clientFullName = client['FULL NAME'],
-				clientUnhcrNo = client['UNHCR NUMBER'];
+			// get data from results
+			let rowFirstName =
+				$this.find(`td[data-name="${rowData.First_Name}"]`).text();
+			let rowLastName =
+				$this.find(`td[data-name="${rowData.Last_Name}"]`).text();
+			let rowUnhcrNo =
+				$this.find(`td[data-name="${rowData.Unhcr_No}"]`).text();
 
-			// get row data
-			let resultRows = $('.table.table-striped.grid-table')
-				.find('tr.grid-row');
-			let matchedRows = [];
+			// if names and unhcr match, add row to match array
+			if (
+				matchNames(
+					[rowFirstName, rowLastName],
+					[clientFirstName, clientLastName, clientFullName]
+				)
+				&& matchUnhcr(rowUnhcrNo, clientUnhcrNo)
+			) {
+				matchedRows.push(rowElem);
+			}
+		}
 
-			// HTML attributes of each row (in "data-name"):
-			let rowData = {
-				Stars_No: 			"NRU_NO",
-				Unhcr_No: 			"HO_REF_NO",
-				First_Name: 		"ForeName",
-				Last_Name: 			"SurName",
-				Caseworker: 		"CASEWORKER",
-				Nationality: 		"NATIONALITY",
-				Country_Of_Origin: 	"TownBirthDesc"
-			};
-			
-			// for every row element, find matching client data
-			for (let rowElem of resultRows) {
-				$this = $(rowElem);
+		// Check length of matchedRows array, decide next step from there
+		if (matchedRows.length > 1) {
+			// Add client to error stack
+			Utils_SkipClient('Duplicate matching clients found', clientIndex);
+		}
+		
+		// 1 exact match -> this is our client!
+		else if (matchedRows.length === 1) {
+			// click the client row:
+			matchedRows[0].click();
 
-				// get data from results
-				let rowFirstName =
-					$this.find(`td[data-name="${rowData.First_Name}"]`).text();
-				let rowLastName =
-					$this.find(`td[data-name="${rowData.Last_Name}"]`).text();
-				let rowUnhcrNo =
-					$this.find(`td[data-name="${rowData.Unhcr_No}"]`).text();
-
-				// if names and unhcr match, add row to match array
-				if (
-					matchNames(
-						[rowFirstName, rowLastName],
-						[clientFirstName, clientLastName, clientFullName]
-					)
-					&& matchUnhcr(rowUnhcrNo, clientUnhcrNo)
-				) {
-					matchedRows.push(rowElem);
+			// Client is already available, redirect to Client Basic Information
+			// to check if extra client data needs to be saved
+			var mObj = {
+				action: 'store_data_to_chrome_storage_local',
+				dataObj: {
+					'ACTION_STATE': 'CHECK_CLIENT_BASIC_DATA'
 				}
-			}
+			};
 
-			// Check length of matchedRows array, decide next step from there
-			if (matchedRows.length > 1) {
-				// Add client to error stack
-				Utils_SkipClient('Duplicate matching clients found', clientIndex);
-			}
-			
-			// 1 exact match -> this is our client!
-			else if (matchedRows.length === 1) {
-				// click the client row:
-				matchedRows[0].click();
-	
-				// Client is already available, redirect to Client Basic Information
-				// to check if extra client data needs to be saved
-				var mObj = {
-					action: 'store_data_to_chrome_storage_local',
-					dataObj: {
-						'ACTION_STATE': 'CHECK_CLIENT_BASIC_DATA'
-					}
-				};
-	
-				// once action state is stored, navigate to CBI
-				chrome.runtime.sendMessage(mObj, function(response) {
-					Utils_NavigateToTab( Utils_GetTabHref('ClientBasicInformation') );
-				});
-			}
-			
-			// no name matches, but unhcr # matched something, so throw error
-			else {
-				Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
-					'Needs human intervention.', clientIndex);
-			}
-		});
+			// once action state is stored, navigate to CBI
+			chrome.runtime.sendMessage(mObj, function(response) {
+				Utils_NavigateToTab( Utils_GetTabHref('ClientBasicInformation') );
+			});
+		}
+		
+		// no name matches, but unhcr # matched something, so throw error
+		else {
+			Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
+				'Needs human intervention.', clientIndex);
+		}
 	}
 	// NOTE: as of March 15, 2017 - I haven't seen any alerts on this page recently
 	// NOTE: as of August 7, 2017 - Popups occur when > 100 results AND when 0 results
@@ -283,7 +248,7 @@ function processSearchResults() {
  * 
  * @param {object} rowNames - array of names from search result row (first, last - all)
  * @param {object} clientNames - array of client name strings (first, last - all, full name)
- * @returns {boolean} - true if all names are the same, false otherwise
+ * @returns {boolean} - true if all names are the same / similar enough, false otherwise
  */
 function matchNames(rowNames, clientNames) {
 	let rowF = rowNames[0],
@@ -299,8 +264,7 @@ function matchNames(rowNames, clientNames) {
 	let clientF,
 		clientL; // all last names, not just 1st last name
 
-	// clientNames looks like this:
-	// -> first, last, full name
+	// clientNames looks like this: -> [first, last, full name]
 	if (clientNames[0])
 		clientF = clientNames[0];
 	// get first name from first word in client's full name
@@ -321,6 +285,9 @@ function matchNames(rowNames, clientNames) {
 
 	clientF = clientF.toUpperCase();
 	clientL = clientL.toUpperCase();
+
+	debugger;
+	// TODO: fust stuff here!
 
 	// return true if first AND all last names match
 	return (rowF === clientF) && (rowL === clientL);

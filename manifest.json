@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "RIPS Extension - Auto Client Import",
-	"version": "2.0.2",
+	"version": "2.0.3",
 
 	"description": "RIPS Extension - Enables automatic client data import. Checks for existing client data before importing new client info.",
 
@@ -21,8 +21,8 @@
 		},
 		{	// Services pages
 			"matches": [ 
-				"http://rips.247lib.com/*/ClientDetails/ClientServicesList", // [see all]
-				"http://rips.247lib.com/*/MatterAction/CreateNewServices"	 // [add new]
+				"http://rips.247lib.com/*/ClientDetails/ClientServicesList",
+				"http://rips.247lib.com/*/MatterAction/CreateNewServices"
 			],
 			"js": [ "js/page_controllers/CtrlServices.js" ]
 		},
@@ -34,9 +34,15 @@
 			"matches": [ "http://rips.247lib.com/*/MatterAction/MatterActionsList" ],
 			"js": [ "js/page_controllers/CtrlViewActions.js" ]
 		},
-		{	// Advanced Search page
-			"matches": [ "http://rips.247lib.com/*/SearchClientDetails/*" ],
-			"js": [ "js/page_controllers/CtrlAdvancedSearch.js" ]
+		{	// Advanced Search pages
+			"matches": [
+				"http://rips.247lib.com/Stars/SearchClientDetails/AdvancedSearch",
+				"http://rips.247lib.com/Stars/SearchClientDetails/ClientListSearchResult"
+			],
+			"js": [
+				"js/page_controllers/CtrlAdvancedSearch.js",
+				"js/min/fuse.js"
+			]
 		},
 		{	// This one needs to go last so that it can use other pages' functions!
 			"matches": [ "http://rips.247lib.com/*" ],

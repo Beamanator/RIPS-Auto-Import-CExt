@@ -5,9 +5,11 @@
  * 
  * Called By: None [automatically taken here after adding an action]
  * 
- * @param {string} action 
+ * @param {object} config 
  */
-function ViewActions_Controller( action ) {
+function ViewActions_Controller( config ) {
+	var action = config.action;
+	
 	switch(action) {
 		// redirect to advanced search to start importing next client
 		case 'NEXT_CLIENT_REDIRECT':

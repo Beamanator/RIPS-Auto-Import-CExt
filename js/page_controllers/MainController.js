@@ -41,13 +41,24 @@ $(document).ready(function(){
 	var mObj = {
 		action: 'get_data_from_chrome_storage_local',
 		keysObj: {
-			'ACTION_STATE': ''
+			'ACTION_STATE': '',
+			'CLIENT_INDEX': '',
+			'CLIENT_DATA': ''
 		}
 	};
 
 	chrome.runtime.sendMessage(mObj, function(response) {
 		// responses should come back in the same order, so:
 		var action = response['ACTION_STATE'];
+		var clientIndex = response['CLIENT_INDEX'];
+		var clientData = response['CLIENT_DATA'];
+
+		// set up config object
+		var config = {
+			action: action,
+			clientIndex: clientIndex,
+			clientData: clientData
+		};
 
 		console.log('ACTION!', action);
 
@@ -63,7 +74,7 @@ $(document).ready(function(){
 		// get controller function name from config object
 		var ctrlFuncName = getPageControllerFunctions()[urlPiece];
 
-		// get controller function from window
+		// get controller function from window (actual functions in other files)
 		var ctrlFunc = window[ctrlFuncName];
 
 		// call controller function, if exists
@@ -183,64 +194,52 @@ function BeginClientImport() {
  * - else, go back to advanced search page and to next client.
  * 
  * Called by: ClientBasicInformation.js
+ * 
+ * @param {number} clientIndex - index of client in all client data
+ * @param {object} clientData - all client data
  */
-function MainContent_DoNextStep() {
-	// 1) get client data & index again
-	var mObj = {
-		action: 'get_data_from_chrome_storage_local',
-		keysObj: {
-			'CLIENT_DATA': '',
-			'CLIENT_INDEX': ''
-		}
-	};
+function MainContent_DoNextStep(clientIndex, clientData) {
+	var client = clientData[clientIndex];
 
-	chrome.runtime.sendMessage(mObj, function(response) {
-		// responses come back as serializable obj
-		var clientData = response['CLIENT_DATA'];
-		var clientIndex = response['CLIENT_INDEX'];
+	// get field translator
+	var FTs = Utils_GetFieldTranslator( 'Service' );
+	if (!FTs) return; // basically quit doing anything else!
 
-		var client = clientData[clientIndex];
+	// 2) get service code column from spreadsheet data
+	// (service code is only required field for any service or action entering)
+	var serviceCode = client['SERVICE CODE'];
 
-		// get field translator
-		var FTs = Utils_GetFieldTranslator( 'Service' );
-		if (!FTs) return; // basically quit doing anything else!
+	// 3.A) if there is no service code, go back to advanced search page to process
+	// next client.
+	if (!serviceCode) {
+		// store next action state before redirecting to Advanced Search
+		var mObj2 = {
+			action: 'store_data_to_chrome_storage_local',
+			dataObj: {
+				'ACTION_STATE': 'SEARCH_FOR_CLIENT',
+				'CLIENT_INDEX': '' // auto increment
+			}
+		};
+	
+		// saves action state, then redirects to advanced search
+		chrome.runtime.sendMessage(mObj2, function(response) {
+			Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
+		});
+	}
 
-		// 2) get service code column from spreadsheet data
-		// (service code is only required field for any service or action entering)
-		var serviceCode = client['SERVICE CODE'];
-
-		// 3.A) if there is no service code, go back to advanced search page to process
-		// next client.
-		if (!serviceCode) {
-			// store next action state before redirecting to Advanced Search
-			var mObj2 = {
-				action: 'store_data_to_chrome_storage_local',
-				dataObj: {
-					'ACTION_STATE': 'SEARCH_FOR_CLIENT',
-					'CLIENT_INDEX': '' // auto increment
-				}
-			};
-		
-			// saves action state, then redirects to advanced search
-			chrome.runtime.sendMessage(mObj2, function(response) {
-				Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
-			});
-		}
-
-		// 3.B) if there is a service code, set action state and redirect to
-		// services page to figure out what data to add
-		else {
-			var mObj2 = {
-				action: 'store_data_to_chrome_storage_local',
-				dataObj: {
-					'ACTION_STATE': 'CHECK_CLIENT_SERVICES'
-				}
-			};
-		
-			// after saving action state, redirect to services page
-			chrome.runtime.sendMessage(mObj2, function(response) {
-				Utils_NavigateToTab(Utils_GetTabHref( 'Services' ));
-			});
-		}
-	});
+	// 3.B) if there is a service code, set action state and redirect to
+	// services page to figure out what data to add
+	else {
+		var mObj2 = {
+			action: 'store_data_to_chrome_storage_local',
+			dataObj: {
+				'ACTION_STATE': 'CHECK_CLIENT_SERVICES'
+			}
+		};
+	
+		// after saving action state, redirect to services page
+		chrome.runtime.sendMessage(mObj2, function(response) {
+			Utils_NavigateToTab(Utils_GetTabHref( 'Services' ));
+		});
+	}
 }

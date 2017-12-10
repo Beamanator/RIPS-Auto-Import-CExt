@@ -1,17 +1,21 @@
 // ============================== PAGE CONTROLLER =======================
 /**
  * Controller function for Registration.js - decides what to do based off of
- * passed in action.
+ * passed in config.
  * 
  * Called by: Run_Registration [in MainContent.js]
  * 
- * @param {string} action - action auto import is trying to take next
+ * @param {object} config 
  */
-function Registration_Controller( action ) {
+function Registration_Controller( config ) {
+	var action = config.action;
+	var clientIndex = config.clientIndex;
+	var clientData = config.clientData;
+
 	switch(action) {
 		// Enter client UNHCR and press 'search'
 		case 'REGISTER_NEW_CLIENT':
-			registerNewClient();
+			registerNewClient(clientIndex, clientData);
 			break;
 
 		// Action not handled by Registration.js!
@@ -26,37 +30,12 @@ function Registration_Controller( action ) {
  * Main function to run for registering new clients - gets client data (and index)
  * in preparation for adding to Registration page
  * 
+ * @param {number} clientIndex - index of client in all client data
+ * @param {object} clientData - all client data
  */
-function registerNewClient() {
-	var mObj = {
-		action: 'get_data_from_chrome_storage_local',
-		keysObj: {
-			'CLIENT_INDEX': '',
-			'CLIENT_DATA': ''
-		}
-	};
+function registerNewClient(clientIndex, clientData) {
+	if (clientIndex == undefined) clientIndex = 0;
 
-	chrome.runtime.sendMessage(mObj, function(response) {
-		// successes should come back in the same order, so:
-		var clientIndex = response['CLIENT_INDEX'];
-		var clientData = response['CLIENT_DATA'];
-
-		if (clientIndex == undefined) clientIndex = 0;
-
-		// Now insert new client w/ specified index into RIPS
-		addClientData(clientData, clientIndex);
-	});
-}
-
-// ===================== INTERNAL FUNCTIONS ========================
-
-/**
- * Function adds client data to registration page, then clicks save, 
- * 
- * @param {object} clientData - array of client objects from chrome local store
- * @param {number} clientIndex - index of specific client from clientData array
- */
-function addClientData(clientData, clientIndex) {
 	var client = clientData[clientIndex];
 
 	// TODO: pass in FB config here (future)

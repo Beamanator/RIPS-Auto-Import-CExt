@@ -1,16 +1,21 @@
 // ============================== PAGE CONTROLLER =======================
 /**
- * Controller function for Add Actions page
+ * Controller function for Add Actions page - decides what t odo based off of
+ * passed in config object
  * 
  * Called by: Run_CtrlAddAction [in MainContent.js]
  * 
- * @param {string} action - from chrome storage ACTION_STATE
+ * @param {object} config 
  */
-function AddAction_Controller( action ) {
+function AddAction_Controller( config ) {
+	var action = config.action;
+	var clientIndex = config.clientIndex;
+	var clientData = config.clientData;
+
 	switch(action) {
 		// Add action data :)
 		case 'CLIENT_ADD_ACTION_DATA':
-			startAddActionData();
+			startAddActionData(clientIndex, clientData);
 			break;
 
 		// Action not handled by controller!
@@ -22,40 +27,15 @@ function AddAction_Controller( action ) {
 // ============================== MAIN FUNCTIONS =======================
 
 /**
- * Function starts the process of adding action data - get client data and index
- * then call setServiceDrodown
- * 
- */
-function startAddActionData() {
-	// get client data and index from store
-	var mObj = {
-		action: 'get_data_from_chrome_storage_local',
-		keysObj: {
-			'CLIENT_DATA': '',
-			'CLIENT_INDEX': ''
-		}
-	};
-
-	chrome.runtime.sendMessage(mObj, function(response) {
-		// responses come back as serializable obj
-		var clientData = response['CLIENT_DATA'];
-		var clientIndex = response['CLIENT_INDEX'];
-
-		var client = clientData[clientIndex];
-
-		// Next step = set correct value in service dropdown (async)
-		setServiceDropdown( client, clientIndex );
-	});
-}
-
-/**
  * Function populates the "service" dropdown based off serviceCode, then calls
  * function that adds action data
  * 
- * @param {object} client - current client data object
  * @param {number} ci - index of specific client being imported
+ * @param {object} clientData - all client data
  */
-function setServiceDropdown( client, ci ) {
+function startAddActionData( ci, clientData ) {
+	var client = clientData[ci];
+
 	// first get Field translator for service data
 	var FTa = Utils_GetFieldTranslator( 'Action' );
 	if (!FTa) return; // let Utils handle everything - and quit!

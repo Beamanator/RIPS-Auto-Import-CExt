@@ -1,7 +1,7 @@
 // ============================== PAGE CONTROLLER =======================
 /**
  * Controller function for Services pages - decides what to do based off of
- * passed in action.
+ * passed in config object.
  * 
  * Process:
  * 1) Get current client's service code from input (it should exist)
@@ -12,18 +12,22 @@
  * 
  * Called by: Run_CtrlServices [in MainContent.js]
  * 
- * @param {any} action 
+ * @param {object} config 
  */
-function Services_Controller( action ) {
+function Services_Controller( config ) {
+	var action = config.action;
+	var clientIndex = config.clientIndex;
+	var clientData = config.clientData;
+
 	switch(action) {
 		// check client services - decide if new or reopen is needed
 		case 'CHECK_CLIENT_SERVICES':
-			startServiceSearch();
+			startServiceSearch(clientIndex, clientData);
 			break;
 
 		// new service needed - add it!
 		case 'CLIENT_ADD_SERVICE':
-			addNewService();
+			addNewService(clientIndex, clientData);
 			break;
 
 		// redirect to add action page
@@ -50,47 +54,34 @@ function Services_Controller( action ) {
  * 2) if the service already exists, and
  * 3) if the service already exists and needs to be reopened
  * 
+ * @param {number} clientIndex - index of client in all client data
+ * @param {object} clientData - all client data
  */
-function startServiceSearch() {
-	// get client data and index from store
-	var mObj = {
-		action: 'get_data_from_chrome_storage_local',
-		keysObj: {
-			'CLIENT_DATA': '',
-			'CLIENT_INDEX': ''
-		}
-	};
+function startServiceSearch(clientIndex, clientData) {
+	var client = clientData[clientIndex];
 
-	chrome.runtime.sendMessage(mObj, function(response) {
-		// responses come back as serializable obj
-		var clientData = response['CLIENT_DATA'];
-		var clientIndex = response['CLIENT_INDEX'];
+	// get service code from client object
+	var serviceCode = client['SERVICE CODE'];
 
-		var client = clientData[clientIndex];
+	// get service description from map - to match with table
+	var serviceDesc = Utils_GetServiceDescFromCode( serviceCode );
 
-		// get service code from client object
-		var serviceCode = client['SERVICE CODE'];
+	// get action name for later
+	var actionName = client['ACTION NAME'];
 
-		// get service description from map - to match with table
-		var serviceDesc = Utils_GetServiceDescFromCode( serviceCode );
-
-		// get action name for later
-		var actionName = client['ACTION NAME'];
-
-		// if service description doesn't exist, id didn't match mapping
-		if (!serviceDesc) {
-			let errorMessage = `Service code <${serviceCode}> doesn\'t match any service.` +
-				' see documentation here: https://github.com/Beamanator/RIPS-Auto-Impo' +
-				'rt-CExt#fields-available-for-services-page-and-example-data';
-		
-			Utils_SkipClient(errorMessage, clientIndex);
-		}
-		
-		// serviceDesc exists, so try to find it in the services list
-		else {
-			searchServiceInTable( serviceDesc, actionName );
-		}
-	});
+	// if service description doesn't exist, id didn't match mapping
+	if (!serviceDesc) {
+		let errorMessage = `Service code <${serviceCode}> doesn\'t match any service.` +
+			' see documentation here: https://github.com/Beamanator/RIPS-Auto-Impo' +
+			'rt-CExt#fields-available-for-services-page-and-example-data';
+	
+		Utils_SkipClient(errorMessage, clientIndex);
+	}
+	
+	// serviceDesc exists, so try to find it in the services list
+	else {
+		searchServiceInTable( serviceDesc, actionName );
+	}
 	
 	// console.log('commented out real useful code below [in file]:');
 }
@@ -184,104 +175,92 @@ function searchServiceInTable( serviceDesc, actionName ) {
 /**
  * Function adds a new service and caseworker (if needed) to client, updates
  * ACTION_STATE, then clicks save
+ * 
+ * @param {number} clientIndex - index of client in all client data
+ * @param {object} clientData - all client data
  */
-function addNewService() {
-	// get client data (interested in service data)
-	var mObj = {
-		action: 'get_data_from_chrome_storage_local',
-		keysObj: {
-			'CLIENT_DATA': '',
-			'CLIENT_INDEX': ''
-		}
-	};
+function addNewService(clientIndex, clientData) {
+	var client = clientData[clientIndex];
 
-	chrome.runtime.sendMessage(mObj, function(response) {
-		// responses come back as serializable obj
-		var clientData = response['CLIENT_DATA'];
-		var clientIndex = response['CLIENT_INDEX'];
+	// get service field translator
+	var FTs = Utils_GetFieldTranslator( 'Service' );
+	if (!FTs) return; // let Utils handle everything - and quit!
 
-		var client = clientData[clientIndex];
+	// get service data from client object
+	var serviceCode = client['SERVICE CODE'].toUpperCase();
+	var serviceStart = client['SERVICE START DATE'];
+	var serviceCaseworker = client['SERVICE CASEWORKER'];
 
-		// get service field translator
-		var FTs = Utils_GetFieldTranslator( 'Service' );
-		if (!FTs) return; // let Utils handle everything - and quit!
+	// get actionName for future reference
+	var actionName = client['ACTION NAME'];
 
-		// get service data from client object
-		var serviceCode = client['SERVICE CODE'].toUpperCase();
-		var serviceStart = client['SERVICE START DATE'];
-		var serviceCaseworker = client['SERVICE CASEWORKER'];
+	// get 6-character code (fill with spaces on right)
+	var fullServiceCode = fillServiceCode( serviceCode, ' ' );
 
-		// get actionName for future reference
-		var actionName = client['ACTION NAME'];
+	// set service dropdown to service (using service code)
+	var serviceFound = Utils_CheckErrors([
+		[ Utils_InsertValue( fullServiceCode, FTs['SERVICE CODE'], 2 ), 'SERVICE CODE']
+	], clientIndex);
 
-		// get 6-character code (fill with spaces on right)
-		var fullServiceCode = fillServiceCode( serviceCode, ' ' );
+	// if match wasn't found, break import and error
+	if ( !serviceFound ) {
+		var errorMessage = 'No match found in Service Description dropdown - '
+			+ `service code <${serviceCode}> may not be accurate`;
+	
+		// skip client
+		Utils_SkipClient(errorMessage, clientIndex);
+		return;
+	}
 
-		// set service dropdown to service (using service code)
-		var serviceFound = Utils_CheckErrors([
-			[ Utils_InsertValue( fullServiceCode, FTs['SERVICE CODE'], 2 ), 'SERVICE CODE']
+	// ======== Service Start Date ========
+	// Add service start date
+	if ( serviceStart ) {
+		let dateDateSuccess = Utils_CheckErrors([
+			[ Utils_InsertValue( serviceStart, FTs['SERVICE START DATE'], 3 ),
+				'SERVICE START DATE' ]
 		], clientIndex);
 
-		// if match wasn't found, break import and error
-		if ( !serviceFound ) {
-			var errorMessage = 'No match found in Service Description dropdown - '
-				+ `service code <${serviceCode}> may not be accurate`;
-		
+		// check success
+		if (!dateDateSuccess) {
+			var errMsg = 'Could not properly save service start date. ' +
+				`Please check date: <${serviceStart}> for formatting issues.`;
+
 			// skip client
-			Utils_SkipClient(errorMessage, clientIndex);
+			Utils_SkipClient(errMsg, clientIndex);
 			return;
 		}
+	}
 
-		// ======== Service Start Date ========
-		// Add service start date
-		if ( serviceStart ) {
-			let dateDateSuccess = Utils_CheckErrors([
-				[ Utils_InsertValue( serviceStart, FTs['SERVICE START DATE'], 3 ),
-					'SERVICE START DATE' ]
-			], clientIndex);
+	// ======== Caseworker ==========
+	// --- add caseworker in, if defined in client data ---
+	// Note: Caseworker automatically set as logged-in user! [hopefully]
+	if ( serviceCaseworker ) {
+		let caseworkerFound = Utils_CheckErrors([
+			[ Utils_InsertValue( serviceCaseworker, FTs['SERVICE CASEWORKER'], 1 ),
+				'SERVICE CASEWORKER']
+		], clientIndex);
 
-			// check success
-			if (!dateDateSuccess) {
-				var errMsg = 'Could not properly save service start date. ' +
-					`Please check date: <${serviceStart}> for formatting issues.`;
+		// check success
+		if (!caseworkerFound) {
+			var errMsg = 'Could not find service caseworker from given value ' +
+				`"${serviceCaseworker}" - skipping client`;
 
-				// skip client
-				Utils_SkipClient(errMsg, clientIndex);
-				return;
-			}
+			// skip client
+			Utils_SkipClient(errMsg, clientIndex);
+			return;
 		}
+	}
 
-		// ======== Caseworker ==========
-		// --- add caseworker in, if defined in client data ---
-		// Note: Caseworker automatically set as logged-in user! [hopefully]
-		if ( serviceCaseworker ) {
-			let caseworkerFound = Utils_CheckErrors([
-				[ Utils_InsertValue( serviceCaseworker, FTs['SERVICE CASEWORKER'], 1 ),
-					'SERVICE CASEWORKER']
-			], clientIndex);
+	// next = just save!
+	// TODO: make sure action is populated before clicking save
+	// -> or move all of this into if statement section above
+	let $selectBox = $(`select#${ FTs['SERVICE CODE'] }`);
 
-			// check success
-			if (!caseworkerFound) {
-				var errMsg = 'Could not find service caseworker from given value ' +
-					`"${serviceCaseworker}" - skipping client`;
-
-				// skip client
-				Utils_SkipClient(errMsg, clientIndex);
-				return;
-			}
-		}
-
-		// next = just save!
-		// TODO: make sure action is populated before clicking save
-		// -> or move all of this into if statement section above
-		let $selectBox = $(`select#${ FTs['SERVICE CODE'] }`);
-
-		// set up change handler function, then trigger 'change'
-		$selectBox.change(function(e_change) {
-			clickSave( actionName );
-		})
-		.change();
-	});
+	// set up change handler function, then trigger 'change'
+	$selectBox.change(function(e_change) {
+		clickSave( actionName );
+	})
+	.change();
 }
 
 /**

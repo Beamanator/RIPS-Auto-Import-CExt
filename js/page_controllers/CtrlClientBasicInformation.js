@@ -1,24 +1,28 @@
 // ============================== PAGE CONTROLLER =======================
 /**
  * Controller function for ClientBasicInformation.js - decides what to do based off of
- * passed in action
+ * passed in config object.
  * 
  * Called by: Run_ClientBasicInformation [in MainContent.js]
  * 
  * FIXME: Make sure Client Basic Information is accurate before moving to next step
  * 
- * @param {string} action 
+ * @param {object} config 
  */
-function ClientBasicInformation_Controller( action ) {
+function ClientBasicInformation_Controller( config ) {
+	var action = config.action;
+	var clientIndex = config.clientIndex;
+	var clientData = config.clientData;
+
 	switch(action) {
 		// client created, now decide what to do next
 		case 'CHECK_CLIENT_BASIC_DATA':
-			checkClientBasicData();
+			checkClientBasicData(clientIndex, clientData);
 			break;
 
 		// figure out next step
 		case 'DO_NEXT_STEP':
-			MainContent_DoNextStep();
+			MainContent_DoNextStep(clientIndex, clientData);
 			break;
 
 		// Action not handled by ClientBasicInformation.js!
@@ -33,56 +37,43 @@ function ClientBasicInformation_Controller( action ) {
  * more data to save, then saves data (if needed), then redirects to
  * MainContent_DoNextStep()
  * 
+ * @param {number} clientIndex - index of client in all client data
+ * @param {object} clientData - all client data
  */
-function checkClientBasicData() {
+function checkClientBasicData(clientIndex, clientData) {
 	// goal = check client data, see if we need to update / add any new data to
 	// the client!
 
-	// setup config obj for background.js - get client data & client index
-	var mObj = {
-		action: 'get_data_from_chrome_storage_local',
-		keysObj: {
-			'CLIENT_INDEX': '',
-			'CLIENT_DATA': ''
-		}
-	};
+	if (clientIndex == undefined) clientIndex = 0;
 
-	chrome.runtime.sendMessage(mObj, function(response) {
-		// successes should come back in the same order, so:
-		var clientIndex = response['CLIENT_INDEX'];
-		var clientData = response['CLIENT_DATA'];
+	var client = clientData[clientIndex];
 
-		if (clientIndex == undefined) clientIndex = 0;
+	// NEXT: put optional client data in form
+	var saveNext = insertOptionalClientDetails( client, clientIndex );
 
-		var client = clientData[clientIndex];
+	// if saveNext is true, save action state then go to MainContent_DoNextStep()
+	if ( saveNext ) {
+		// save action state then click save
+		var mObj = {
+			action: 'store_data_to_chrome_storage_local',
+			dataObj: {
+				'ACTION_STATE': 'DO_NEXT_STEP'
+			}
+		};
 
-		// NEXT: put optional client data in form
-		var saveNext = insertOptionalClientDetails( client, clientIndex );
+		// save action state in local storage
+		chrome.runtime.sendMessage(mObj, function(response) {
+			// Here we click the 'save button'
+			$('input[value="Save"]').click();
 
-		// if saveNext is true, save action state then go to MainContent_DoNextStep()
-		if ( saveNext ) {
-			// save action state then click save
-			var mObj = {
-				action: 'store_data_to_chrome_storage_local',
-				dataObj: {
-					'ACTION_STATE': 'DO_NEXT_STEP'
-				}
-			};
+			// Deciding what to do happens on next action state!
+		});
+	}
 
-			// save action state in local storage
-			chrome.runtime.sendMessage(mObj, function(response) {
-				// Here we click the 'save button'
-				$('input[value="Save"]').click();
-
-				// Deciding what to do happens on next action state!
-			});
-		}
-
-		// If there isn't data to save, just skip to MainContent_DoNextStep()
-		else {
-			MainContent_DoNextStep();
-		}
-	});
+	// If there isn't data to save, just skip to MainContent_DoNextStep()
+	else {
+		MainContent_DoNextStep(clientIndex, clientData);
+	}
 }
 
 /**
