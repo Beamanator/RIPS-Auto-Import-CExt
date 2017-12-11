@@ -242,6 +242,8 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
 
             ERROR_MESSAGE   -   string of latest error message
 
+            IMPORT_SETTINGS -   search / matching settings for import
+
             TODO: add audit trail just for me?
 		*/
 		switch (key) {
@@ -320,6 +322,14 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
 				storePromises.push(
 					saveValueToStorage('ERROR_MESSAGE', message)
 				);
+                break;
+
+            // stores client data directly to local storage
+            case 'IMPORT_SETTINGS':
+                var settings = dataValue;
+                storePromises.push(
+                    saveValueToStorage('IMPORT_SETTINGS', settings)
+                );
                 break;
 
             default:

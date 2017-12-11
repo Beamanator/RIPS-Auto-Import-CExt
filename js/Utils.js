@@ -216,17 +216,20 @@ function Utils_GetUrlPiece( url ) {
  * Called By: CtrlAdvancedSearch.js
  * 
  * @param {string} urlPiece checks if this piece is within the current page url
+ * @param {boolean} [throwErr=true] if true, throw error if urlPiece not found in url
  * @returns {boolean} true / false depending on if urlPiece is contained within current url
  */
-function Utils_UrlContains(urlPiece) {
+function Utils_UrlContains(urlPiece, throwErr=true) {
 	var url = Utils_GetPageURL();
 
 	if (url.indexOf(urlPiece) === -1) {
-		// error & quit if the import is not on the right page.
-		ThrowError({
-			message: urlPiece + ' not found on page: ' + url,
-			errMethods: ['mConsole']
-		});
+		if (throwErr) {
+			// error & quit if the import is not on the right page.
+			ThrowError({
+				message: urlPiece + ' not found on page: ' + url,
+				errMethods: ['mConsole']
+			});
+		}
 		return false;
 	}
 
@@ -306,6 +309,19 @@ function Utils_WaitForCondition( Fcondition, params, time = 1000, iter = 5 ) {
 			}
 
 		}, time);
+	});
+}
+
+/**
+ * Function turns setTimeout into promise function
+ * 
+ * @param {number} [waitTime=1000] - amount of time to wait in setTimeout
+ * @returns promise to set timeout complete
+ */
+function Utils_WaitTime(waitTime=1000) {
+	return new Promise( (resolve, reject) => {
+		// after waiting specified time, call resolve
+		setTimeout(resolve, waitTime);
 	});
 }
 

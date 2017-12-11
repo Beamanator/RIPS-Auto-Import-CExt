@@ -41,7 +41,7 @@
 			],
 			"js": [
 				"js/page_controllers/CtrlAdvancedSearch.js",
-				"js/min/fuse.js"
+				"js/min/fuse.min.js"
 			]
 		},
 		{	// This one needs to go last so that it can use other pages' functions!

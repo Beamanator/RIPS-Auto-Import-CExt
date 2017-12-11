@@ -11,6 +11,11 @@ function AdvancedSearch_Controller( config ) {
 	var action = config.action;
 	var clientIndex = config.clientIndex;
 	var clientData = config.clientData;
+
+	var importSettings = config.importSettings;
+
+	// TODO: do stuff with import settings
+	// like name matching, fuse.min.js, phone number searching
 	
 	switch(action) {
 		// Enter client UNHCR and press 'search'
@@ -20,7 +25,7 @@ function AdvancedSearch_Controller( config ) {
 
 		// Analyze search results
 		case 'ANALYZE_CLIENT_DUPLICATES':
-			processSearchResults(clientIndex);
+			processSearchResults(clientIndex, clientData);
 			break;
 
 		// Action not handled by AdvancedSearch.js!
@@ -93,8 +98,9 @@ function processSearchResults(clientIndex, clientData) {
 			// timeout wait is 1 second (1000 ms)
 			let waitTime = 1000;
 
-			// After a bit of time (waitTime), check for presence of popup on page
-			setTimeout( function(){
+			// After a bit of time, then check for presence of popup on page
+			Utils_WaitTime(waitTime)
+			.then(function() {
 				let $alert = $('.sweet-alert');
 
 				if ( $alert.hasClass('visible') ) {
@@ -139,7 +145,7 @@ function processSearchResults(clientIndex, clientData) {
 					// BUT just in case, still navigate to registration
 					navigateToRegistration();
 				}
-			}, waitTime);
+			});
 
 		// Apparently page isn't 'AdvancedSearch' or 'AdvancedSearch-Result', so
 		// not sure where we are anymore... throw an error and stop import please :)
@@ -287,7 +293,7 @@ function matchNames(rowNames, clientNames) {
 	clientL = clientL.toUpperCase();
 
 	debugger;
-	// TODO: fust stuff here!
+	// TODO: fuse stuff here!
 
 	// return true if first AND all last names match
 	return (rowF === clientF) && (rowL === clientL);

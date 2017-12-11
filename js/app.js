@@ -40,6 +40,10 @@
 		Ctrl.widthArray = [];
 		Ctrl.importErrors = [];
 
+		// initialize settings bar checkboxes
+		Ctrl.byUnhcr = true; 	Ctrl.byPhone = false;
+		Ctrl.matchFirst = true;	Ctrl.matchLast = true;
+
 		// Set up Firebase:
 		// FB_initFirebase(Ctrl, $scope, firebase);
 		// getClientCount();
@@ -133,14 +137,17 @@
 
 					// got here if only 1 RIPS tab open (yay)
 					var targetTab = tabs[0];
-					Ctrl.importStarted = true; // hide button
+					$scope.$apply(function() {
+						Ctrl.importStarted = true; // hide button
+					});
 
 					var mObj = {
 						action: 'store_data_to_chrome_storage_local',
 						dataObj: {
 							'ACTION_STATE': 'SEARCH_FOR_CLIENT',
 							'CLIENT_DATA': Ctrl.dataArray,
-							'CLIENT_INDEX': 0
+							'CLIENT_INDEX': 0,
+							'IMPORT_SETTINGS': getImportSettings(Ctrl)
 						}
 					};
 					
@@ -169,7 +176,8 @@
 					'CLIENT_INDEX': 0,
 					'ACTION_STATE': '',
 					'DUPLICATE_CLIENT_UNHCR_NO': '',
-					'ADD_MESSAGE': ''
+					'ADD_MESSAGE': '',
+					'IMPORT_SETTINGS': ''
 				}
 			};
 
@@ -182,6 +190,7 @@
 			Ctrl.importErrors = [];
 			Ctrl.errorMessages = [];
 			Ctrl.delim = '';
+			Ctrl.importStarted = false;
 			
 			// data from coverted client data (data-table)
 			Ctrl.headerArr = [];
@@ -293,6 +302,26 @@
 		Ctrl.getWidth = function(index) { return Ctrl.widthArray[index]; }
 
 		// ====================== INTERNAL FUNCTIONS =======================
+		
+		/**
+		 * Function returns an object from import settings checkboxes
+		 * 
+		 * @param {object} Ctrl - angular app object
+		 * @returns {object} - settings object
+		 */
+		function getImportSettings(Ctrl) {
+			return {
+				matchSettings: {
+					matchFirst: Ctrl.matchFirst,
+					matchLast: Ctrl.matchLast
+				},
+
+				searchSettings: {
+					byUnhcr: Ctrl.byUnhcr,
+					byPhone: Ctrl.byPhone
+				}
+			};
+		}
 
 		/**
 		 * Initialize array of widths for parsed client data table

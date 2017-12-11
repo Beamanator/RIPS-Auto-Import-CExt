@@ -5,6 +5,7 @@
  * 
  * Called by: Run_ClientBasicInformation [in MainContent.js]
  * 
+ * TODO: Deal with new validation popup (Warning: missing client data) - dep / vuln
  * FIXME: Make sure Client Basic Information is accurate before moving to next step
  * 
  * @param {object} config 
@@ -81,7 +82,7 @@ function checkClientBasicData(clientIndex, clientData) {
  * given client object. If any data is added to the form, sets a flag to
  * save client before moving on (and returns this flag)
  * 
- * FIXME: TODO: figure out how to allow multiple keys for client items such
+ * TODO: figure out how to allow multiple keys for client items such
  * as name (client name / applicant name / full name)
  * 
  * @param {object} client - client data object 

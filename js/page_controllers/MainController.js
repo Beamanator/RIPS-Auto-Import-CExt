@@ -43,22 +43,14 @@ $(document).ready(function(){
 		keysObj: {
 			'ACTION_STATE': '',
 			'CLIENT_INDEX': '',
-			'CLIENT_DATA': ''
+			'CLIENT_DATA': '',
+			'IMPORT_SETTINGS': ''
 		}
 	};
 
 	chrome.runtime.sendMessage(mObj, function(response) {
 		// responses should come back in the same order, so:
 		var action = response['ACTION_STATE'];
-		var clientIndex = response['CLIENT_INDEX'];
-		var clientData = response['CLIENT_DATA'];
-
-		// set up config object
-		var config = {
-			action: action,
-			clientIndex: clientIndex,
-			clientData: clientData
-		};
 
 		console.log('ACTION!', action);
 
@@ -67,6 +59,19 @@ $(document).ready(function(){
 			console.log('Action state <' + action + '> indicates time to wait :)');
 			return;
 		}
+
+		// action exists, so continue getting other data & running ctrl fns
+		var clientIndex = response['CLIENT_INDEX'];
+		var clientData = response['CLIENT_DATA'];
+		var importSettings = response['IMPORT_SETTINGS'];
+
+		// set up config object
+		var config = {
+			action: action,
+			clientIndex: clientIndex,
+			clientData: clientData,
+			importSettings: importSettings
+		};
 
 		// get url piece string from current page's url
 		var urlPiece = Utils_GetUrlPiece( pageURL );
@@ -79,7 +84,7 @@ $(document).ready(function(){
 
 		// call controller function, if exists
 		if (ctrlFunc)
-			ctrlFunc( action );
+			ctrlFunc( config );
 		else {
 			console.error('Controller function for <' + urlPiece + '> is not defined');
 		}
@@ -132,39 +137,39 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 
 // ======================= PAGE-SPECIFIC CONTROLLER CALLS ===========================
 // run controller code in CtrlAdvancedSearch.js
-function Run_CtrlAdvancedSearch( action ) {
+function Run_CtrlAdvancedSearch( config ) {
 	if (AdvancedSearch_Controller)
-		AdvancedSearch_Controller( action );
+		AdvancedSearch_Controller( config );
 }
 
 // run controller code in CtrlRegistration.js
-function Run_CtrlRegistration( action ) {
+function Run_CtrlRegistration( config ) {
 	if (Registration_Controller)
-		Registration_Controller( action );
+		Registration_Controller( config );
 }
 
 // run controller code in CtrlClientBasicInformation.js
-function Run_CtrlClientBasicInformation( action ) {
+function Run_CtrlClientBasicInformation( config ) {
 	if (ClientBasicInformation_Controller)
-		ClientBasicInformation_Controller( action );
+		ClientBasicInformation_Controller( config );
 }
 
 // run controller code in CtrlServices.js
-function Run_CtrlServices( action  ) {
+function Run_CtrlServices( config ) {
 	if (Services_Controller)
-		Services_Controller( action );
+		Services_Controller( config );
 }
 
 // run controller code in CtrlAddAction.js
-function Run_CtrlAddAction( action ) {
+function Run_CtrlAddAction( config ) {
 	if (AddAction_Controller)
-		AddAction_Controller( action );
+		AddAction_Controller( config );
 }
 
 // run controller code in CtrlViewActions.js
-function Run_CtrlViewActions( action ) {
+function Run_CtrlViewActions( config ) {
 	if (ViewActions_Controller)
-		ViewActions_Controller( action );
+		ViewActions_Controller( config );
 }
 
 // ======================================= OTHER FUNCTIONS ========================================
@@ -176,13 +181,15 @@ function Run_CtrlViewActions( action ) {
  * 
  */
 function BeginClientImport() {
-	var url = Utils_GetPageURL();
-
-	if ( url.indexOf('SearchClientDetails/AdvancedSearch') === -1 ) {
-		Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
-	} else {
+	// find out if we're on the right starting page
+	if ( Utils_UrlContains( Utils_GetTabHref('AdvancedSearch'), false) ) {
 		// first action in advanced search is to search for clients
 		Run_CtrlAdvancedSearch('SEARCH_FOR_CLIENT');
+	}
+	
+	// else, we're not on AdvancedSearch, so navigate there
+	else {
+		Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
 	}
 }
 
@@ -194,6 +201,10 @@ function BeginClientImport() {
  * - else, go back to advanced search page and to next client.
  * 
  * Called by: ClientBasicInformation.js
+ * 
+ * TODO: because this function moves the user to another page AFTER visiting CBI,
+ * need to handle the dependent / vuln empty swal popup.
+ * -> If error shows up, warn user in settings page.
  * 
  * @param {number} clientIndex - index of client in all client data
  * @param {object} clientData - all client data
@@ -223,7 +234,10 @@ function MainContent_DoNextStep(clientIndex, clientData) {
 	
 		// saves action state, then redirects to advanced search
 		chrome.runtime.sendMessage(mObj2, function(response) {
-			Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
+			Utils_NavigateToTab( Utils_GetTabHref( 'AdvancedSearch' ));
+
+			// Check for dep / vuln popup
+			dismissSwal();
 		});
 	}
 
@@ -239,7 +253,30 @@ function MainContent_DoNextStep(clientIndex, clientData) {
 	
 		// after saving action state, redirect to services page
 		chrome.runtime.sendMessage(mObj2, function(response) {
-			Utils_NavigateToTab(Utils_GetTabHref( 'Services' ));
+			Utils_NavigateToTab( Utils_GetTabHref( 'Services' ));
+
+			// Check for dep / vuln popup
+			dismissSwal();
 		});
 	}
+}
+
+/**
+ * Function waits to check if alert visible, then clicks 'confirm' button
+ * 
+ */
+function dismissSwal() {
+	// wait for 500ms, then dismiss alert if it exists
+	Utils_WaitTime(1200)
+	.then(function() {
+		let $alert = $('.sweet-alert');
+
+		// check if alert is visible
+		if ( $alert.hasClass('visible') ) {
+			// click 'ok'
+			$alert.find('button.confirm').click();
+		}
+		
+		// else, alert isn't visible so do nothing - page should redirect anyway
+	});
 }
