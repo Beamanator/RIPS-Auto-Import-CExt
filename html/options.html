@@ -101,16 +101,34 @@
 				<div class="sidebar-settings">
 					<span class="sidebar-italic">Settings</span>
 					<hr>
+					<p>First Search Criteria</p>
+					<div class="sidebar-checkbox">
+						<label>
+							<input type="checkbox" value="unhcr_number"
+							ng-model="ctrl.byUnhcr">
+							UNHCR Number
+						</label>
+					</div>
+					<div class="sidebar-checkbox">
+						<label>
+							<input type="checkbox" value="phone_number"
+							ng-model="ctrl.byPhone">
+							Phone Number
+						</label>
+					</div>
+					<hr>
 					<p>Matching Names</p>
 					<div class="sidebar-checkbox">
 						<label>
-							<input type="checkbox" value="first_name">
+							<input type="checkbox" value="first_name"
+							ng-model="ctrl.matchFirst">
 							First Name
 						</label>
 					</div>
 					<div class="sidebar-checkbox">
 						<label>
-							<input type="checkbox" value="last_name">
+							<input type="checkbox" value="last_name"
+							ng-model="ctrl.matchLast">
 							Last Name
 						</label>
 					</div>
