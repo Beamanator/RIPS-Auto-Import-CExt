@@ -91,8 +91,17 @@
 		 * 
 		 */
 		Ctrl.importClients = function() {
-			console.log('data to import:',Ctrl.dataArray);
+			// Make sure data arrays are populated before moving on
+			if (Ctrl.headerArr.length === 0 || Ctrl.dataArray.length === 0) {
+				let errMessage = `Error: headerArr <${Ctrl.headerArr.length}> or ` +
+					`dataArray <${Ctrl.headerArr.length}> is empty :(`;
+
+				console.error(errMessage);
+				return;
+			}
+
 			// TODO: add some validation for required fields (maybe in "Create Table" function)
+			console.log('data to import:',Ctrl.dataArray);
 
 			// display empty import error array
 			Ctrl.importErrors = [];
@@ -192,7 +201,7 @@
 			Ctrl.delim = '';
 			Ctrl.importStarted = false;
 			
-			// data from coverted client data (data-table)
+			// data from converted client data (data-table)
 			Ctrl.headerArr = [];
 			Ctrl.dataArray = [];
 		}
