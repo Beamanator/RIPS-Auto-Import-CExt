@@ -15,7 +15,7 @@ function AdvancedSearch_Controller( config ) {
 	var importSettings = config.importSettings;
 
 	// TODO: do stuff with import settings
-	// like name matching, fuse.min.js, phone number searching
+	// like phone number searching
 	
 	switch(action) {
 		// Enter client UNHCR and press 'search'
@@ -25,7 +25,7 @@ function AdvancedSearch_Controller( config ) {
 
 		// Analyze search results
 		case 'ANALYZE_CLIENT_DUPLICATES':
-			processSearchResults(clientIndex, clientData);
+			processSearchResults(clientIndex, clientData, importSettings);
 			break;
 
 		// Action not handled by AdvancedSearch.js!
@@ -87,8 +87,9 @@ function searchForDuplicates(clientIndex, clientData) {
  * 
  * @param {number} clientIndex - index of client in all client data
  * @param {object} clientData - all client data
+ * @param {object} importSettings - configurable import settings from options page
  */
-function processSearchResults(clientIndex, clientData) {
+function processSearchResults(clientIndex, clientData, importSettings) {
 	// First check if the window is at the Advanced Search page in RIPS
 	// -> Note: we shouldn't be on the search results page.
 	if ( !Utils_UrlContains( Utils_GetTabHref('AdvancedSearch-Result'))) {
@@ -115,9 +116,9 @@ function processSearchResults(clientIndex, clientData) {
 					// dismiss popup - not necessary
 					// $('button.confirm').click();
 
-					// 0 results! No error, just create new client now
+					// 0 results! No error, decide if we need to create client
 					if (sweetAlertText === mNoResults) {
-						navigateToRegistration();
+						decideNextStep(importSettings, clientIndex);
 						return;
 					}
 
@@ -142,8 +143,8 @@ function processSearchResults(clientIndex, clientData) {
 					// - Popups occur when > 100 results AND when 0 results, so
 					// - there shouldn't be any situation when popup doesn't occur
 					// - and URL is still .../AdvancedSearch
-					// BUT just in case, still navigate to registration
-					navigateToRegistration();
+					// BUT just in case, decide what to do now
+					decideNextStep(importSettings, clientIndex);
 				}
 			});
 
@@ -153,9 +154,11 @@ function processSearchResults(clientIndex, clientData) {
 			let errMessage = 'Moved from Advanced Search page too abruptly :(\n' +
 				'It is recommended to clear data & start over';
 
-			ThrowError({
-				message: errMessage,
-				errMethods: ['mConsole', 'mAlert']
+			Utils_StopImport( errMessage, function(response) {
+				ThrowError({
+					message: errMessage,
+					errMethods: ['mConsole', 'mAlert']
+				});
 			});
 		}
 	}
@@ -169,10 +172,26 @@ function processSearchResults(clientIndex, clientData) {
 			clientFullName = client['FULL NAME'],
 			clientUnhcrNo = client['UNHCR NUMBER'];
 
+		let clientImportNames = getClientImportNames({
+			firstName: clientFirstName,
+			lastName: clientLastName,
+			fullName: clientFullName
+		});
+
+		// if names object didn't return correctly, throw error and skip client
+		if (Object.keys(clientImportNames).length === 0) {
+			let errMessage = `Somehow found a weird mix of first name ` +
+				`<${clientFirstName}>, last name <${clientLastName}>, ` +
+				`and full name <${clientFullName}> data from import.`
+
+			Utils_SkipClient(errMessage, clientIndex);
+			return;
+		}
+
 		// get row data
 		let resultRows = $('.table.table-striped.grid-table')
 			.find('tr.grid-row');
-		let matchedRows = [];
+		let clientsToSearch = [];
 
 		// properties of each row (in HTML "data-name" attribute):
 		let rowData = {
@@ -185,11 +204,13 @@ function processSearchResults(clientIndex, clientData) {
 			Country_Of_Origin: 	"TownBirthDesc"
 		};
 		
-		// for every row element, find matching client data
-		for (let rowElem of resultRows) {
-			$this = $(rowElem);
+		// for every row element, push name data to array
+		for (let i = 0; i < resultRows.length; i++) {
+			let $this = $(resultRows[i]);
 
-			// get data from results
+			// get data from search results
+			let rowStarsNo =
+				$this.find(`td[data-name="${rowData.Stars_No}"]`).text();
 			let rowFirstName =
 				$this.find(`td[data-name="${rowData.First_Name}"]`).text();
 			let rowLastName =
@@ -197,28 +218,86 @@ function processSearchResults(clientIndex, clientData) {
 			let rowUnhcrNo =
 				$this.find(`td[data-name="${rowData.Unhcr_No}"]`).text();
 
-			// if names and unhcr match, add row to match array
-			if (
-				matchNames(
-					[rowFirstName, rowLastName],
-					[clientFirstName, clientLastName, clientFullName]
-				)
-				&& matchUnhcr(rowUnhcrNo, clientUnhcrNo)
-			) {
-				matchedRows.push(rowElem);
+			// instead of matching here, just get names (push to array)
+			// 	then use fuse.js to search through names after loop
+			clientsToSearch.push({
+				'resultIndex': i,
+				starsNo: rowStarsNo,
+				firstName: rowFirstName,
+				lastName: rowLastName,
+				elem: $this
+			});
+		}
+
+		// set up first & last name fuse searches.
+		var options_firstName = Utils_GetBasicFuseSettings(
+			['firstName'],
+			clientImportNames.firstName.length
+		);
+		var options_lastName = Utils_GetBasicFuseSettings(
+			['lastName'],
+			clientImportNames.lastName.length
+		);
+
+		options_firstName.id = 'resultIndex';
+		options_lastName.id = 'resultIndex';
+		
+		var fuse_firstName = new Fuse(clientsToSearch, options_firstName);
+		var fuse_lastName = new Fuse(clientsToSearch, options_lastName);
+
+		/**
+		 * 	search for matching names!
+		 * 	Fuse results below should look like this:
+		 * 	[
+		 * 		{
+		 * 			"item": 0, (id of search objs -> resultIndex key)
+		 * 			"score": 0.25 (how well this item matched)
+		 * 		},
+		 * 		{...}
+		 * 	]
+		 */
+		var result_firstName = fuse_firstName.search(clientImportNames.firstName);
+		var result_lastName = fuse_lastName.search(clientImportNames.lastName);
+
+		let matches = [];
+
+		// loop through search results of first name
+		for (let i = 0; i < result_firstName.length; i++) {
+			let f_resultIndex = result_firstName[i].item;
+
+			// try to find same resultIndex in result_lastName
+			for (let j of result_lastName) {
+				let l_resultIndex = j.item;
+
+				// if indices match, add to matches array
+				if (l_resultIndex === f_resultIndex) {
+					matches.push(clientsToSearch[f_resultIndex].elem);
+					break;
+				}
 			}
 		}
 
+
+		debugger;
+
 		// Check length of matchedRows array, decide next step from there
-		if (matchedRows.length > 1) {
+		if (matches.length > 1) {
+			let errMessage = `Duplicate matching clients found: StARS #`;
+
+			// TODO: loop through matches, pull out objects from clientsToSearch's
+			// StARS numbers
+			for (let rowMatch of matches) {
+				debugger;
+			}
+
 			// Add client to error stack
-			Utils_SkipClient('Duplicate matching clients found', clientIndex);
+			Utils_SkipClient(errMessage, clientIndex);
 		}
 		
 		// 1 exact match -> this is our client!
-		else if (matchedRows.length === 1) {
+		else if (matches.length === 1) {
 			// click the client row:
-			matchedRows[0].click();
+			matches[0].click();
 
 			// Client is already available, redirect to Client Basic Information
 			// to check if extra client data needs to be saved
@@ -229,7 +308,7 @@ function processSearchResults(clientIndex, clientData) {
 				}
 			};
 
-			// once action state is stored, navigate to CBI
+			// once action state is stored, navigate to CBI (there decide what to do)
 			chrome.runtime.sendMessage(mObj, function(response) {
 				Utils_NavigateToTab( Utils_GetTabHref('ClientBasicInformation') );
 			});
@@ -248,55 +327,80 @@ function processSearchResults(clientIndex, clientData) {
 // ===================== INTERNAL FUNCTIONS ========================
 
 /**
- * Function checks & returns if ALL names match - single first name
- * and ALL last names.
- * Note: not case sensitive
+ * Function gathers and returns first and last names of client in an object. If
+ * the client only has one column - full name, names are split into first and last,
+ * then returned.
  * 
- * @param {object} rowNames - array of names from search result row (first, last - all)
- * @param {object} clientNames - array of client name strings (first, last - all, full name)
- * @returns {boolean} - true if all names are the same / similar enough, false otherwise
+ * @param {object} clientNamesObj - object of client name strings (keys: firstName, lastName - all, fullName)
+ * @returns {object} - object with client name strings (keys: firstName, lastName)
+ * 					- returns empty object if some data found in first / last AND full names
  */
-function matchNames(rowNames, clientNames) {
-	let rowF = rowNames[0],
-		rowL = rowNames[1];
+function getClientImportNames(clientNamesObj) {
+	let names = {};
 
-	// if row data exists, make them uppercase for matching easier
-	if (rowF && rowL) {
-		rowF = rowF.toUpperCase();
-		rowL = rowL.toUpperCase();
+	let client1st = clientNamesObj.firstName,
+		client2nd = clientNamesObj.lastName,
+		clientFull = clientNamesObj.fullName;
+
+	// first and last name columns exist
+	if (client1st && client2nd) {
+		names.firstName = client1st;
+		names.lastName = client2nd;
 	}
-	else return false;
-
-	let clientF,
-		clientL; // all last names, not just 1st last name
-
-	// clientNames looks like this: -> [first, last, full name]
-	if (clientNames[0])
-		clientF = clientNames[0];
-	// get first name from first word in client's full name
-	else if (clientNames[2])
-		clientF = clientNames[2].split(' ')[0];
-	else return false;
-
-	if (clientNames[1])
-		clientL = clientNames[1];
-	// get last name(s) from all words following first name in client's full name
-	else if (clientNames[2]) {
-		// clientL = clientNames[2].split(' ').slice(1).join(' ');
-		clientL = clientNames[2].substr(
-			clientNames[2].indexOf(' ') + 1
+	
+	// full name column exists
+	else if (clientFull && (!client1st && !client2nd)) {
+		names.firstName = clientFull.split(' ')[0];
+		names.lastName = clientFull.substr(
+			clientFull.indexOf(' ') + 1
 		);
 	}
-	else return false;
 
-	clientF = clientF.toUpperCase();
-	clientL = clientL.toUpperCase();
+	// some weird combination of first / last / full name columns exists
+	// else {} -> do nothing.
 
-	debugger;
-	// TODO: fuse stuff here!
+	// object of client names (first / last)
+	return names;
+}
 
-	// return true if first AND all last names match
-	return (rowF === clientF) && (rowL === clientL);
+/**
+ * Function gets import setting "createNew" and decides if we should create client in
+ * registration page or skip registration
+ * 
+ * @param {object} importSettings - see above
+ * @param {number} ci - client Index (see above)
+ */
+function decideNextStep(importSettings, ci) {
+	// if settings don't exist, stop import!
+	if (!importSettings) {
+		var errorMessage = 'Import Settings not found! Cancelling import';
+
+		// stop import and flag error message
+		Utils_StopImport( errorMessage, function(response) {
+			ThrowError({
+				message: errorMessage,
+				errMethods: ['mSwal', 'mConsole']
+			});
+		});
+	}
+
+	// otherwise, get settings and decide what to do
+	else {
+		let settings = importSettings.otherSettings;
+		let createNewClient;
+
+		// if there's no property "createNew", default to false
+		if (!settings || !settings.createNew) {
+			createNewClient = false;
+		}
+
+		// nav to registration of skip client, depending on setting
+		if (createNewClient) {
+			navigateToRegistration();
+		} else {
+			Utils_SkipClient('Client not found, skipping registration.', ci);
+		}
+	}
 }
 
 /**
@@ -308,7 +412,7 @@ function matchNames(rowNames, clientNames) {
  * @returns {boolean} - true if match, false if not match
  */
 function matchUnhcr(rowUnhcr, clientUnhcr) {
-	return rowUnhcr === clientUnhcr;
+	return rowUnhcr.toUpperCase() === clientUnhcr.toUpperCase();
 }
 
 /**
