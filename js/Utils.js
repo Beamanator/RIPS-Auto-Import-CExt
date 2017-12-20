@@ -70,7 +70,7 @@ function Utils_GetFieldTranslator( type, flag_getElemID ) {
 function Utils_StopImport( errorMessage, callback ) {
 	// take care of defaults
 	if ( !errorMessage )
-		errorMessage = 'stopping import';
+		errorMessage = 'stopping import for unknown reason';
 
 	if ( !callback )
 		callback = function(r) { 

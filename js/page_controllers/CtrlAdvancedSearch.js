@@ -180,6 +180,7 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 
 		// if names object didn't return correctly, throw error and skip client
 		if (Object.keys(clientImportNames).length === 0) {
+			// TODO: make this Utils_StopImport() b/c all clients will fail right?
 			let errMessage = `Somehow found a weird mix of first name ` +
 				`<${clientFirstName}>, last name <${clientLastName}>, ` +
 				`and full name <${clientFullName}> data from import.`
@@ -191,10 +192,10 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 		// get row data
 		let resultRows = $('.table.table-striped.grid-table')
 			.find('tr.grid-row');
-		let clientsToSearch = [];
+		let rowsToSearch = [];
 
 		// properties of each row (in HTML "data-name" attribute):
-		let rowData = {
+		let rowHtmlData = {
 			Stars_No: 			"NRU_NO",
 			Unhcr_No: 			"HO_REF_NO",
 			First_Name: 		"ForeName",
@@ -210,17 +211,17 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 
 			// get data from search results
 			let rowStarsNo =
-				$this.find(`td[data-name="${rowData.Stars_No}"]`).text();
+				$this.find(`td[data-name="${rowHtmlData.Stars_No}"]`).text();
 			let rowFirstName =
-				$this.find(`td[data-name="${rowData.First_Name}"]`).text();
+				$this.find(`td[data-name="${rowHtmlData.First_Name}"]`).text();
 			let rowLastName =
-				$this.find(`td[data-name="${rowData.Last_Name}"]`).text();
+				$this.find(`td[data-name="${rowHtmlData.Last_Name}"]`).text();
 			let rowUnhcrNo =
-				$this.find(`td[data-name="${rowData.Unhcr_No}"]`).text();
+				$this.find(`td[data-name="${rowHtmlData.Unhcr_No}"]`).text();
 
 			// instead of matching here, just get names (push to array)
 			// 	then use fuse.js to search through names after loop
-			clientsToSearch.push({
+			rowsToSearch.push({
 				'resultIndex': i,
 				starsNo: rowStarsNo,
 				firstName: rowFirstName,
@@ -229,65 +230,103 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 			});
 		}
 
-		// set up first & last name fuse searches.
-		var options_firstName = Utils_GetBasicFuseSettings(
-			['firstName'],
-			clientImportNames.firstName.length
-		);
-		var options_lastName = Utils_GetBasicFuseSettings(
-			['lastName'],
-			clientImportNames.lastName.length
-		);
+		// respect import settings - don't search if matching settings say so
+		let matchSettings = importSettings.matchSettings;
+		let matchFirst = matchSettings.matchFirst,
+			matchLast = matchSettings.matchLast;
 
-		options_firstName.id = 'resultIndex';
-		options_lastName.id = 'resultIndex';
-		
-		var fuse_firstName = new Fuse(clientsToSearch, options_firstName);
-		var fuse_lastName = new Fuse(clientsToSearch, options_lastName);
+		let result_firstName = [],
+			result_lastName = [];
 
-		/**
-		 * 	search for matching names!
-		 * 	Fuse results below should look like this:
-		 * 	[
-		 * 		{
-		 * 			"item": 0, (id of search objs -> resultIndex key)
-		 * 			"score": 0.25 (how well this item matched)
-		 * 		},
-		 * 		{...}
-		 * 	]
-		 */
-		var result_firstName = fuse_firstName.search(clientImportNames.firstName);
-		var result_lastName = fuse_lastName.search(clientImportNames.lastName);
+		// get first name search results if import settings say so
+		if (matchFirst) {
+			let fuseConfig = {
+				searchKeys: ['firstName'],
+				maxPatternLength: clientImportNames.firstName.length,
+				identifier: 'resultIndex'
+			};
+
+			result_firstName = fuzzySearch(
+				fuseConfig,
+				rowsToSearch,
+				clientImportNames.firstName
+			);
+		}
+
+		// get last name search results if import settings say so
+		if (matchLast) {
+			let fuseConfig = {
+				searchKeys: ['lastName'],
+				maxPatternLength: clientImportNames.lastName.length,
+				identifier: 'resultIndex'
+			};
+
+			result_firstName = fuzzySearch(
+				fuseConfig,
+				rowsToSearch,
+				clientImportNames.lastName
+			);
+		}
 
 		let matches = [];
 
-		// loop through search results of first name
-		for (let i = 0; i < result_firstName.length; i++) {
-			let f_resultIndex = result_firstName[i].item;
+		// if we didn't search first AND last names, just say all results
+		// 	are matches and move on
+		if (matchFirst && matchLast) {
+			// loop through search results of first name for now
+			for (let i = 0; i < result_firstName.length; i++) {
+				let f_resultIndex = result_firstName[i].item;
 
-			// try to find same resultIndex in result_lastName
-			for (let j of result_lastName) {
-				let l_resultIndex = j.item;
+				// try to find same resultIndex in result_lastName
+				for (let lNameResult of result_lastName) {
+					let l_resultIndex = lNameResult.item;
 
-				// if indices match, add to matches array
-				if (l_resultIndex === f_resultIndex) {
-					matches.push(clientsToSearch[f_resultIndex].elem);
-					break;
+					// if indices match, add matching row to matches array
+					if (l_resultIndex === f_resultIndex) {
+						matches.push(rowsToSearch[f_resultIndex]);
+						break;
+					}
 				}
 			}
 		}
+		
+		// match first name only
+		else if (matchFirst && matchLast === false) {
+			for (let fNameResult of result_firstName) {
+				matches.push(rowsToSearch[fNameResult.item]);
+			}
+		}
+		
+		// match last name only
+		else if (matchFirst === false && matchLast) {
+			for (let lNameResult of result_lastName) {
+				matches.push(rowsToSearch[lNameResult.item]);
+			}
+		}
+		
+		// only here if matchFirst & matchLast are false (shouldn't be possible)
+		else {
+			// throw error & quit
+			var errorMessage = `Import Settings bugged! matchFirst <${matchFirst}>` +
+				` and matchLast <${matchLast}> are false somehow!`;
 
-
-		debugger;
+			// stop import and flag error message
+			Utils_StopImport( errorMessage, function(response) {
+				ThrowError({
+					message: errorMessage,
+					errMethods: ['mSwal', 'mConsole']
+				});
+			});
+			return;
+		}
 
 		// Check length of matchedRows array, decide next step from there
 		if (matches.length > 1) {
-			let errMessage = `Duplicate matching clients found: StARS #`;
+			let errMessage = 'Duplicate matching clients found:';
 
-			// TODO: loop through matches, pull out objects from clientsToSearch's
-			// StARS numbers
+			// loop through matches, pull out StARS numbers for error
 			for (let rowMatch of matches) {
-				debugger;
+				errMessage += ` [StARS #${rowMatch.starsNo}]`;
 			}
 
 			// Add client to error stack
@@ -297,7 +336,7 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 		// 1 exact match -> this is our client!
 		else if (matches.length === 1) {
 			// click the client row:
-			matches[0].click();
+			matches[0].elem.click();
 
 			// Client is already available, redirect to Client Basic Information
 			// to check if extra client data needs to be saved
@@ -314,10 +353,16 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 			});
 		}
 		
-		// no name matches, but unhcr # matched something, so throw error
+		// no name matches, but unhcr # matched something. next decide if we
+		// 	need to create client or move on
 		else {
-			Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
-				'Needs human intervention.', clientIndex);
+			// new logic: did name matching algorithm above - if no name match,
+			// 	probably a relative, so client creation allowed
+			decideNextStep(importSettings, clientIndex);
+
+			// old logic: skip client here.
+			// Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
+			// 	'Needs human intervention.', clientIndex);
 		}
 	}
 	// NOTE: as of March 15, 2017 - I haven't seen any alerts on this page recently
@@ -366,14 +411,18 @@ function getClientImportNames(clientNamesObj) {
 /**
  * Function gets import setting "createNew" and decides if we should create client in
  * registration page or skip registration
+ * Note: createNew is boolean
  * 
  * @param {object} importSettings - see above
  * @param {number} ci - client Index (see above)
  */
 function decideNextStep(importSettings, ci) {
 	// if settings don't exist, stop import!
-	if (!importSettings) {
-		var errorMessage = 'Import Settings not found! Cancelling import';
+	if (!importSettings || !importSettings.otherSettings ||
+		!importSettings.otherSettings.createNew === undefined) {
+
+		var errorMessage = 'Import Settings <createNew> not found! ' +
+			'Cancelling import.';
 
 		// stop import and flag error message
 		Utils_StopImport( errorMessage, function(response) {
@@ -386,19 +435,16 @@ function decideNextStep(importSettings, ci) {
 
 	// otherwise, get settings and decide what to do
 	else {
-		let settings = importSettings.otherSettings;
-		let createNewClient;
-
-		// if there's no property "createNew", default to false
-		if (!settings || !settings.createNew) {
-			createNewClient = false;
-		}
+		let createNewClient = importSettings.otherSettings.createNew;
 
 		// nav to registration of skip client, depending on setting
 		if (createNewClient) {
 			navigateToRegistration();
 		} else {
-			Utils_SkipClient('Client not found, skipping registration.', ci);
+			Utils_SkipClient(
+				'No matches - Settings are set to skip client creation.',
+				ci
+			);
 		}
 	}
 }
@@ -429,4 +475,61 @@ function navigateToRegistration() {
 	chrome.runtime.sendMessage(mObj, function(response) {
 		Utils_NavigateToTab( Utils_GetTabHref('Registration') );
 	});
+}
+
+
+/**
+ * Function sets basic fuse settings for project. Settings for fuse can be found here:
+ * http://fusejs.io/
+ * Note: fuse = fuzzy text searching
+ * Note2: maxPatternLength & keys are necessary for successful searches
+ * 
+ * @param {object} config - a few config items for settings
+ * @returns {object} - basic fuse settings. Caller needs to configure 'keys' to search
+ */
+function getBasicFuseSettings(config) {
+	let searchKeys = config.searchKeys || [];
+	let maxPatternLength = config.maxPatternLength || 32;
+	let identifier = config.identifier; // can be undefined
+
+	let settings = {
+		keys: searchKeys,
+		shouldSort: true,
+		id: identifier,
+		includeScore: true,
+		threshold: 0.3,
+		location: 0,
+		distance: 0,
+		maxPatternLength: maxPatternLength + 3
+	};
+
+	return settings;
+}
+
+/**
+ * Function performs Fuse (fuzzy) search and returns results
+ * 
+ * Note: Fuse results should look like this:
+ * 	[
+ * 		{
+ * 			"item": 0, (id / identifier of search objects)
+ * 			"score": 0.25 (how well this item matched)
+ * 		},
+ * 		{...}
+ * 	]
+ * 
+ * @param {object} config - config for getting basic fuse settings
+ * @param {object} itemsToSearch - array of items to search through
+ * @param {string} searchText - string to search for in itemsToSearch
+ * @returns {object} - search results array of objects
+ */
+function fuzzySearch(config, itemsToSearch, searchText) {
+	// get Fuse search options
+	let options = getBasicFuseSettings(config);
+	
+	// set up Fuse object
+	let fuse = new Fuse(itemsToSearch, options);
+
+	// perform search, return results
+	return fuse.search(searchText);
 }
