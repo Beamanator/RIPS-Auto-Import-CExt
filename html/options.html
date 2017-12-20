@@ -60,7 +60,7 @@
 					</div>
 					<div class="actions-import">
 						<button type="button" class="btn btn-success"
-							ng-if="!ctrl.errorMessages.length && !ctrl.importStarted"
+							ng-if="!ctrl.errorMessages.length && ctrl.importEnabled"
 							ng-click="ctrl.importClients()">
 							Import Clients
 						</button>
@@ -101,7 +101,8 @@
 				<div class="sidebar-settings">
 					<span class="sidebar-italic">Settings</span>
 					<hr>
-					<p>First Search Criteria</p>
+					<!-- search criteria - how many ways should we search for clients -->
+					<p>Search Criteria</p>
 					<div class="sidebar-checkbox">
 						<label>
 							<input type="checkbox" value="unhcr_number"
@@ -116,8 +117,23 @@
 							Phone Number
 						</label>
 					</div>
+					<div class="sidebar-checkbox">
+						<label>
+							<input type="checkbox" value="other_phone_number"
+							ng-model="ctrl.byOtherPhone">
+							"Other Phone" Number
+						</label>
+					</div>
+					<div class="sidebar-checkbox">
+						<label>
+							<input type="checkbox" value="stars_number"
+							ng-model="ctrl.byStarsNumber">
+							StARS Number
+						</label>
+					</div>
 					<hr>
-					<p>Matching Names</p>
+					<!-- name matching - which names should we try to match? -->
+					<p>Name Matching</p>
 					<div class="sidebar-checkbox">
 						<label>
 							<input type="checkbox" value="first_name"
@@ -133,6 +149,26 @@
 						</label>
 					</div>
 					<hr>
+					<!-- If import matches no clients, create new client? -->
+					<p>On No Match...</p>
+					<div class="sidebar-checkbox">
+						<label>
+							<input type="checkbox" value="create_new_clients"
+							ng-checked="ctrl.createNew"
+							ng-click="ctrl.toggleCreateNew()">
+							Create New Clients
+						</label>
+					</div>
+					<div class="sidebar-checkbox">
+						<label>
+							<input type="checkbox" value="skip_client_creation"
+							ng-checked="!ctrl.createNew"
+							ng-click="ctrl.toggleCreateNew()">
+							Skip Client Creation
+						</label>
+					</div>
+					<hr>
+					<!-- details of data to be imported -->
 					<p>Data Details</p>
 					<div>
 						<label ng-if="!ctrl.errorMessages.length && ctrl.delim">

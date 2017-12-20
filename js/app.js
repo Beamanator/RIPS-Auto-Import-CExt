@@ -32,7 +32,7 @@
 				+ '\tService Code (+ more), Action Code (+ more)';
 		// Ctrl.clientCount = 0;
 		// Ctrl.auto = true;
-		Ctrl.importStarted = false;
+		Ctrl.importEnabled = false;
 
 		// initialize arrays
 		Ctrl.headerArr = [];
@@ -41,8 +41,10 @@
 		Ctrl.importErrors = [];
 
 		// initialize settings bar checkboxes
-		Ctrl.byUnhcr = true; 	Ctrl.byPhone = false;
-		Ctrl.matchFirst = true;	Ctrl.matchLast = true;
+		Ctrl.byUnhcr = true; 		Ctrl.byPhone = false;
+		Ctrl.byOtherPhone = false;	Ctrl.byStarsNumber = false;
+		Ctrl.matchFirst = true;		Ctrl.matchLast = true;
+		Ctrl.createNew = true;
 
 		// Set up Firebase:
 		// FB_initFirebase(Ctrl, $scope, firebase);
@@ -147,7 +149,7 @@
 					// got here if only 1 RIPS tab open (yay)
 					var targetTab = tabs[0];
 					$scope.$apply(function() {
-						Ctrl.importStarted = true; // hide button
+						Ctrl.importEnabled = false; // hide button
 					});
 
 					var mObj = {
@@ -199,7 +201,7 @@
 			Ctrl.importErrors = [];
 			Ctrl.errorMessages = [];
 			Ctrl.delim = '';
-			Ctrl.importStarted = false;
+			Ctrl.importEnabled = false;
 			
 			// data from converted client data (data-table)
 			Ctrl.headerArr = [];
@@ -275,6 +277,11 @@
 		// ============================================================================
 
 		// ============================= EVERYTHING ELSE ==============================
+		// Function toggles createNew variable for checkboxes
+		Ctrl.toggleCreateNew = function() {
+			Ctrl.createNew = !Ctrl.createNew;
+		}
+		
 		// Function fills table with pasted client data
 		Ctrl.fillTable = function() {
 			// countButtonClick('create_table');
@@ -303,6 +310,9 @@
 
 			// initialize width array for column css
 			initColWidthArray(dataObj.headerArr.length);
+
+			// show import button
+			Ctrl.importEnabled = true;
 		};
 
 		// these functions deal with widths of columns in the table
@@ -327,7 +337,13 @@
 
 				searchSettings: {
 					byUnhcr: Ctrl.byUnhcr,
-					byPhone: Ctrl.byPhone
+					byPhone: Ctrl.byPhone,
+					byOtherPhone: Ctrl.byOtherPhone,
+					byStarsNumber: Ctrl.byStarsNumber
+				},
+
+				otherSettings: {
+					createNew: Ctrl.createNew
 				}
 			};
 		}
