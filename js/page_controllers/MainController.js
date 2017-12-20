@@ -37,41 +37,18 @@ function getPageControllerFunctions() {
 $(document).ready(function(){
 	var pageURL = Utils_GetPageURL();
 
-	// setup config obj for background.js
-	var mObj = {
-		action: 'get_data_from_chrome_storage_local',
-		keysObj: {
-			'ACTION_STATE': '',
-			'CLIENT_INDEX': '',
-			'CLIENT_DATA': '',
-			'IMPORT_SETTINGS': ''
-		}
-	};
-
-	chrome.runtime.sendMessage(mObj, function(response) {
+	getImportConfig()
+	.then(function(importConfig) {
 		// responses should come back in the same order, so:
-		var action = response['ACTION_STATE'];
+		var action = importConfig.action;
 
-		console.log('ACTION!', action);
+		console.log('ACTION:', action);
 
 		// if action indicates we're not ready to automatically continue, quit
 		if (action === "WAITING" || action === "" || action === undefined) {
 			console.log('Action state <' + action + '> indicates time to wait :)');
 			return;
 		}
-
-		// action exists, so continue getting other data & running ctrl fns
-		var clientIndex = response['CLIENT_INDEX'];
-		var clientData = response['CLIENT_DATA'];
-		var importSettings = response['IMPORT_SETTINGS'];
-
-		// set up config object
-		var config = {
-			action: action,
-			clientIndex: clientIndex,
-			clientData: clientData,
-			importSettings: importSettings
-		};
 
 		// get url piece string from current page's url
 		var urlPiece = Utils_GetUrlPiece( pageURL );
@@ -84,7 +61,7 @@ $(document).ready(function(){
 
 		// call controller function, if exists
 		if (ctrlFunc)
-			ctrlFunc( config );
+			ctrlFunc( importConfig );
 		else {
 			console.error('Controller function for <' + urlPiece + '> is not defined');
 		}
@@ -112,7 +89,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 	}
 });
 
-console.log('setting up main-controller message listener');
+// console.log('setting up main-controller message listener');
 // Listener for messages from background.js
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 	console.log('heard message in MainContent.js!');
@@ -183,8 +160,11 @@ function Run_CtrlViewActions( config ) {
 function BeginClientImport() {
 	// find out if we're on the right starting page
 	if ( Utils_UrlContains( Utils_GetTabHref('AdvancedSearch'), false) ) {
-		// first action in advanced search is to search for clients
-		Run_CtrlAdvancedSearch('SEARCH_FOR_CLIENT');
+		// get import config, then pass to controller
+		getImportConfig()
+		.then(function( config ) {
+			Run_CtrlAdvancedSearch( config );
+		});
 	}
 	
 	// else, we're not on AdvancedSearch, so navigate there
@@ -278,5 +258,45 @@ function dismissSwal() {
 		}
 		
 		// else, alert isn't visible so do nothing - page should redirect anyway
+	});
+}
+
+/**
+ * Function gets configuration data needed for import, including:
+ * Action state ('ACTION_STATE')
+ * Client index ('CLIENT_INDEX')
+ * Client data ('CLIENT_DATA')
+ * Import settings ('IMPORT_SETTINGS')
+ * -> more details on each can be found in background.js
+ * 
+ * @returns Promise to import config data
+ */
+function getImportConfig() {
+	return new Promise( (resolve, reject) => {
+		// setup config obj for background.js
+		var mObj = {
+			action: 'get_data_from_chrome_storage_local',
+			keysObj: {
+				'ACTION_STATE': '',
+				'CLIENT_INDEX': '',
+				'CLIENT_DATA': '',
+				'IMPORT_SETTINGS': ''
+			}
+		};
+
+		chrome.runtime.sendMessage(mObj, function(data) {
+			if (Object.keys(data).length < 4)
+				reject('Something went wrong getting import config');
+			else {
+				let config = {
+					action: 		data.ACTION_STATE,
+					clientIndex: 	data.CLIENT_INDEX,
+					clientData: 	data.CLIENT_DATA,
+					importSettings: data.IMPORT_SETTINGS
+				};
+
+				resolve(config);
+			}
+		});
 	});
 }
