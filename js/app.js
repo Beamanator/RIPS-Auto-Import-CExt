@@ -44,7 +44,7 @@
 		Ctrl.byUnhcr = true; 		Ctrl.byPhone = false;
 		Ctrl.byOtherPhone = false;	Ctrl.byStarsNumber = false;
 		Ctrl.matchFirst = true;		Ctrl.matchLast = true;
-		Ctrl.createNew = true;
+		Ctrl.createNew = false; // safer if we default this to false
 
 		// Set up Firebase:
 		// FB_initFirebase(Ctrl, $scope, firebase);

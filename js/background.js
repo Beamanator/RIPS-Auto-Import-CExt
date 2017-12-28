@@ -67,14 +67,9 @@ chrome.runtime.onMessage.addListener(function(mObj, MessageSender, sendResponse)
             async = true;
             break;
 
-        // import has finished successfully, do 'finishing' things:
-        case 'finish_import':
-            finishClientImport();
-            break;
-
-        // import should be stopped due to an error
-        case 'stopped_via_error':
-            stopViaError(mObj, sendResponse);
+        // import should be stopped due to a message
+        case 'stopped_via_msg':
+            stopViaMsg(mObj, sendResponse);
             break;
 
         // add error to options page
@@ -132,8 +127,8 @@ function catchMessage(mObj, sendResponse) {
 }
 
 /**
- * Function sets action state as "ERROR_STATE", effectively shutting down the import
- * Then sendResponse is called, letting the caller display an error or anything
+ * Function sets action state as "FINISHED_STATE", effectively shutting down the import
+ * Then sendResponse is called, letting the caller display a message or anything
  * 
  * Also, client index and client data are cleared and message (from mObj) is
  * saved as ERROR_MESSAGE (if it exists)
@@ -143,17 +138,17 @@ function catchMessage(mObj, sendResponse) {
  * @param {object} mObj - message config object from caller
  * @param {function} sendResponse - callback function for caller to use to display specific error
  */
-function stopViaError(mObj, sendResponse) {
+function stopViaMsg(mObj, sendResponse) {
     // setup mObj:
     var mObj2 = {
         dataObj: {
-            'ACTION_STATE': 'ERROR_STATE',
+            'ACTION_STATE': 'FINISHED_STATE',
             'CLIENT_DATA': '',
             'CLIENT_INDEX': 0
         }
     };
 
-    // if mObj has a message attached, add ERROR_MESSAGE
+    // if mObj has a message attached, add ERROR_MESSAGE to show user
     if (mObj.message)
         mObj2.dataObj['ERROR_MESSAGE'] = mObj.message;
 
@@ -217,7 +212,8 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
 
 		/* ============== AVAILABLE KEYS =============
             ACTION_STATE    -	holds the on/off (true / false) value for each field
-                            ANALYZE_CLIENT_DUPLICATES = analyze search results
+                            ANALYZE_SEARCH_RESULTS_* = analyze search results based on _* value
+                                                - stars no, unhcr no, phone, other phone
                             CHECK_CLIENT_SERVICES   = check if specific service is live for client
                             CHECK_CLIENT_BASIC_DATA = check if client has extra basic data that needs to be saved
                             CLIENT_ADD_ACTION_DATA  = 1) tells service ctrl to redirect to add action page
@@ -226,11 +222,11 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
                             CLIENT_CREATED          = client created, now decide what's next
                             CLIENT_SKIP_ACTION_DATA = service saved, go to advanced search now
                             DO_NEXT_STEP            = call MainContent_DoNextStep() from anywhere
-                            ERROR_STATE             = errored state - fix the problem and try again!
+                            FINISHED_STATE          = import is finished, just clear data now!
                             NEXT_CLIENT_REDIRECT    = redirect to advanced search & increment client index
                             REGISTER_NEW_CLIENT     = Register new client
-                            SEARCH_FOR_CLIENT       = start searching for clients in AdvancedSearch
-                                                - enter UNHCR #, click "search"
+                            SEARCH_FOR_CLIENT_*     = start searching for clients in AdvancedSearch based on _*
+                                                - enter (stars no, unhcr no, phone, other phone), click "search"
                             WAITING                 = Waiting for import start (hold off)
             
             ADD_MESSAGE     -   add message to console in options.js
@@ -244,7 +240,7 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
 
             IMPORT_SETTINGS -   search / matching settings for import
 
-            TODO: add audit trail just for me?
+            TODO: add audit trail (in fb?) just for me?
 		*/
 		switch (key) {
             // action state tells extension where we're at in the lifecycle
@@ -367,20 +363,6 @@ function clearDataFromChromeLocalStorage(mObj, responseCallback) {
     storeToChromeLocalStorage({
         dataObj: dataObj
     }, responseCallback);    
-}
-
-/**
- * Function is called when we're done importing!! yay!!
- * 
- * TODO: ideas for what to do here:
- * -> open a new tab and display duplicates
- * -> Alert the user that we're done
- * -> Console log we're done
- * -> Clear stored data (if no duplicates)
- * 
- */
-function finishClientImport() {
-    console.log("WOOT we're done");
 }
 
 // ===============================================================

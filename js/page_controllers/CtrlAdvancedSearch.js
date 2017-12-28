@@ -13,46 +13,66 @@ function AdvancedSearch_Controller( config ) {
 	var clientData = config.clientData;
 
 	var importSettings = config.importSettings;
-
-	// TODO: do stuff with import settings
-	// like phone number searching
 	
 	switch(action) {
-		// Enter client UNHCR and press 'search'
+		// Enter client data and press 'search'
 		case 'SEARCH_FOR_CLIENT':
-			searchForDuplicates(clientIndex, clientData);
+		case 'SEARCH_FOR_CLIENT_UNHCR_NUMBER':
+		case 'SEARCH_FOR_CLIENT_PHONE':
+		case 'SEARCH_FOR_CLIENT_OTHER_PHONE':
+		case 'SEARCH_FOR_CLIENT_STARS_NUMBER':
+			searchForDuplicates(clientIndex, clientData, importSettings, action);
 			break;
 
-		// Analyze search results
-		case 'ANALYZE_CLIENT_DUPLICATES':
-			processSearchResults(clientIndex, clientData, importSettings);
+		// Analyze search results - depending on search result,
+		// redirect to next search criteria
+		case 'ANALYZE_SEARCH_RESULTS_UNHCR_NUMBER':
+		case 'ANALYZE_SEARCH_RESULTS_PHONE':
+		case 'ANALYZE_SEARCH_RESULTS_OTHER_PHONE':
+		case 'ANALYZE_SEARCH_RESULTS_STARS_NUMBER':
+			processSearchResults(clientIndex, clientData, importSettings, action);
 			break;
 
 		// Action not handled by AdvancedSearch.js!
 		default:
-			console.error('Unhandled action found in AdvancedSearch.js:', action);
+			let err = 'Unhandled action found in AdvancedSearch.js: ' + action;
+
+			// stop import and flag error message
+			Utils_StopImport( errorMessage, function(response) {
+				ThrowError({
+					message: errorMessage,
+					errMethods: ['mConsole']
+				});
+			});
 	}
 }
 
 // ============================== MAIN FUNCTIONS =======================
 
 /**
- * Function gets client index and data, takes the current client's UNHCR number,
- * sticks it in the UNHCR textbox, and then clicks "search"
+ * Function gets client index and data, sticks client data in related checkbox
+ * (depending on action), and then clicks "search".
  * 
- * Before the click, set action state to the next step - 'ANALYZE_CLIENT_DUPLICATES'
+ * Before the click, set action state to the appropriate next step
+ * - 'ANALYZE_SEARCH_RESULTS_*'
  * 
  * @param {number} clientIndex - index of client in all client data
  * @param {object} clientData - all client data
+ * @param {object} importSettings - configurable import settings from options page
+ * @param {string} action - import's ACTION_STATE - for which search to do
  */
-function searchForDuplicates(clientIndex, clientData) {
+function searchForDuplicates(clientIndex, clientData, importSettings, action) {
 	// check if client index is out of range of client data array [done!]
 	if ( clientIndex >= clientData.length ) {
-		var mObj = {
-			action: 'finish_import'
-		};
+		let msg = `Import Finished! Check errors above :)`;
 
-		chrome.runtime.sendMessage(mObj);
+		// stop import and show finished message
+		Utils_StopImport( msg, function(response) {
+			ThrowError({
+				message: msg,
+				errMethods: ['mConsole']
+			});
+		});
 		return;
 	}
 
@@ -61,22 +81,86 @@ function searchForDuplicates(clientIndex, clientData) {
 	var FTs = Utils_GetFieldTranslator( 'Search' );
 	if (!FTs)
 		return; // error handling in Utils function
-	
-	// put UNHCR number into textbox
-	Utils_InsertValue( client['UNHCR NUMBER'], FTs['UNHCR NUMBER'],
-		clientIndex )
-	// $("#" + FTs['UNHCR NUMBER']).val( client['UNHCR NUMBER'] );
+
+	// if all search settings are unchecked, quit import before beginning
+	let searchSettings = importSettings.searchSettings;
+	if (!searchSettings.byUnhcr && !searchSettings.byStarsNumber 
+	&& !searchSettings.byPhone && !searchSettings.byOtherPhone) {
+		let msg = 'Need to check at least one search type checkbox :)';
+
+		// stop import and throw error
+		Utils_StopImport(msg, function(res) {
+			ThrowError({
+				message: msg,
+				errMethods: ['mAlert', 'mConsole']
+			});
+		});
+		return;
+	}
+
+	// change action to next search action state
+	if (action === 'SEARCH_FOR_CLIENT') {
+		action = Utils_GetNextSearchActionState(action, searchSettings);
+	}
+
+	let valueCode, nextActionState;
+
+	// get valueCode and next action depending on action / value to insert
+	switch(action) {
+		case 'SEARCH_FOR_CLIENT_UNHCR_NUMBER':
+			valueCode = 'UNHCR NUMBER';
+			nextActionState = 'ANALYZE_SEARCH_RESULTS_UNHCR_NUMBER';
+			break;
+
+		case 'SEARCH_FOR_CLIENT_PHONE':
+			valueCode = 'MAIN PHONE';
+			nextActionState = 'ANALYZE_SEARCH_RESULTS_PHONE';
+			break;
+		
+		case 'SEARCH_FOR_CLIENT_OTHER_PHONE':
+			valueCode = 'OTHER PHONE';
+			nextActionState = 'ANALYZE_SEARCH_RESULTS_OTHER_PHONE';
+			break;
+		
+		case 'SEARCH_FOR_CLIENT_STARS_NUMBER':
+			valueCode = 'STARS NUMBER';
+			nextActionState = 'ANALYZE_SEARCH_RESULTS_STARS_NUMBER';
+			break;
+
+		// if all other searches are done, skip to next client
+		case 'NEXT_CLIENT':
+			Utils_SkipClient('Done searching for this client. Start next.',
+				clientIndex);
+			break;
+		
+		default:
+			let err = `SOMETHING MIGHT BE WRONG - action<${action}>`;
+
+			// stop import and flag error message
+			Utils_StopImport( err, function(response) {
+				ThrowError({
+					message: err,
+					errMethods: ['mConsole']
+				});
+			});
+	}
+
+	if (!valueCode) return; // err handled above in 'default'
+	if (action === 'NEXT_CLIENT') return; // client skipping code above
+
+	// put value into necessary textbox
+	Utils_InsertValue( client[valueCode], FTs[valueCode], clientIndex );
 
 	// store next action state before clicking 'search'
-	var mObj2 = {
+	let mObj = {
 		action: 'store_data_to_chrome_storage_local',
 		dataObj: {
-			'ACTION_STATE': 'ANALYZE_CLIENT_DUPLICATES'
+			'ACTION_STATE': nextActionState
 		}
 	};
 
 	// send message obj, then click 'search' (refreshes page)
-	chrome.runtime.sendMessage(mObj2, function(response) {
+	chrome.runtime.sendMessage(mObj, function(response) {
 		$('input[value="Search"]').click();
 	});
 }
@@ -88,13 +172,16 @@ function searchForDuplicates(clientIndex, clientData) {
  * @param {number} clientIndex - index of client in all client data
  * @param {object} clientData - all client data
  * @param {object} importSettings - configurable import settings from options page
+ * @param {string} action - see above
  */
-function processSearchResults(clientIndex, clientData, importSettings) {
+function processSearchResults(clientIndex, clientData, importSettings, action) {
+	let searchSettings = importSettings.searchSettings;
+
 	// First check if the window is at the Advanced Search page in RIPS
-	// -> Note: we shouldn't be on the search results page.
 	if ( !Utils_UrlContains( Utils_GetTabHref('AdvancedSearch-Result'))) {
 
-		// Add extra check for Advanced Search, just to be more cautious.
+		// Not on search results page, check if on Advanced Search page,
+		// -> just to be cautious.
 		if ( Utils_UrlContains( Utils_GetTabHref('AdvancedSearch'))) {
 			// timeout wait is 1 second (1000 ms)
 			let waitTime = 1000;
@@ -118,21 +205,41 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 
 					// 0 results! No error, decide if we need to create client
 					if (sweetAlertText === mNoResults) {
-						decideNextStep(importSettings, clientIndex);
+						decideNextStep(importSettings, clientIndex, action);
 						return;
 					}
 
-					// > 100 results! Throw error, skip client
+					// > 100 results! Search next option or skip client
 					if (sweetAlertText === mManyResults) {
-						Utils_SkipClient('Too many clients with ' +
-							'same UNHCR #<Not given>', clientIndex);
+						// get next action to do
+						let nextAction = Utils_GetNextSearchActionState(action, searchSettings);
+						
+						// skip client - due to not finding client from import data
+						if (nextAction === 'NEXT_CLIENT') {
+							Utils_SkipClient('Data not specific enough to find client.',
+								clientIndex);
+						}
+						
+						// else, start new search w/ next action
+						else {
+							// add msg here about > 100 results! Then do next search
+							let msg = `Action<${nextAction}> not specific enough` +
+								' to find unique client account.';
+								
+							Utils_AddError(msg, function() {
+								navigateToAdvancedSearch(nextAction);
+							});
+						}
 					}
 
 					// WHAT HAPPENED??? Somehow there is a popup but the text
-					// isn't handled here, so we must error!
+					// isn't handled here, so we must error and skip client!
+					// -> don't do other searches, just error since this is weird
 					else {
-						Utils_SkipClient('Error! Unhandled popup text found on ' +
-							`search page: "${sweetAlertText}"`, clientIndex);
+						let msg = 'Error! Unhandled popup text found on search page:'+
+							`"${sweetAlertText}", with action:<${action}>`;
+
+						Utils_SkipClient(msg, clientIndex);
 					}
 				}
 				
@@ -144,7 +251,7 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 					// - there shouldn't be any situation when popup doesn't occur
 					// - and URL is still .../AdvancedSearch
 					// BUT just in case, decide what to do now
-					decideNextStep(importSettings, clientIndex);
+					decideNextStep(importSettings, clientIndex, action);
 				}
 			});
 
@@ -180,12 +287,17 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 
 		// if names object didn't return correctly, throw error and skip client
 		if (Object.keys(clientImportNames).length === 0) {
-			// TODO: make this Utils_StopImport() b/c all clients will fail right?
+			// error will (probs) be same for all clients, so stop import
 			let errMessage = `Somehow found a weird mix of first name ` +
 				`<${clientFirstName}>, last name <${clientLastName}>, ` +
-				`and full name <${clientFullName}> data from import.`
+				`and full name <${clientFullName}> data from import. Quitting.`;
 
-			Utils_SkipClient(errMessage, clientIndex);
+			Utils_StopImport( errMessage, function(response) {
+				ThrowError({
+					message: errMessage,
+					errMethods: ['mConsole', 'mAlert']
+				});
+			});
 			return;
 		}
 
@@ -230,10 +342,12 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 			});
 		}
 
-		// respect import settings - don't search if matching settings say so
+		// get matching settings from import settings
 		let matchSettings = importSettings.matchSettings;
 		let matchFirst = matchSettings.matchFirst,
 			matchLast = matchSettings.matchLast;
+			
+		let matches = [];
 
 		let result_firstName = [],
 			result_lastName = [];
@@ -267,8 +381,6 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 				clientImportNames.lastName
 			);
 		}
-
-		let matches = [];
 
 		// if we didn't search first AND last names, just say all results
 		// 	are matches and move on
@@ -308,7 +420,7 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 		else {
 			// throw error & quit
 			var errorMessage = `Import Settings bugged! matchFirst <${matchFirst}>` +
-				` and matchLast <${matchLast}> are false somehow!`;
+				` and matchLast <${matchLast}> are false or undefined somehow!`;
 
 			// stop import and flag error message
 			Utils_StopImport( errorMessage, function(response) {
@@ -322,15 +434,27 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 
 		// Check length of matchedRows array, decide next step from there
 		if (matches.length > 1) {
-			let errMessage = 'Duplicate matching clients found:';
+			let msg = `Duplicate matching clients found [action=${action}]:`;
 
 			// loop through matches, pull out StARS numbers for error
 			for (let rowMatch of matches) {
-				errMessage += ` [StARS #${rowMatch.starsNo}]`;
+				msg += ` [StARS #${rowMatch.starsNo}]`;
 			}
 
-			// Add client to error stack
-			Utils_SkipClient(errMessage, clientIndex);
+			// get next action to perform
+			let nextAction = Utils_GetNextSearchActionState(action, searchSettings);
+
+			// skip client & add msg to error stack
+			if (nextAction === 'NEXT_CLIENT') {
+				Utils_SkipClient(msg, clientIndex);
+			}
+
+			// add msg to error stack & perform next search
+			else {
+				Utils_AddError(msg, function() {
+					navigateToAdvancedSearch(nextAction);
+				});
+			}
 		}
 		
 		// 1 exact match -> this is our client!
@@ -358,7 +482,7 @@ function processSearchResults(clientIndex, clientData, importSettings) {
 		else {
 			// new logic: did name matching algorithm above - if no name match,
 			// 	probably a relative, so client creation allowed
-			decideNextStep(importSettings, clientIndex);
+			decideNextStep(importSettings, clientIndex, action);
 
 			// old logic: skip client here.
 			// Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
@@ -409,14 +533,17 @@ function getClientImportNames(clientNamesObj) {
 }
 
 /**
- * Function gets import setting "createNew" and decides if we should create client in
- * registration page or skip registration
+ * Function gets import setting "createNew" and decides if we should:
+ * - try searching with new data item or
+ * - create client in registration page or
+ * - skip registration & try next client
  * Note: createNew is boolean
  * 
  * @param {object} importSettings - see above
  * @param {number} ci - client Index (see above)
+ * @param {string} action - see above
  */
-function decideNextStep(importSettings, ci) {
+function decideNextStep(importSettings, ci, action) {
 	// if settings don't exist, stop import!
 	if (!importSettings || !importSettings.otherSettings ||
 		!importSettings.otherSettings.createNew === undefined) {
@@ -436,15 +563,23 @@ function decideNextStep(importSettings, ci) {
 	// otherwise, get settings and decide what to do
 	else {
 		let createNewClient = importSettings.otherSettings.createNew;
+		let nextAction = Utils_GetNextSearchActionState(action, searchSettings);
 
-		// nav to registration of skip client, depending on setting
-		if (createNewClient) {
-			navigateToRegistration();
-		} else {
-			Utils_SkipClient(
-				'No matches - Settings are set to skip client creation.',
-				ci
-			);
+		// no more searches left, so use client creation logic
+		if (nextAction === 'NEXT_CLIENT') {
+			// nav to registration or skip client, depending on '.createNew'
+			if (createNewClient) {
+				navigateToRegistration();
+			} else {
+				let msg = 'No matches - Settings are set to skip client creation.';
+				Utils_SkipClient(msg, ci);
+			}
+		}
+
+		// do next search!
+		else {
+			// no need to send message to error stack right?
+			navigateToAdvancedSearch(nextAction);
 		}
 	}
 }
@@ -474,6 +609,25 @@ function navigateToRegistration() {
 	// once data returns, navigate to registration page
 	chrome.runtime.sendMessage(mObj, function(response) {
 		Utils_NavigateToTab( Utils_GetTabHref('Registration') );
+	});
+}
+
+/**
+ * Function extrapolates advanced search page navigation
+ * Useful for instances where we want to move to next search method, without
+ * incrementing client #
+ * 
+ * @param {string} nextAction - next action in action state
+ */
+function navigateToAdvancedSearch(nextAction) {
+	let mObj = {
+		action: 'store_data_to_chrome_storage_local',
+		dataObj: {'ACTION_STATE': nextAction}
+	};
+
+	// once data returns, navigate to advanced search page
+	chrome.runtime.sendMessage(mObj, function(response) {
+		Utils_NavigateToTab( Utils_GetTabHref('AdvancedSearch') );
 	});
 }
 

@@ -101,6 +101,7 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 
 		// case will be hit ONLY when "Import Clients" button is clicked from popup
 		case "begin_client_import":
+			// first action is 'SEARCH_FOR_CLIENT'
 			BeginClientImport();
 			break;
 

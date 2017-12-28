@@ -60,30 +60,30 @@ function Utils_GetFieldTranslator( type, flag_getElemID ) {
 
 /**
  * Function tells background.js to stop the auto import function via
- * action 'stopped_via_error', and passes an error message to background.js, then
+ * action 'stopped_via_msg', and passes a message to background.js, then
  * the chrome runtime callback to caller
  * 
- * @param {string} errorMessage - error message to pass to background.js
+ * @param {string} message - message to pass to background.js
  * @param {function} callback - chrome runtime callback sent to caller. if not given,
  *                              defaults to console.error() fn
  */
-function Utils_StopImport( errorMessage, callback ) {
+function Utils_StopImport( message, callback ) {
 	// take care of defaults
-	if ( !errorMessage )
-		errorMessage = 'stopping import for unknown reason';
+	if ( !message )
+	message = 'stopping import for unknown reason';
 
 	if ( !callback )
 		callback = function(r) { 
-			Utils_AddError(errorMessage);
+			Utils_AddError(message);
 		};
 
-	// set action state to error state
+	// set action state to finished import state
 	var mObj = {
-		action: 'stopped_via_error',
-		message: errorMessage
+		action: 'stopped_via_msg',
+		message: message
 	};
 
-	// send message config (stop auto import) then display an error
+	// send message config (stop auto import) then display a message
 	chrome.runtime.sendMessage(mObj, callback);
 }
 
@@ -426,9 +426,9 @@ function Utils_SetDateValue( date, elemID ) {
 		let m = Utils_GetMonthNumberFromName( dateArr[1] );
 		let y = parseInt( dateArr[2] );
 
+		// throw error & return invalid if month invalid
 		if (!m || m === '') {
-			// TODO: throw error
-			Utils_AddError('ERROR! ');
+			Utils_AddError(`ERROR getting month # from month<${dateArr[1]}>!`);
 			return false;
 		}
 
@@ -447,13 +447,13 @@ function Utils_SetDateValue( date, elemID ) {
 		let y = parseInt( dateArr[2] );
 
 		if ( d < 1 || d > 31 ) {
-			Utils_AddError('ERROR <Date>: Day (' + d + ') out of range!');
+			Utils_AddError(`ERROR <Date>: Day (${d}) out of range!`);
 			return false;
 		} else if ( m < 1 || m > 12 ) {
-			Utils_AddError('ERROR <Date>: Month (' + m + ') out of range!');
+			Utils_AddError(`ERROR <Date>: Month (${m}) out of range!`);
 			return false;
 		} else if ( y < 1900 || y > ((new Date()).getUTCFullYear() + 1) ) {
-			Utils_AddError('ERROR <Date>: Year (' + y + ') out of range!');
+			Utils_AddError(`ERROR <Date>: Year (${y}) out of range!`);
 			return false;
 		} else {
 			newDate = '' + d + '/' + m + '/' + y;
@@ -672,6 +672,71 @@ function Utils_AddError( message, callback ) {
 	};
 
 	chrome.runtime.sendMessage(mObj, callback);
+}
+
+/**
+ * Function determines which search action state should come after given action, based
+ * on search settings from import page
+ * 
+ * Order of searches to run (based on unique-ness):
+ * 1) StARS Number
+ * 2) UNHCR Number
+ * 3) Main Phone Number
+ * 4) Other Phone Number
+ * 5) Next Client - move to next client
+ * 
+ * @param {string} action - 'current' action state of import
+ * @param {object} searchSettings - search settings (from options page)
+ * @returns {string} - next action state, based off current state
+ */
+function Utils_GetNextSearchActionState(action, searchSettings) {
+	let nextAction;
+	let byUnhcr = searchSettings.byUnhcr,	byStarsNumber = searchSettings.byStarsNumber;
+	let byPhone = searchSettings.byPhone,	byOtherPhone = searchSettings.byOtherPhone;
+
+	// determine next client search state
+	switch(action) {
+		// From 'searchForDuplicates' - still on 'search' page.
+		case 'SEARCH_FOR_CLIENT':
+			// set next action by following search heirarchy
+			if (byStarsNumber)	 	nextAction = 'SEARCH_FOR_CLIENT_STARS_NUMBER';
+			else if (byUnhcr)		nextAction = 'SEARCH_FOR_CLIENT_UNHCR_NUMBER';
+			else if (byPhone)		nextAction = 'SEARCH_FOR_CLIENT_PHONE';
+			else if (byOtherPhone)	nextAction = 'SEARCH_FOR_CLIENT_OTHER_PHONE';
+			else nextAction = 'NEXT_CLIENT';
+			break;
+		
+		// From 'processSearchResults' - on 'search results' page.
+		case 'ANALYZE_SEARCH_RESULTS_STARS_NUMBER':
+			// set next action by following search heirarchy
+			if (byUnhcr)			nextAction = 'SEARCH_FOR_CLIENT_UNHCR_NUMBER';
+			else if (byPhone)		nextAction = 'SEARCH_FOR_CLIENT_PHONE';
+			else if (byOtherPhone)	nextAction = 'SEARCH_FOR_CLIENT_OTHER_PHONE';
+			else nextAction = 'NEXT_CLIENT';
+			break;
+
+		case 'ANALYZE_SEARCH_RESULTS_UNHCR_NUMBER':
+			// set next action by following search heirarchy
+			if (byPhone)		nextAction = 'SEARCH_FOR_CLIENT_PHONE';
+			else if (byOtherPhone)	nextAction = 'SEARCH_FOR_CLIENT_OTHER_PHONE';
+			else nextAction = 'NEXT_CLIENT';
+			break;
+
+		case 'ANALYZE_SEARCH_RESULTS_PHONE':
+			// set next action by following search heirarchy
+			if (byOtherPhone)	nextAction = 'SEARCH_FOR_CLIENT_OTHER_PHONE';
+			else nextAction = 'NEXT_CLIENT';
+			break;
+
+		case 'ANALYZE_SEARCH_RESULTS_OTHER_PHONE':
+			// set next action by following search heirarchy
+			nextAction = 'NEXT_CLIENT';
+			break;
+		
+		// default: // not needed - return undefined
+	}
+
+	return nextAction;
 }
 
 // =====================================================================================
