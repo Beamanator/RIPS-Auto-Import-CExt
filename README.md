@@ -1,12 +1,13 @@
 # RIPS-Auto-Import-CExt
 ## Instructions for useage:
-1) For any data you want to import into RIPS, make sure the column header matches an appropriate column below.
+1) Log in to [RIPS](http://bit.ly/2CHOAcV) in only 1 tab on Google Chrome.
 2) Install Auto Import Extension.
-3) Open the "Options page" by clicking on the extension icon in the upper-right corner of Google Chrome.
-4) Copy all contents of client data spreadsheet (including column headers), and paste data into main textbox.
-5) Click "Create Table!" -> A table with parsed data should appear below the button.
-6) Make sure you are logged into RIPS in only 1 tab on Google Chrome.
-7) If everything looks good, click "Import Clients" to start the import!
+3) Open the "Options page" by clicking on the extension icon labeled "Ri" in the upper-right corner of Google Chrome.
+4) For any data you want to import into RIPS, make sure the column header matches an appropriate column below.
+5) Copy all contents of client data spreadsheet (including column headers), and paste data into main textbox.
+6) Click "Create Table!" -> A table with parsed data should appear below the button.
+7) Make sure the import settings are set as you need.
+8) If everything looks good, click "Import Clients" to start the import!
 
 ## *Exact* Fields required for Registration page, and example data:
 
@@ -65,7 +66,7 @@ Other Information (Dates):
 Fields in separate tabs:
 
 | Urgent Notes | Important Information | Family Size | UNHCR Case Size | Direct Beneficiaries | Indirect Beneficiaries |
-|--------------|------------------------|------------|-----------------|----------------------|------------------------|
+|--<Free Text>--|-----<Free Text>------|-------------|-----------------|----------------------|------------------------|
 
 Vulnerability Data:
 
@@ -77,7 +78,7 @@ Notes about "Optional" tables above:
 
 ## Fields available for Services page, and example data:
 
-| Service Code\* | Service Caseworker | Service Start Date |
+|  Service Code\*  | Service Caseworker | Service Start Date |
 |------------------|--------------------|--------------------|
 | MAP, RST, UCY, etc |  abeaman           |  1-Mar-2017        |
 
@@ -121,14 +122,16 @@ Notes about Add Action table:
 2) *Service Code* - This is the same column as above for Services -> don't add 2 columns with "Service Code" title.
 
 ### Testing Scenarios:
-|#| Client Data Description (list) |Expected Outcome| Last Pass (Version #) |
-|-|------------------------------|----------------|-------------|
-|0|Full Name, UNHCR Number, UNHCR File Status, Phone Number, Gender, DOB, Nationality, Language, Case Size, Service Timestamp|RLAP Phase 1 - everything but actions|v2.0.0|
-|1|Duplicate UNHCR #s, any other data|client added to duplicate storage, no new clients created|v2.0.0|
-|2|First Name / Last Name vs Full Name|Scenarios should put names in correct positions|v2.0.0|
-|3|Full Name has > 2 names|First name goes in first name box, all others go in 'surname' box|v2.0.0|
-|4|Only Reg data, no services / actions|Client created, not redirected to services / actions pages|v2.0.0|
-|5|Only Reg data (missing name), no services / actions|Error in Registration page, client skipped, error added to options page|v2.0.0|
-|6|Reg data, Services data, no action data|Client created (if needed), service added (if needed), moves back to Advanced Search|v2.0.0|
-|7|Reg data, Services data (code, caseworker), action data (name, notes, caseworker)|Same as 6, but adds action data before moving back to Advanced Search|v2.0.0|
-|99|Reg Data, CBI Data, Services data, Action data|Client created (if needed), optional data added and saved, service added (if needed), action added||
+|#| Client Data Description (list) |Settings|Expected Outcome| Last Pass (Version #) |
+|-|--------------------------------|--------|----------------|-------------|
+|1.1|Only Reg data, First / last name|Create clients|Client created, not redirected to services / actions pages|v2.0.0|
+|1.2|Only Reg data, Full name (not first / last), has > 2 names|Create clients|Client created, first name / surname filled out appropriately||
+|1.3|Only Reg data|Default|No new client created, error passed to stack||
+|1.4|Only Reg data (missing field), no services / actions|Create clients|Error in Registration page, client skipped, error added to options page|v2.0.0|
+|2.1|Required data, UNHCR File Statuss|Default|CBI data updated, Passes dependent / vuln swal warning|v2.0.0|
+|2.2|Required data, UNHCR Case Size, Vulnerability (fill out!)|Default|CBI data updated||
+|3|Required data, Service start date, Service code|Default|Service data added|v2.0.0|
+|4|Required data, Service start date, Service code, Action name, Action notes|Default|Service data added, Action data added|v2.0.0|
+|5|Reg Data, CBI Data, Services data, Action data|Client created (if needed), optional data added and saved, service added (if needed), action added|Create clients||
+|10|Only Reg data - Duplicate UNHCR #s|Default|Client added to error list, no new clients created|v2.0.0|
+
