@@ -72,6 +72,8 @@ Vulnerability Data:
 
 | Vulnerability Notes | Vulnerability Name |
 |---------------------|--------------------|
+| Test vulnerability! |    Homeless        |
+|               | Single female head of household |
 
 Notes about "Optional" tables above:
 1) *Vulnerability name* - make sure vulnerability is spelled exactly correct
@@ -124,14 +126,13 @@ Notes about Add Action table:
 ### Testing Scenarios:
 |#| Client Data Description (list) |Settings|Expected Outcome| Last Pass (Version #) |
 |-|--------------------------------|--------|----------------|-------------|
-|1.1|Only Reg data, First / last name|Create clients|Client created, not redirected to services / actions pages|v2.0.0|
-|1.2|Only Reg data, Full name (not first / last), has > 2 names|Create clients|Client created, first name / surname filled out appropriately||
-|1.3|Only Reg data|Default|No new client created, error passed to stack||
-|1.4|Only Reg data (missing field), no services / actions|Create clients|Error in Registration page, client skipped, error added to options page|v2.0.0|
-|2.1|Required data, UNHCR File Statuss|Default|CBI data updated, Passes dependent / vuln swal warning|v2.0.0|
-|2.2|Required data, UNHCR Case Size, Vulnerability (fill out!)|Default|CBI data updated||
-|3|Required data, Service start date, Service code|Default|Service data added|v2.0.0|
-|4|Required data, Service start date, Service code, Action name, Action notes|Default|Service data added, Action data added|v2.0.0|
-|5|Reg Data, CBI Data, Services data, Action data|Client created (if needed), optional data added and saved, service added (if needed), action added|Create clients||
+|1.1|Only Reg data, First / last name|Create clients|Client created, not redirected to services / actions pages|v2.0.5|
+|1.2|Only Reg data, Full name (not first / last), has > 2 names|Create clients|Client created, first name / surname filled out appropriately|v2.0.5|
+|1.3|Only Reg data|Default|No new client created, error passed to stack|v2.0.5|
+|1.4|Only Reg data (missing field), no services / actions|Create clients|Error in Registration page, client skipped, error added to options page|v2.0.5|
+|2.1|Reg data, UNHCR File Status|Default|CBI data updated, Passes dependent / vuln swal warning|v2.0.5|
+|2.2|Reg data, UNHCR Case Size, Vulnerability (fill out!)|Default|CBI data updated|v2.0.5|
+|3|Reg data, Service start date, Service code|Default|Service data added|v2.0.0|
+|4|Reg data, Service data, Action data|Default|Service data added, Action data added|v2.0.0|
 |10|Only Reg data - Duplicate UNHCR #s|Default|Client added to error list, no new clients created|v2.0.0|
 
