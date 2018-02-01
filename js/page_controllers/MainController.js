@@ -65,6 +65,9 @@ $(document).ready(function(){
 		else {
 			console.error('Controller function for <' + urlPiece + '> is not defined');
 		}
+	})
+	.catch(err => {
+		console.error(err);
 	});
 });
 
@@ -286,7 +289,10 @@ function getImportConfig() {
 		};
 
 		chrome.runtime.sendMessage(mObj, function(data) {
-			if (Object.keys(data).length < 4)
+			let dataSize = Object.keys(data).length;
+			if (dataSize === 0)
+				reject('No import config found - quitting');
+			else if (dataSize < 4)
 				reject('Something went wrong getting import config');
 			else {
 				let config = {
