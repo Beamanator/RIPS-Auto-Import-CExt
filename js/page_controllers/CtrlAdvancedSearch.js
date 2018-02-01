@@ -148,6 +148,20 @@ function searchForDuplicates(clientIndex, clientData, importSettings, action) {
 	if (!valueCode) return; // err handled above in 'default'
 	if (action === 'NEXT_CLIENT') return; // client skipping code above
 
+	// check to make sure search value exists. If not, fail!
+	if ( !client[valueCode] ) {
+		let err = `Error! Somehow search value <${valueCode}>` +
+			` is <${client[valueCode]}> - search failed.`;
+
+		// stop import and flag error message
+		Utils_StopImport( err, function(response) {
+			ThrowError({
+				message: err,
+				errMethods: ['mConsole']
+			});
+		})
+	}
+
 	// put value into necessary textbox
 	Utils_InsertValue( client[valueCode], FTs[valueCode], clientIndex );
 
@@ -274,16 +288,12 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 	else {
 		// get client variables
 		let client = clientData[clientIndex];
-		let clientFirstName = client['FIRST NAME'],
-			clientLastName = client['LAST NAME'],
-			clientFullName = client['FULL NAME'],
-			clientUnhcrNo = client['UNHCR NUMBER'];
-
 		let clientImportNames = getClientImportNames({
-			firstName: clientFirstName,
-			lastName: clientLastName,
-			fullName: clientFullName
+			firstName: client['FIRST NAME'],
+			lastName: client['LAST NAME'],
+			fullName: client['FULL NAME']
 		});
+		let clientUnhcrNo = client['UNHCR NUMBER'];
 
 		// if names object didn't return correctly, throw error and skip client
 		if (Object.keys(clientImportNames).length === 0) {
@@ -375,7 +385,7 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 				identifier: 'resultIndex'
 			};
 
-			result_firstName = fuzzySearch(
+			result_lastName = fuzzySearch(
 				fuseConfig,
 				rowsToSearch,
 				clientImportNames.lastName
@@ -563,7 +573,8 @@ function decideNextStep(importSettings, ci, action) {
 	// otherwise, get settings and decide what to do
 	else {
 		let createNewClient = importSettings.otherSettings.createNew;
-		let nextAction = Utils_GetNextSearchActionState(action, searchSettings);
+		let nextAction = Utils_GetNextSearchActionState(action,
+			importSettings.searchSettings);
 
 		// no more searches left, so use client creation logic
 		if (nextAction === 'NEXT_CLIENT') {
