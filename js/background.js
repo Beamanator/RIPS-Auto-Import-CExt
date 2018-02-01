@@ -14,7 +14,7 @@
 
 // React when a browser action's icon is clicked.
 chrome.browserAction.onClicked.addListener(function(tab) {
-    // do something
+    // do something (handled in manifest file for now)
 });
 
 // React when a tab is closed
