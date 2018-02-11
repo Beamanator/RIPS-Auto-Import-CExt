@@ -38,9 +38,9 @@ function AdvancedSearch_Controller( config ) {
 			let err = 'Unhandled action found in AdvancedSearch.js: ' + action;
 
 			// stop import and flag error message
-			Utils_StopImport( errorMessage, function(response) {
+			Utils_StopImport( err, function(response) {
 				ThrowError({
-					message: errorMessage,
+					message: err,
 					errMethods: ['mConsole']
 				});
 			});
@@ -64,7 +64,7 @@ function AdvancedSearch_Controller( config ) {
 function searchForDuplicates(clientIndex, clientData, importSettings, action) {
 	// check if client index is out of range of client data array [done!]
 	if ( clientIndex >= clientData.length ) {
-		let msg = `Import Finished! Check errors above :)`;
+		let msg = `(jk) - Import Finished! Check errors above :)`;
 
 		// stop import and show finished message
 		Utils_StopImport( msg, function(response) {
@@ -150,16 +150,15 @@ function searchForDuplicates(clientIndex, clientData, importSettings, action) {
 
 	// check to make sure search value exists. If not, fail!
 	if ( !client[valueCode] ) {
-		let err = `Error! Somehow search value <${valueCode}>` +
+		let err = `Somehow search value <${valueCode}>` +
 			` is <${client[valueCode]}> - search failed.`;
 
-		// stop import and flag error message
-		Utils_StopImport( err, function(response) {
-			ThrowError({
-				message: err,
-				errMethods: ['mConsole']
-			});
-		})
+		// skip client if any search type is undefined
+		// TODO: skip search type, but not entire client
+		Utils_SkipClient(err, clientIndex);
+
+		// quit search function early
+		return;
 	}
 
 	// put value into necessary textbox
@@ -236,7 +235,7 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 						
 						// else, start new search w/ next action
 						else {
-							// add msg here about > 100 results! Then do next search
+							// add msg here about > 100 results! Then do next search type
 							let msg = `Action<${nextAction}> not specific enough` +
 								' to find unique client account.';
 								
@@ -459,7 +458,7 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 				Utils_SkipClient(msg, clientIndex);
 			}
 
-			// add msg to error stack & perform next search
+			// add msg to error stack & perform next search type
 			else {
 				Utils_AddError(msg, function() {
 					navigateToAdvancedSearch(nextAction);
