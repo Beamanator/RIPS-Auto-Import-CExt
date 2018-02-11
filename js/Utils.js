@@ -398,7 +398,7 @@ function  Utils_InsertValue(value, id, configParam) {
  */
 function Utils_SetDateValue( date, elemID ) {
 	if (!date || !elemID) {
-		Utils_AddError('ERROR: Date data not found');
+		Utils_AddError('Date data not found');
 		return false;
 	}
 
@@ -447,13 +447,13 @@ function Utils_SetDateValue( date, elemID ) {
 		let y = parseInt( dateArr[2] );
 
 		if ( d < 1 || d > 31 ) {
-			Utils_AddError(`ERROR <Date>: Day (${d}) out of range!`);
+			Utils_AddError(`<Date>: Day (${d}) out of range!`);
 			return false;
 		} else if ( m < 1 || m > 12 ) {
-			Utils_AddError(`ERROR <Date>: Month (${m}) out of range!`);
+			Utils_AddError(`<Date>: Month (${m}) out of range!`);
 			return false;
 		} else if ( y < 1900 || y > ((new Date()).getUTCFullYear() + 1) ) {
-			Utils_AddError(`ERROR <Date>: Year (${y}) out of range!`);
+			Utils_AddError(`<Date>: Year (${y}) out of range!`);
 			return false;
 		} else {
 			newDate = '' + d + '/' + m + '/' + y;
@@ -462,7 +462,7 @@ function Utils_SetDateValue( date, elemID ) {
 
 	// format doesn't match above options, so invalid
 	else {
-		Utils_AddError('ERROR <Date>: Format is invalid');
+		Utils_AddError('<Date>: Format is invalid');
 		return false;
 	}
 
@@ -636,7 +636,7 @@ function Utils_CheckErrors( fieldArr, ci ) {
 			allPass = false;
 
 			// create error message
-			let errMsg = `Error: Field Invalid - Client #${ci + 1}` +
+			let errMsg = `Field Invalid - Client #${ci + 1}` +
 				` - Field: <${fieldName}>.`;
 
 			Utils_AddError(errMsg);
@@ -666,7 +666,7 @@ function Utils_AddError( message, callback ) {
 	if (!callback)
 		callback = function(r) { console.error('Error:', message); }
 
-	mObj = {
+	let mObj = {
 		action: 'catch_error',
 		message: message
 	};

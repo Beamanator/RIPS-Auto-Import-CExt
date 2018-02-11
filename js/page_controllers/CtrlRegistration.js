@@ -263,10 +263,10 @@ function NationalityInsert(natValue, FTr, ci) {
 
 		// if newNat is invalid, throw error and return false!
 		if (newNat.length < 2) {
-			let errMessage = `Client #${ci + 1} - Error: Nationality "` +
-				natValue + '" doesn\'t have proper format before parens "()".';
+			let err = `Client #${ci + 1} - Nationality "${natValue$}"` +
+				' doesn\'t have proper format before the parens "()".';
 			
-			Utils_AddError( errMessage );
+			Utils_AddError( err );
 			return false;
 		}
 	}
