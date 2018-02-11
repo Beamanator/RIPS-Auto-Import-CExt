@@ -131,7 +131,7 @@ function catchMessage(mObj, sendResponse) {
  * Then sendResponse is called, letting the caller display a message or anything
  * 
  * Also, client index and client data are cleared and message (from mObj) is
- * saved as ERROR_MESSAGE (if it exists)
+ * saved as ADD_MESSAGE (if it exists)
  * 
  * TODO: phase out this function w/ Utils_SkipClient
  * 
@@ -148,9 +148,9 @@ function stopViaMsg(mObj, sendResponse) {
         }
     };
 
-    // if mObj has a message attached, add ERROR_MESSAGE to show user
+    // if mObj has a message attached, add ADD_MESSAGE to show user
     if (mObj.message)
-        mObj2.dataObj['ERROR_MESSAGE'] = mObj.message;
+        mObj2.dataObj['ADD_MESSAGE'] = mObj.message;
 
     // store / clear data:
     storeToChromeLocalStorage(mObj2, sendResponse);
@@ -236,8 +236,6 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
             
             DUPLICATE_CLIENT_UNHCR_NO - array of duplicate unhcr #s
 
-            ERROR_MESSAGE   -   string of latest error message
-
             IMPORT_SETTINGS -   search / matching settings for import
 
             TODO: add audit trail (in fb?) just for me?
@@ -310,14 +308,6 @@ function storeToChromeLocalStorage(mObj, responseCallback) {
                         return saveValueToStorage('DUPLICATE_CLIENT_UNHCR_NO', newDupeArray);
                     })
                 );
-                break;
-
-            // store an error message indicating why the import stopped
-            case 'ERROR_MESSAGE':
-                var message = dataValue;
-				storePromises.push(
-					saveValueToStorage('ERROR_MESSAGE', message)
-				);
                 break;
 
             // stores client data directly to local storage
