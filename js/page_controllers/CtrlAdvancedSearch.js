@@ -397,7 +397,8 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 			let fuseConfig = {
 				searchKeys: ['lastName'],
 				maxPatternLength: clientImportNames.lastName.length,
-				identifier: 'resultIndex'
+				identifier: 'resultIndex',
+				distance: 100
 			};
 
 			result_lastName = fuzzySearch(
@@ -667,7 +668,6 @@ function navigateToAdvancedSearch(nextAction) {
  * threshold: (0 = perfect match, 1.0 = no match at all)
  * id: if present, only returned data has this key (not original search values)
  * location: where in the string the search is looking for a match
- * // TODO: change distance to 0 if we want super exact matching
  * distance: if 0, match should occur right at the 'location' for a match
  * 
  * @param {object} config - a few config items for settings
@@ -677,6 +677,7 @@ function getBasicFuseSettings(config) {
 	let searchKeys = config.searchKeys || [];
 	let maxPatternLength = config.maxPatternLength || 32;
 	let identifier = config.identifier; // can be undefined
+	let distance = config.distance || 0;
 
 	let settings = {
 		keys: searchKeys,
@@ -685,7 +686,7 @@ function getBasicFuseSettings(config) {
 		includeScore: true,
 		threshold: 0.3,
 		location: 0,
-		distance: 100,
+		distance: distance,
 		maxPatternLength: maxPatternLength + 3
 	};
 
