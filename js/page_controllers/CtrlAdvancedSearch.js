@@ -21,7 +21,7 @@ function AdvancedSearch_Controller( config ) {
 		case 'SEARCH_FOR_CLIENT_PHONE':
 		case 'SEARCH_FOR_CLIENT_OTHER_PHONE':
 		case 'SEARCH_FOR_CLIENT_STARS_NUMBER':
-			searchForDuplicates(clientIndex, clientData, importSettings, action);
+			kickoffSearch(clientIndex, clientData, importSettings, action);
 			break;
 
 		// Analyze search results - depending on search result,
@@ -61,7 +61,7 @@ function AdvancedSearch_Controller( config ) {
  * @param {object} importSettings - configurable import settings from options page
  * @param {string} action - import's ACTION_STATE - for which search to do
  */
-function searchForDuplicates(clientIndex, clientData, importSettings, action) {
+function kickoffSearch(clientIndex, clientData, importSettings, action) {
 	// check if client index is out of range of client data array [done!]
 	if ( clientIndex >= clientData.length ) {
 		let msg = `(jk) - Import Finished! Check errors above :)`;
