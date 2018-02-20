@@ -664,6 +664,12 @@ function navigateToAdvancedSearch(nextAction) {
  * Note: fuse = fuzzy text searching
  * Note2: maxPatternLength & keys are necessary for successful searches
  * 
+ * threshold: (0 = perfect match, 1.0 = no match at all)
+ * id: if present, only returned data has this key (not original search values)
+ * location: where in the string the search is looking for a match
+ * // TODO: change distance to 0 if we want super exact matching
+ * distance: if 0, match should occur right at the 'location' for a match
+ * 
  * @param {object} config - a few config items for settings
  * @returns {object} - basic fuse settings. Caller needs to configure 'keys' to search
  */
@@ -679,7 +685,7 @@ function getBasicFuseSettings(config) {
 		includeScore: true,
 		threshold: 0.3,
 		location: 0,
-		distance: 0,
+		distance: 100,
 		maxPatternLength: maxPatternLength + 3
 	};
 
