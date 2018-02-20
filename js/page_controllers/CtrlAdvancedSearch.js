@@ -150,8 +150,8 @@ function searchForDuplicates(clientIndex, clientData, importSettings, action) {
 
 	// check to make sure search value exists. If not, fail!
 	if ( !client[valueCode] ) {
-		let err = `Somehow search value <${valueCode}>` +
-			` is <${client[valueCode]}> - search failed.`;
+		let err = `Search value <${valueCode}> is undefined` +
+			` <${client[valueCode]}> - search failed.`;
 
 		// skip client if any search type is undefined
 		// TODO: skip search type, but not entire client
@@ -162,20 +162,36 @@ function searchForDuplicates(clientIndex, clientData, importSettings, action) {
 	}
 
 	// put value into necessary textbox
-	Utils_InsertValue( client[valueCode], FTs[valueCode], clientIndex );
+	let f_n = valueCode; // (field_name)
+	let pass = Utils_CheckErrors([
+		[ Utils_InsertValue(client[f_n], FTs[f_n]), f_n ]
+	], clientIndex);
 
-	// store next action state before clicking 'search'
-	let mObj = {
-		action: 'store_data_to_chrome_storage_local',
-		dataObj: {
-			'ACTION_STATE': nextActionState
-		}
-	};
+	// insert passed - continue import by searching for clients
+	if (pass) {
+		// store next action state before clicking 'search'
+		let mObj = {
+			action: 'store_data_to_chrome_storage_local',
+			dataObj: {
+				'ACTION_STATE': nextActionState
+			}
+		};
 
-	// send message obj, then click 'search' (refreshes page)
-	chrome.runtime.sendMessage(mObj, function(response) {
-		$('input[value="Search"]').click();
-	});
+		// send message obj, then click 'search' (refreshes page)
+		chrome.runtime.sendMessage(mObj, function(response) {
+			$('input[value="Search"]').click();
+		});
+	}
+	
+	// no pass -> skip client with warning
+	else {
+		// NOTE: We should never get here! Other warnings / errors above should
+		// 	be enough to handle everything.
+		let err = `Somehow something went wrong with Utils_InsertValue! Check ` +
+			`errors on import page.`;
+
+		Utils_SkipClient(err, clientIndex);
+	}
 }
 
 /**
