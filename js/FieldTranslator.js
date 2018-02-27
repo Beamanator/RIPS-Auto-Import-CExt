@@ -21,7 +21,6 @@ function FT_getAllTranslator(flag_getElemID=true) {
 }
 
 function FT_getSearchTranslator() {
-	// TODO: add more search translations?
 	return {
 		'MAIN PHONE': 	'mobile',
 		'OTHER PHONE': 	'telephone',
