@@ -9,6 +9,11 @@
 7) Make sure the import settings are set as you need.
 8) If everything looks good, click "Import Clients" to start the import!
 
+## Client search analysis - How the extension searches for clients:
+Client search analysis is done using the library [fusejs.io](http://fusejs.io/). The docs are on the website, but here are some of the special settings that I thought needed extra effort / specific explanation:
+1) *location* - Where the search should start looking for a match (0 = beginning of the string)
+2) *distance* - How far away from "Location" the search should look for the match (0 = only right at the location, 100 = 100 characters in either direction)
+
 ## *Exact* Fields required for Registration page, and example data:
 
 | Full Name\* | Gender\* | Date of Birth\* | Nationality\* | Main Language\* | Phone Number\* | UNHCR number\* |
@@ -34,7 +39,7 @@ Current Contact Details (free text):
 
 | Address1 | Address2 | Other Phone Number | Email Address |
 |----------|----------|--------------------|---------------|
-| Street   | Zip      | 0123456789         | spamalotmucho@gmail.com|
+| Street   | Zip      | 01234567890        | spamalotmucho@gmail.com|
 
 Background (Dropdown boxes):
 
