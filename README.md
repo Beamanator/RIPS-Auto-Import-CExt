@@ -110,7 +110,7 @@ Notes about Services table:
 |PRO|RLAP Protection|
 |RSD|RLAP RSD|
 |AEP|Adult Education Program|
-|CEP|Children's Education Program|
+|CEP|Children Education Program|
 |EACB|Education Access and Capacity Building|
 |MONT|Montessori Preschool|
 |PDC|Professional Development Courses|

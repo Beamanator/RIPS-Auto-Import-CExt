@@ -215,13 +215,13 @@ function addNewService(clientIndex, clientData) {
 	// ======== Service Start Date ========
 	// Add service start date
 	if ( serviceStart ) {
-		let dateDateSuccess = Utils_CheckErrors([
+		let serviceDateSuccess = Utils_CheckErrors([
 			[ Utils_InsertValue( serviceStart, FTs['SERVICE START DATE'], 3 ),
 				'SERVICE START DATE' ]
 		], clientIndex);
 
 		// check success
-		if (!dateDateSuccess) {
+		if (!serviceDateSuccess) {
 			var errMsg = 'Could not properly save service start date. ' +
 				`Please check date: <${serviceStart}> for formatting issues.`;
 

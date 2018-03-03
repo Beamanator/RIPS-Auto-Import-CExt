@@ -100,7 +100,7 @@ function setActionDropdown( client, ci ) {
 	// get action data from client data object
 	var actionName = client['ACTION NAME'];
 
-	// var actionDate = client['ACTION DATE']; // TODO: deal with date stuff
+	var actionDate = client['ACTION DATE'];
 	var actionCaseworker = client['ACTION CASEWORKER'];
 	var actionNotes = client['ACTION NOTES'];
 
@@ -111,7 +111,7 @@ function setActionDropdown( client, ci ) {
 
 	// if action is not found, skip client
 	if ( !foundMatch ) {
-		var errorMessage = 'No match found in Action dropdown '
+		var errorMessage = 'No match found in Action dropdown ' +
 			`- action name <${actionName}> may not be accurate.`;
 
 		// Skip importing this client
@@ -119,8 +119,25 @@ function setActionDropdown( client, ci ) {
 		return;
 	}
 
-	// TODO: add date data - id: DATE_OF_ACT
+	// =========== Action Date ===========
+	// Add action date data
+	if ( actionDate ) {
+		let actionDateSuccess = Utils_CheckErrors([
+			[ Utils_InsertValue( actionDate, FTa['ACTION DATE'], 3 ),
+				'ACTION DATE' ]
+		], ci);
 
+		// check success
+		if (!actionDateSuccess) {
+			let errMsg = 'Could not properly save action start date. ' +
+				`Please check date: <${actionDate}> for formatting issues.`;
+
+			// skip client
+			Utils_SkipClient(errMsg, ci);
+		}
+	}
+
+	// ========== Attendance Notes ===========
 	// add Attendance Notes information:
 	if ( actionNotes ) {
 		$('iframe')
@@ -129,6 +146,7 @@ function setActionDropdown( client, ci ) {
 			.append(`<p>${actionNotes}</p>`);
 	}
 
+	// ============ Caseworker =============
 	// --- add caseworker in, if defined in client data ---
 	if ( actionCaseworker ) {		
 		// try to find & select caseworker

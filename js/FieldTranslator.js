@@ -66,10 +66,9 @@ function FT_getActionTranslator() {
 		// ====================== ACTIONS: ======================
 		"ACTION NAME":			'ddlActions', // REQUIRED!,
 		"ACTION CASEWORKER":	'CASEWORKERID',
-		// "ACTION NOTES":		'NO ELEM ID! HANDLE SEPARATELY!',
+		// "ACTION NOTES":		'NO ELEM ID! HANDLE IN CtrlAddAction.js!',
 		// "ACTION CODE":		"Action Code", // skipping, see footnote A
-		// TODO: probably not ready yet?
-		// "ACTION DATE":			"elementID"
+		"ACTION DATE":			"DATE_OF_ACT",
 
 		// User doesn't need to enter this column, it's just used as an element
 		// id translator for Add Action page
