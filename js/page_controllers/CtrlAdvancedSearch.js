@@ -206,7 +206,7 @@ function kickoffSearch(clientIndex, clientData, importSettings, action) {
 function processSearchResults(clientIndex, clientData, importSettings, action) {
 	let searchSettings = importSettings.searchSettings;
 
-	// First check if the window is at the Advanced Search page in RIPS
+	// First check if the window is at the Advanced SEARCH page in RIPS (not results)
 	if ( !Utils_UrlContains( Utils_GetTabHref('AdvancedSearch-Result'))) {
 
 		// Not on search results page, check if on Advanced Search page,
@@ -301,219 +301,262 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 
 	// page IS 'AdvancedSearch-Results' -> There ARE results :)
 	else {
-		// get client variables
-		let client = clientData[clientIndex];
-		let clientImportNames = getClientImportNames({
-			firstName: client['FIRST NAME'],
-			lastName: client['LAST NAME'],
-			fullName: client['FULL NAME']
+		// wait for search results to show on the page before doing analysis
+		Utils_WaitForCondition(
+			Utils_AreSearchResultsLoaded, {
+				tableSelector: '.table.table-striped.grid-table',
+				rowSelector: 'tr.grid-row'
+			}, 500, 8
+		)
+		.then(successMsg => {
+			// get row data (they have to be loaded now)
+			let resultRows = $('.table.table-striped.grid-table')
+				.find('tr.grid-row');
+
+			// 1 last check to make sure resultRows.length > 0
+			if (resultRows.length == 0) {
+				let errMsg = 'Somehow still 0 clients showing up in search result, ' +
+					'despite passing Utils_AreSearchResultsLoaded - fix this!!';
+
+				Utils_SkipClient(errMsg, clientIndex);
+			}
+
+			// there ARE search results, so now process them!
+			searchThroughResults(resultRows, clientData[clientIndex],
+				action, importSettings, clientIndex);
+		})
+		.catch(errMsg => {
+			// Gets here if results haven't loaded on the page. This is necessary
+			//  because no results looks like no matches, which usually is when
+			//  the program creates a new client - but if results haven't loaded,
+			//  this means there could still be a match, so creating a client would
+			//  mean potentially creating a duplicate record. BAD
+			Utils_SkipClient(errMsg, clientIndex);
 		});
-		let clientUnhcrNo = client['UNHCR NUMBER'];
+	}
+}
 
-		// if names object didn't return correctly, throw error and skip client
-		if (Object.keys(clientImportNames).length === 0) {
-			// error will (probs) be same for all clients, so stop import
-			let errMessage = `Somehow found a weird mix of first name ` +
-				`<${clientFirstName}>, last name <${clientLastName}>, ` +
-				`and full name <${clientFullName}> data from import. Quitting.`;
+/**
+ * Function searches through search results - AFTER being 100% confident they exist :D
+ * 
+ * @param {object} resultRows - jQuery rows representing search results
+ * @param {object} client - client object that is being imported
+ * @param {string} action - see above
+ * @param {object} importSettings - see above
+ * @param {number} clientIndex - see above
+ * @returns - none
+ */
+function searchThroughResults(resultRows, client, action, importSettings, clientIndex) {
+	// get client variables
+	let clientImportNames = getClientImportNames({
+		firstName: client['FIRST NAME'],
+		lastName: client['LAST NAME'],
+		fullName: client['FULL NAME']
+	});
+	let clientUnhcrNo = client['UNHCR NUMBER'];
 
-			Utils_StopImport( errMessage, function(response) {
-				ThrowError({
-					message: errMessage,
-					errMethods: ['mConsole', 'mAlert']
-				});
+	// if names object didn't return correctly, throw error and skip client
+	if (Object.keys(clientImportNames).length === 0) {
+		// error will (probs) be same for all clients, so stop import
+		let errMessage = `Somehow found a weird mix of first name ` +
+			`<${client['FIRST NAME']}>, last name <${client['LAST NAME']}>, ` +
+			`and full name <${client['FULL NAME']}> data from import. Import ` +
+			'needs BOTH first and last names OR full name. Quitting.';
+
+		Utils_StopImport( errMessage, function(response) {
+			ThrowError({
+				message: errMessage,
+				errMethods: ['mConsole', 'mAlert']
 			});
-			return;
-		}
+		});
+		return;
+	}
 
-		// get row data
-		let resultRows = $('.table.table-striped.grid-table')
-			.find('tr.grid-row');
-		let rowsToSearch = [];
+	// properties of each row (in HTML "data-name" attribute):
+	let rowHtmlData = {
+		Stars_No: 			"NRU_NO",
+		Unhcr_No: 			"HO_REF_NO",
+		First_Name: 		"ForeName",
+		Last_Name: 			"SurName",
+		Caseworker: 		"CASEWORKER",
+		Nationality: 		"NATIONALITY",
+		Country_Of_Origin: 	"TownBirthDesc"
+	};
+	
+	// collect search row data in new array
+	let rowsToSearch = [];
 
-		// properties of each row (in HTML "data-name" attribute):
-		let rowHtmlData = {
-			Stars_No: 			"NRU_NO",
-			Unhcr_No: 			"HO_REF_NO",
-			First_Name: 		"ForeName",
-			Last_Name: 			"SurName",
-			Caseworker: 		"CASEWORKER",
-			Nationality: 		"NATIONALITY",
-			Country_Of_Origin: 	"TownBirthDesc"
+	// for every row element, push name data to array
+	for (let i = 0; i < resultRows.length; i++) {
+		let $this = $(resultRows[i]);
+
+		// get data from search results
+		let rowStarsNo =
+			$this.find(`td[data-name="${rowHtmlData.Stars_No}"]`).text();
+		let rowFirstName =
+			$this.find(`td[data-name="${rowHtmlData.First_Name}"]`).text();
+		let rowLastName =
+			$this.find(`td[data-name="${rowHtmlData.Last_Name}"]`).text();
+		let rowUnhcrNo =
+			$this.find(`td[data-name="${rowHtmlData.Unhcr_No}"]`).text();
+
+		// instead of matching here, just get names (push to array)
+		// 	then use fuse.js to search through names after loop
+		rowsToSearch.push({
+			'resultIndex': i,
+			starsNo: rowStarsNo,
+			firstName: rowFirstName,
+			lastName: rowLastName,
+			elem: $this
+		});
+	}
+
+	// get matching settings from import settings
+	let matchSettings = importSettings.matchSettings;
+	let matchFirst = matchSettings.matchFirst,
+		matchLast = matchSettings.matchLast;
+		
+	let matches = [];
+
+	let result_firstName = [],
+		result_lastName = [];
+
+	// get first name search results if import settings say so
+	if (matchFirst) {
+		let fuseConfig = {
+			searchKeys: ['firstName'],
+			maxPatternLength: clientImportNames.firstName.length,
+			identifier: 'resultIndex'
 		};
-		
-		// for every row element, push name data to array
-		for (let i = 0; i < resultRows.length; i++) {
-			let $this = $(resultRows[i]);
 
-			// get data from search results
-			let rowStarsNo =
-				$this.find(`td[data-name="${rowHtmlData.Stars_No}"]`).text();
-			let rowFirstName =
-				$this.find(`td[data-name="${rowHtmlData.First_Name}"]`).text();
-			let rowLastName =
-				$this.find(`td[data-name="${rowHtmlData.Last_Name}"]`).text();
-			let rowUnhcrNo =
-				$this.find(`td[data-name="${rowHtmlData.Unhcr_No}"]`).text();
+		result_firstName = fuzzySearch(
+			fuseConfig,
+			rowsToSearch,
+			clientImportNames.firstName
+		);
+	}
 
-			// instead of matching here, just get names (push to array)
-			// 	then use fuse.js to search through names after loop
-			rowsToSearch.push({
-				'resultIndex': i,
-				starsNo: rowStarsNo,
-				firstName: rowFirstName,
-				lastName: rowLastName,
-				elem: $this
-			});
-		}
+	// get last name search results if import settings say so
+	if (matchLast) {
+		let fuseConfig = {
+			searchKeys: ['lastName'],
+			maxPatternLength: clientImportNames.lastName.length,
+			identifier: 'resultIndex',
+			distance: 100
+		};
 
-		// get matching settings from import settings
-		let matchSettings = importSettings.matchSettings;
-		let matchFirst = matchSettings.matchFirst,
-			matchLast = matchSettings.matchLast;
-			
-		let matches = [];
+		result_lastName = fuzzySearch(
+			fuseConfig,
+			rowsToSearch,
+			clientImportNames.lastName
+		);
+	}
 
-		let result_firstName = [],
-			result_lastName = [];
+	// if we didn't search first AND last names, just say all results
+	// 	are matches and move on
+	if (matchFirst && matchLast) {
+		// loop through search results of first name for now
+		for (let i = 0; i < result_firstName.length; i++) {
+			let f_resultIndex = result_firstName[i].item;
 
-		// get first name search results if import settings say so
-		if (matchFirst) {
-			let fuseConfig = {
-				searchKeys: ['firstName'],
-				maxPatternLength: clientImportNames.firstName.length,
-				identifier: 'resultIndex'
-			};
-
-			result_firstName = fuzzySearch(
-				fuseConfig,
-				rowsToSearch,
-				clientImportNames.firstName
-			);
-		}
-
-		// get last name search results if import settings say so
-		if (matchLast) {
-			let fuseConfig = {
-				searchKeys: ['lastName'],
-				maxPatternLength: clientImportNames.lastName.length,
-				identifier: 'resultIndex',
-				distance: 100
-			};
-
-			result_lastName = fuzzySearch(
-				fuseConfig,
-				rowsToSearch,
-				clientImportNames.lastName
-			);
-		}
-
-		// if we didn't search first AND last names, just say all results
-		// 	are matches and move on
-		if (matchFirst && matchLast) {
-			// loop through search results of first name for now
-			for (let i = 0; i < result_firstName.length; i++) {
-				let f_resultIndex = result_firstName[i].item;
-
-				// try to find same resultIndex in result_lastName
-				for (let lNameResult of result_lastName) {
-					let l_resultIndex = lNameResult.item;
-
-					// if indices match, add matching row to matches array
-					if (l_resultIndex === f_resultIndex) {
-						matches.push(rowsToSearch[f_resultIndex]);
-						break;
-					}
-				}
-			}
-		}
-		
-		// match first name only
-		else if (matchFirst && matchLast === false) {
-			for (let fNameResult of result_firstName) {
-				matches.push(rowsToSearch[fNameResult.item]);
-			}
-		}
-		
-		// match last name only
-		else if (matchFirst === false && matchLast) {
+			// try to find same resultIndex in result_lastName
 			for (let lNameResult of result_lastName) {
-				matches.push(rowsToSearch[lNameResult.item]);
-			}
-		}
-		
-		// only here if matchFirst & matchLast are false (shouldn't be possible)
-		else {
-			// throw error & quit
-			var errorMessage = `Import Settings bugged! matchFirst <${matchFirst}>` +
-				` and matchLast <${matchLast}> are false or undefined somehow!`;
+				let l_resultIndex = lNameResult.item;
 
-			// stop import and flag error message
-			Utils_StopImport( errorMessage, function(response) {
-				ThrowError({
-					message: errorMessage,
-					errMethods: ['mSwal', 'mConsole']
-				});
-			});
-			return;
-		}
-
-		// Check length of matchedRows array, decide next step from there
-		if (matches.length > 1) {
-			let msg = `Duplicate matching clients found [action=${action}]:`;
-
-			// loop through matches, pull out StARS numbers for error
-			for (let rowMatch of matches) {
-				msg += ` [StARS #${rowMatch.starsNo}]`;
-			}
-
-			// get next action to perform
-			let nextAction = Utils_GetNextSearchActionState(action, searchSettings);
-
-			// skip client & add msg to error stack
-			if (nextAction === 'NEXT_CLIENT') {
-				Utils_SkipClient(msg, clientIndex);
-			}
-
-			// add msg to error stack & perform next search type
-			else {
-				Utils_AddError(msg, function() {
-					navigateToAdvancedSearch(nextAction);
-				});
-			}
-		}
-		
-		// 1 exact match -> this is our client!
-		else if (matches.length === 1) {
-			// click the client row:
-			matches[0].elem.click();
-
-			// Client is already available, redirect to Client Basic Information
-			// to check if extra client data needs to be saved
-			var mObj = {
-				action: 'store_data_to_chrome_storage_local',
-				dataObj: {
-					'ACTION_STATE': 'CHECK_CLIENT_BASIC_DATA'
+				// if indices match, add matching row to matches array
+				if (l_resultIndex === f_resultIndex) {
+					matches.push(rowsToSearch[f_resultIndex]);
+					break;
 				}
-			};
+			}
+		}
+	}
+	
+	// match first name only
+	else if (matchFirst && matchLast === false) {
+		for (let fNameResult of result_firstName) {
+			matches.push(rowsToSearch[fNameResult.item]);
+		}
+	}
+	
+	// match last name only
+	else if (matchFirst === false && matchLast) {
+		for (let lNameResult of result_lastName) {
+			matches.push(rowsToSearch[lNameResult.item]);
+		}
+	}
+	
+	// only here if matchFirst & matchLast are false (shouldn't be possible)
+	else {
+		// throw error & quit
+		var errorMessage = `Import Settings bugged! matchFirst <${matchFirst}>` +
+			` and matchLast <${matchLast}> are false or undefined somehow!`;
 
-			// once action state is stored, navigate to CBI (there decide what to do)
-			chrome.runtime.sendMessage(mObj, function(response) {
-				Utils_NavigateToTab( Utils_GetTabHref('ClientBasicInformation') );
+		// stop import and flag error message
+		Utils_StopImport( errorMessage, function(response) {
+			ThrowError({
+				message: errorMessage,
+				errMethods: ['mSwal', 'mConsole']
+			});
+		});
+		return;
+	}
+
+	// Check length of matchedRows array, decide next step from there
+	if (matches.length > 1) {
+		let msg = `Duplicate matching clients found [action=${action}]:`;
+
+		// loop through matches, pull out StARS numbers for error
+		for (let rowMatch of matches) {
+			msg += ` [StARS #${rowMatch.starsNo}]`;
+		}
+
+		// get next action to perform
+		let nextAction = Utils_GetNextSearchActionState(action, searchSettings);
+
+		// skip client & add msg to error stack
+		if (nextAction === 'NEXT_CLIENT') {
+			Utils_SkipClient(msg, clientIndex);
+		}
+
+		// add msg to error stack & perform next search type
+		else {
+			Utils_AddError(msg, function() {
+				navigateToAdvancedSearch(nextAction);
 			});
 		}
-		
-		// no name matches, but unhcr # matched something. next decide if we
-		// 	need to create client or move on
-		else {
-			// new logic: did name matching algorithm above - if no name match,
-			// 	probably a relative, so client creation allowed
-			decideNextStep(importSettings, clientIndex, action);
+	}
+	
+	// 1 exact match -> this is our client!
+	else if (matches.length === 1) {
+		// click the client row:
+		matches[0].elem.click();
 
-			// old logic: skip client here.
-			// Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
-			// 	'Needs human intervention.', clientIndex);
-		}
+		// Client is already available, redirect to Client Basic Information
+		// to check if extra client data needs to be saved
+		var mObj = {
+			action: 'store_data_to_chrome_storage_local',
+			dataObj: {
+				'ACTION_STATE': 'CHECK_CLIENT_BASIC_DATA'
+			}
+		};
+
+		// once action state is stored, navigate to CBI (there decide what to do)
+		chrome.runtime.sendMessage(mObj, function(response) {
+			Utils_NavigateToTab( Utils_GetTabHref('ClientBasicInformation') );
+		});
+	}
+	
+	// no name matches, but unhcr # matched something. next decide if we
+	// 	need to create client or move on
+	else {
+		// new logic: did name matching algorithm above - if no name match,
+		// 	probably a relative, so client creation allowed
+		decideNextStep(importSettings, clientIndex, action);
+
+		// old logic: skip client here.
+		// Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
+		// 	'Needs human intervention.', clientIndex);
 	}
 	// NOTE: as of March 15, 2017 - I haven't seen any alerts on this page recently
 	// NOTE: as of August 7, 2017 - Popups occur when > 100 results AND when 0 results

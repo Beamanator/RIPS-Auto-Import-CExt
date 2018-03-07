@@ -281,8 +281,8 @@ function Utils_GetServiceDescFromCode( code ) {
  * intervals)
  * 
  * @param {function} Fcondition - function / condition that must eventually return true
- * @param {object} params - array of parameters to pass to Fcondition
- * @param {number} [time=1000] - time between each interval call
+ * @param {object} params - array or object of parameters to pass to Fcondition
+ * @param {number} [time=1000] - time between each interval call (in ms)
  * @param {number} [iter=5] - number of iterations allowed before rejecting
  * @returns {object} - Promise  - resolve when Fcondition returns true
  * 								- reject if iterates more than iter variable
@@ -740,16 +740,13 @@ function Utils_GetNextSearchActionState(action, searchSettings) {
 }
 
 // =====================================================================================
-//                                 UNUSED FUNCTIONS
+//                               CONDITIONAL FUNCTIONS
 // =====================================================================================
 
 /**
- * Function finds a select element (from input select_selector) using jQuer, then
+ * Function finds a select element (from input select_selector) using jQuery, then
  * returns true if the select element has an option element selected, and
  * returns false if the select element has not been 'populated' / selected
- * 
- * UNUSED because it's easier to just check while looping through dropdowns...
- * for now
  * 
  * @param {object} selector_arr - single-element array with jQuery selector
  * 								  to locate desired select element
@@ -782,4 +779,23 @@ function Utils_IsSelectElemPopulated( selector_arr ) {
 		console.warn('I think we would be here if more than one option is selected'
 			+ ' which we DIDNT PREPARE FOR??');
 	}
+}
+
+/**
+ * Function finds the number of result rows returned to the page using jQuery.
+ * returns true if # rows > 0
+ * returns false if # rows == 0
+ * 
+ * @param {object} config - config which holds table and row selectors
+ * @returns {boolean} - true of rows are loaded (# > 0)
+ */
+function Utils_AreSearchResultsLoaded( config ) {
+	let tableS = config.tableSelector,
+		rowS = config.rowSelector;
+
+	// get number of rows using jQuery
+	let numRows = $(tableS).find(rowS).length;
+
+	// if results are available (# rows > 0), returns true! else, false
+	return numRows > 0;
 }
