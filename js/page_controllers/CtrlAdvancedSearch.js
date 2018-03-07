@@ -347,6 +347,9 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
  * @returns - none
  */
 function searchThroughResults(resultRows, client, action, importSettings, clientIndex) {
+	let matchSettings = importSettings.matchSettings,
+		searchSettings = importSettings.searchSettings;
+	
 	// get client variables
 	let clientImportNames = getClientImportNames({
 		firstName: client['FIRST NAME'],
@@ -412,7 +415,6 @@ function searchThroughResults(resultRows, client, action, importSettings, client
 	}
 
 	// get matching settings from import settings
-	let matchSettings = importSettings.matchSettings;
 	let matchFirst = matchSettings.matchFirst,
 		matchLast = matchSettings.matchLast;
 		
