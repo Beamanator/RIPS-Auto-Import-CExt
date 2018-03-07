@@ -75,12 +75,12 @@ function startAddActionData( ci, clientData ) {
 		// action dropdown has been populated by RIPS function! now move on
 		setActionDropdown( client, ci ); 
 	})
-	.catch(function(errorMessage) {
+	.catch(function(errMsg) {
 		// action not found after setting service dropdown -> internet must
 		// not be doing well, so skip client.
 		// Note: if service is new, it's possible RIPS admin needs to
 		// add necessary actions to the service
-		Utils_SkipClient(errorMessage, ci);
+		Utils_SkipClient(errMsg, ci);
 	});
 }
 
