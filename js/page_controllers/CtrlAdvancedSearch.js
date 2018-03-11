@@ -103,27 +103,27 @@ function kickoffSearch(clientIndex, clientData, importSettings, action) {
 		action = Utils_GetNextSearchActionState(action, searchSettings);
 	}
 
-	let valueCode, nextActionState;
+	let nextActionState;
 
 	// get valueCode and next action depending on action / value to insert
 	switch(action) {
 		case 'SEARCH_FOR_CLIENT_UNHCR_NUMBER':
-			valueCode = 'UNHCR NUMBER';
+			// valueCode = 'UNHCR NUMBER';
 			nextActionState = 'ANALYZE_SEARCH_RESULTS_UNHCR_NUMBER';
 			break;
 
 		case 'SEARCH_FOR_CLIENT_PHONE':
-			valueCode = 'MAIN PHONE';
+			// valueCode = 'MAIN PHONE';
 			nextActionState = 'ANALYZE_SEARCH_RESULTS_PHONE';
 			break;
 		
 		case 'SEARCH_FOR_CLIENT_OTHER_PHONE':
-			valueCode = 'OTHER PHONE';
+			// valueCode = 'OTHER PHONE';
 			nextActionState = 'ANALYZE_SEARCH_RESULTS_OTHER_PHONE';
 			break;
 		
 		case 'SEARCH_FOR_CLIENT_STARS_NUMBER':
-			valueCode = 'STARS NUMBER';
+			// valueCode = 'STARS NUMBER';
 			nextActionState = 'ANALYZE_SEARCH_RESULTS_STARS_NUMBER';
 			break;
 
@@ -144,6 +144,10 @@ function kickoffSearch(clientIndex, clientData, importSettings, action) {
 				});
 			});
 	}
+
+	// get value code from nextActionState (value code will be used by field
+	//  translator to get data from client object)
+	let valueCode = Utils_GetValueCodeFromActionState(action);
 
 	if (!valueCode) return; // err handled above in 'default'
 	if (action === 'NEXT_CLIENT') return; // client skipping code above
@@ -356,7 +360,7 @@ function searchThroughResults(resultRows, client, action, importSettings, client
 		lastName: client['LAST NAME'],
 		fullName: client['FULL NAME']
 	});
-	let clientUnhcrNo = client['UNHCR NUMBER'];
+	// let clientUnhcrNo = client['UNHCR NUMBER'];
 
 	// if names object didn't return correctly, throw error and skip client
 	if (Object.keys(clientImportNames).length === 0) {
@@ -506,7 +510,12 @@ function searchThroughResults(resultRows, client, action, importSettings, client
 
 	// Check length of matchedRows array, decide next step from there
 	if (matches.length > 1) {
-		let msg = `Duplicate matching clients found [action=${action}]:`;
+		// get valueCode from action
+		let valueCode = Utils_GetValueCodeFromActionState(action);
+
+		// -> ALSO get FTs (search translator)
+		let msg = `Duplicate matching clients found [action=${action}], ` +
+			`[${valueCode}=${client[valueCode]}]:`;
 
 		// loop through matches, pull out StARS numbers for error
 		for (let rowMatch of matches) {
@@ -664,9 +673,9 @@ function decideNextStep(importSettings, ci, action) {
  * @param {string} clientUnhcr - unhcr # from client data
  * @returns {boolean} - true if match, false if not match
  */
-function matchUnhcr(rowUnhcr, clientUnhcr) {
-	return rowUnhcr.toUpperCase() === clientUnhcr.toUpperCase();
-}
+// function matchUnhcr(rowUnhcr, clientUnhcr) {
+// 	return rowUnhcr.toUpperCase() === clientUnhcr.toUpperCase();
+// }
 
 /**
  * Function extrapolates registration page navigation

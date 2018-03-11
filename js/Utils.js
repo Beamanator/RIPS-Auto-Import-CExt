@@ -739,6 +739,42 @@ function Utils_GetNextSearchActionState(action, searchSettings) {
 	return nextAction;
 }
 
+/**
+ * Function gets a value code (for a field translator) based off of the passed
+ * in action state. Action state could be something like 'SEARCH_FOR_CLIENT_PHONE',
+ * which would produce an action state of 'MAIN PHONE', as an example
+ * 
+ * @param {string} actionState - current action state of import
+ * @returns {string} - value code corresponding to action state ('' if doesn't match)
+ */
+function Utils_GetValueCodeFromActionState(actionState) {
+	let valueCode = '';
+
+	switch(actionState) {
+		case 'SEARCH_FOR_CLIENT_UNHCR_NUMBER':
+		case 'ANALYZE_SEARCH_RESULTS_UNHCR_NUMBER':
+			valueCode = 'UNHCR NUMBER';
+			break;
+
+		case 'SEARCH_FOR_CLIENT_PHONE':
+		case 'ANALYZE_SEARCH_RESULTS_PHONE':
+			valueCode = 'MAIN PHONE';
+			break;
+
+		case 'SEARCH_FOR_CLIENT_OTHER_PHONE':
+		case 'ANALYZE_SEARCH_RESULTS_OTHER_PHONE':
+			valueCode = 'OTHER PHONE';
+			break;
+
+		case 'SEARCH_FOR_CLIENT_STARS_NUMBER':
+		case 'ANALYZE_SEARCH_RESULTS_STARS_NUMBER':
+			valueCode = 'STARS NUMBER';
+			break;
+	}
+
+	return valueCode;
+}
+
 // =====================================================================================
 //                               CONDITIONAL FUNCTIONS
 // =====================================================================================
