@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "RIPS Extension - Auto Client Import",
-	"version": "2.2.2",
+	"version": "2.2.3",
 
 	"description": "RIPS Extension - Enables automatic client data import. Checks for existing client data before importing new client info.",
 
@@ -64,7 +64,7 @@
 			"32": "img/fav128.png"
 			// "48": "img/icon48.png" // unpacked exts need .png to see icon :)
 		},
-		"default_popup": "html/popup.html"
+		"default_popup": "html/optionPageRedirect.html"
 	},
 	"icons": {
     	"128": "img/fav128.png"
