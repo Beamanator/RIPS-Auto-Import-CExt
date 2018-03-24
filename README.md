@@ -1,6 +1,8 @@
 # RIPS-Auto-Import-CExt
 ## Instructions for useage:
 1) Log in to [RIPS](http://bit.ly/2CHOAcV) in only 1 tab on Google Chrome.
+   - If you have more than 1 RIPS tab open, even in multiple Google Chrome windows, the import will get confused and send an error!
+   - If you NEED to work on RIPS at the same time as the import, you can open RIPS using a different browser like Safari, Firefox, Bing, etc.
 2) Install Auto Import Extension.
 3) Open the "Options page" by clicking on the extension icon labeled "Ri" in the upper-right corner of Google Chrome.
 4) For any data you want to import into RIPS, make sure the column header matches an appropriate column below.
