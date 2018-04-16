@@ -34,6 +34,9 @@
 		// Ctrl.auto = true;
 		Ctrl.importEnabled = false;
 
+		// Get extension version #, set in main-title div
+		Ctrl.versionNum = chrome.runtime.getManifest().version;
+
 		// initialize arrays
 		Ctrl.headerArr = [];
 		Ctrl.dataArray = [];
