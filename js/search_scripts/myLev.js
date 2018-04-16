@@ -2,6 +2,14 @@
  * Original alrgorithm from:
  * https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#JavaScript
  * 
+ * Inspired by weighted Levenshtein algorithm from:
+ * https://stackoverflow.com/questions/22308014/damerau-levenshtein-distance-implementation
+ * 
+ * And Damerau piece from:
+ * https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
+ * 
+ * And a few edits myself
+ * 
  * Levenshtein Distance calculates the number of substitutions,
  * insertions, or deletions that need to happen for two strings to be
  * equal
@@ -20,17 +28,25 @@ function getEditDistance(a, b) {
     // handle empty strings
     if (a.length === 0) return b.length; 
     if (b.length === 0) return a.length;
-  
+
+    // set up distance matrix
     let matrix = [];
+
+    // set up weights obj
+    let weights = {
+        insert: 1,
+        delete: 1,
+        replace: 0.5
+    };
   
     // initialize first column of each row
     for (let i = 0; i <= b.length; i++) {
-        matrix[i] = [i];
+        matrix[i] = [weights.insert * i];
     }
   
     // increment each column in the first row
     for (let j = 0; j <= a.length; j++) {
-        matrix[0][j] = j;
+        matrix[0][j] = (weights.delete * j);
     }
   
     // Fill in the rest of the matrix
@@ -42,9 +58,9 @@ function getEditDistance(a, b) {
             
             else {
                 matrix[i][j] = Math.min(
-                    matrix[i-1][j-1] + 1, // substitution
-                    matrix[ i ][j-1] + 1, // insertion
-                    matrix[i-1][ j ] + 1  // deletion
+                    matrix[i-1][j-1] + weights.replace, // substitution
+                    matrix[ i ][j-1] + weights.insert, // insertion
+                    matrix[i-1][ j ] + weights.delete  // deletion
                 );
             }
         }
