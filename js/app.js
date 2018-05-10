@@ -47,7 +47,14 @@
 		Ctrl.byUnhcr = true; 		Ctrl.byPhone = false;
 		Ctrl.byOtherPhone = false;	Ctrl.byStarsNumber = false;
 		Ctrl.matchFirst = true;		Ctrl.matchLast = true;
-		Ctrl.createNew = false; // safer if we default this to false
+		
+		// handle client creation rules checkboxes
+		// Ctrl.createNew = false; // safer if we default this to false // old way
+		// default to skip conditionally (only skip when > 0 results but 0
+		//  exact matches - Create Client(s) otherwise)
+		Ctrl.skipClientCreation = false;
+		Ctrl.skipConditionally = true;
+		Ctrl.createAllClients = false;
 
 		// Set up Firebase:
 		// FB_initFirebase(Ctrl, $scope, firebase);
@@ -280,9 +287,37 @@
 		// ============================================================================
 
 		// ============================= EVERYTHING ELSE ==============================
-		// Function toggles createNew variable for checkboxes
-		Ctrl.toggleCreateNew = function() {
-			Ctrl.createNew = !Ctrl.createNew;
+		// Function handles changing client creation settings
+		Ctrl.handleClientCreationRuleChange = function(key) {
+			// negate clicked setting & set others to false
+			switch (key) {
+				// skip client creation always
+				case 'skip-cc':
+					Ctrl.skipClientCreation = !Ctrl.skipClientCreation;
+					Ctrl.skipConditionally = false;
+					Ctrl.createAllClients = false;
+					break;
+
+				// skip conditionally (only skip when > 0 results but 0 exact match)
+				case 'skip-con':
+					Ctrl.skipClientCreation = false;
+					Ctrl.skipConditionally = !Ctrl.skipConditionally;
+					Ctrl.createAllClients = false;
+					break;
+
+				// create all clients (when 0 exact matches)
+				case 'create-all':
+					Ctrl.skipClientCreation = false;
+					Ctrl.skipConditionally = false;
+					Ctrl.createAllClients = !Ctrl.createAllClients;
+					break;
+
+				// shouldn't get here -> error
+				default:
+					console.error(
+						`Key from Ctrl.handleClientCreationRuleChange is invalid:<${key}>`
+					);
+			}
 		}
 		
 		// Function fills table with pasted client data
@@ -345,8 +380,15 @@
 					byStarsNumber: Ctrl.byStarsNumber
 				},
 
+				clientCreationSettings: {
+					// TODO: handle these in scripts
+					skipClientCreation: Ctrl.skipClientCreation,
+					skipConditionally: Ctrl.skipConditionally,
+					createAllClients: Ctrl.createAllClients
+				},
+
 				otherSettings: {
-					createNew: Ctrl.createNew
+					// Add stuff here if needed
 				}
 			};
 		}
