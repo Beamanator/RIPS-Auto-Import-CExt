@@ -113,7 +113,7 @@
 			}
 
 			// TODO: add some validation for required fields (maybe in "Create Table" function)
-			console.log('data to import:',Ctrl.dataArray);
+			console.log('data getting imported:',Ctrl.dataArray);
 
 			// display empty import error array
 			Ctrl.importErrors = [];
@@ -159,7 +159,7 @@
 					// got here if only 1 RIPS tab open (yay)
 					var targetTab = tabs[0];
 					$scope.$apply(function() {
-						Ctrl.importEnabled = false; // hide button
+						Ctrl.importEnabled = false; // hide import button b/c just pressed it
 					});
 
 					var mObj = {
@@ -288,6 +288,7 @@
 
 		// ============================= EVERYTHING ELSE ==============================
 		// Function handles changing client creation settings
+		// Note: keys come hard-coded in options.html
 		Ctrl.handleClientCreationRuleChange = function(key) {
 			// negate clicked setting & set others to false
 			switch (key) {
@@ -314,9 +315,10 @@
 
 				// shouldn't get here -> error
 				default:
-					console.error(
-						`Key from Ctrl.handleClientCreationRuleChange is invalid:<${key}>`
-					);
+					displayError([
+						`Key from Ctrl.handleClientCreationRuleChange ` +
+						`is invalid:<${key}>`
+					]);
 			}
 		}
 		
@@ -363,28 +365,28 @@
 		/**
 		 * Function returns an object from import settings checkboxes
 		 * 
-		 * @param {object} Ctrl - angular app object
+		 * @param {object} app - angular app object (Controller)
 		 * @returns {object} - settings object
 		 */
-		function getImportSettings(Ctrl) {
+		function getImportSettings(app) {
 			return {
 				matchSettings: {
-					matchFirst: Ctrl.matchFirst,
-					matchLast: Ctrl.matchLast
+					matchFirst: app.matchFirst,
+					matchLast: app.matchLast
 				},
 
 				searchSettings: {
-					byUnhcr: Ctrl.byUnhcr,
-					byPhone: Ctrl.byPhone,
-					byOtherPhone: Ctrl.byOtherPhone,
-					byStarsNumber: Ctrl.byStarsNumber
+					byUnhcr: app.byUnhcr,
+					byPhone: app.byPhone,
+					byOtherPhone: app.byOtherPhone,
+					byStarsNumber: app.byStarsNumber
 				},
 
 				clientCreationSettings: {
 					// TODO: handle these in scripts
-					skipClientCreation: Ctrl.skipClientCreation,
-					skipConditionally: Ctrl.skipConditionally,
-					createAllClients: Ctrl.createAllClients
+					skipClientCreation: app.skipClientCreation,
+					skipConditionally: app.skipConditionally,
+					createAllClients: app.createAllClients
 				},
 
 				otherSettings: {
@@ -557,6 +559,7 @@
 		 * that occur DURING import
 		 * 
 		 * TODO: make this more clear by differentiating variable names
+		 * between basic & import errors
 		 * 
 		 * @param {object} messages - array of strings (warning messages) 
 		 */
