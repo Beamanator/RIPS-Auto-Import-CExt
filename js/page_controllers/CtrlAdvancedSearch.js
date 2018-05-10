@@ -53,6 +53,8 @@ function AdvancedSearch_Controller( config ) {
  * Function gets client index and data, sticks client data in related checkbox
  * (depending on action), and then clicks "search".
  * 
+ * Analysis of search results (or errors) happens in processSearchResults()
+ * 
  * Before the click, set action state to the appropriate next step
  * - 'ANALYZE_SEARCH_RESULTS_*'
  * 
@@ -224,6 +226,7 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 			.then(function() {
 				let $alert = $('.sweet-alert');
 
+				// check if popup modal is visible
 				if ( $alert.hasClass('visible') ) {
 					// alert was generated, meaning there were either 0 clients found
 					// or > 100 results
@@ -562,8 +565,9 @@ function searchThroughResults(resultRows, client, action, importSettings, client
 	// 	need to create client or move on
 	else {
 		// new logic: did name matching algorithm above - if no name match,
-		// 	probably a relative, so client creation allowed
-		decideNextStep(importSettings, clientIndex, action);
+		// 	probably a relative, check what client creation settings are set
+		// Note: rowsToSearch holds search results (remember, 0 matches here)
+		decideNextStep(importSettings, clientIndex, action, rowsToSearch.length);
 
 		// old logic: skip client here.
 		// Utils_SkipClient('Found client with matching UNHCR, but not matching name. ' +
@@ -613,22 +617,23 @@ function getClientImportNames(clientNamesObj) {
 }
 
 /**
- * Function gets import setting "createNew" and decides if we should:
+ * Function gets client creation import settings and decides if we should:
  * - try searching with new data item or
  * - create client in registration page or
- * - skip registration & try next client
+ * - skip registration (always) & try next client
+ * - skip client creation (if search results don't match client) & try next client
  * Note: createNew is boolean
  * 
  * @param {object} importSettings - see above
  * @param {number} ci - client Index (see above)
  * @param {string} action - see above
+ * @param {number} [numSearchResults=0] - number of clients in search result table
  */
-function decideNextStep(importSettings, ci, action) {
+function decideNextStep(importSettings, ci, action, numSearchResults=0) {
 	// if settings don't exist, stop import!
-	if (!importSettings || !importSettings.otherSettings ||
-		!importSettings.otherSettings.createNew === undefined) {
+	if (!importSettings || !importSettings.clientCreationSettings) {
 
-		var errorMessage = 'Import Settings <createNew> not found! ' +
+		var errorMessage = 'Import Settings <clientCreationSettings> not found! ' +
 			'Cancelling import.';
 
 		// stop import and flag error message
@@ -642,22 +647,63 @@ function decideNextStep(importSettings, ci, action) {
 
 	// otherwise, get settings and decide what to do
 	else {
-		let createNewClient = importSettings.otherSettings.createNew;
-		let nextAction = Utils_GetNextSearchActionState(action,
-			importSettings.searchSettings);
+		let creationSettings = importSettings.clientCreationSettings,
+			searchSettings = importSettings.searchSettings;
 
-		// no more searches left, so use client creation logic
+		let nextAction = Utils_GetNextSearchActionState(action, searchSettings);
+
+		// no more searches left, so use logic based off client creation settings
 		if (nextAction === 'NEXT_CLIENT') {
-			// nav to registration or skip client, depending on '.createNew'
-			if (createNewClient) {
+			// nav to registration or skip client, depending on '.settings'
+			
+			// create clients always, if 0 exact matches (we're here, so there
+			//  have to be 0 exact matches)
+			if (creationSettings.createAllClients) {
 				navigateToRegistration();
-			} else {
+			}
+			
+			// skip client creation always (no matter how many results)
+			// Here = 0 matches, any # of results
+			else if (creationSettings.skipClientCreation) {
 				let msg = 'No matches - Settings are set to skip client creation.';
+				Utils_SkipClient(msg, ci);
+			}
+
+			// skip client creation, depending on # of search results & exact matches
+			else if (creationSettings.skipConditionally) {
+				// 1) didn't find match, or else we wouldn't be here
+				// 2) similar results in RIPS found
+				// 3) settings say skip this client
+				if (numSearchResults > 0) {
+					let msg = 'No exact matches, but results found! ' +
+						'Skipping client creation b/c not able to match any results.';
+					Utils_SkipClient(msg, ci);
+				}
+				
+				// 1) didn't find match (as above)
+				// 2) 0 search results found
+				// 3) settings say create new client
+				else {
+					// shouldn't get here b/c 0 search results is handled w/ popup
+					let msg = '0 results, so why in decideNextStep()??';
+					Utils_SkipClient(msg, ci);
+
+					// Note: logically, navigate to Registration. But this shouldn't
+					// get hit ever so throw error.
+					// navigateToRegistration();
+				}
+			}
+
+			// all settings are false
+			else {
+				// Shouldn't get here b/c all client creation settings can't be false
+				let msg = 'BROKEN - All ClientCreationSettings are false! Or at ' +
+					'least that should be the only way to get here...';
 				Utils_SkipClient(msg, ci);
 			}
 		}
 
-		// do next search!
+		// do next type of search!
 		else {
 			// no need to send message to error stack right?
 			navigateToAdvancedSearch(nextAction);
