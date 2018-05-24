@@ -676,7 +676,8 @@ function decideNextStep(importSettings, ci, action, numSearchResults=0) {
 				// 3) settings say skip this client
 				if (numSearchResults > 0) {
 					let msg = 'No exact matches, but results found! ' +
-						'Skipping client creation b/c not able to match any results.';
+						'Skipping client creation b/c program not able to match ' +
+						'any results well enough.';
 					Utils_SkipClient(msg, ci);
 				}
 				
