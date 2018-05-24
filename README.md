@@ -1,4 +1,8 @@
 # RIPS-Auto-Import-CExt
+
+**Latest Stable Version: 2.2.2**
+**Version in progress: 2.3.0 - testing**
+
 ## Instructions for useage:
 1) Install the [RIPS Auto Import - Chrome Extension](https://chrome.google.com/webstore/detail/rips-extension-auto-clien/pocojahdkeglomgiciopcfcheoffdaoa).
 2) Log in to [RIPS](http://bit.ly/2CHOAcV) in only 1 tab on Google Chrome.
@@ -63,7 +67,7 @@ Other Information (Dropdown boxes):
 Other Information (Checkboxes):
 
 | CARE | CRS | EFRRA/ACSFT | IOM | MSF | PSTIC | Refuge Egypt | Save the Children | UNICEF/TdH | Other Service Provider |
-|------|------|-------------|-----|----|-------|--------------|-------------------|------------|------------------------|
+|------|-----|-------------|-----|-----|-------|--------------|-------------------|------------|------------------------|
 
 Other Information (Dates):
 
@@ -73,7 +77,8 @@ Other Information (Dates):
 Fields in separate tabs:
 
 | Urgent Notes | Important Information | Family Size | UNHCR Case Size | Direct Beneficiaries | Indirect Beneficiaries |
-|--<Free Text>--|-----<Free Text>------|-------------|-----------------|----------------------|------------------------|
+|:------------:|:---------------------:|:-----------:|:---------------:|:--------------------:|:----------------------:|
+|  *Free Text* |      *Free Text*      |   *number*  |     *number*    |      *number*        |        *number*        |
 
 Vulnerability Data:
 
