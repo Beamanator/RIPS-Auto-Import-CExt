@@ -290,27 +290,26 @@
 		// Function handles changing client creation settings
 		// Note: keys come hard-coded in options.html
 		Ctrl.handleClientCreationRuleChange = function(key) {
+			// initialize local variables
+			let skipClientCreation = false,
+				skipConditionally = false,
+				createAllClients = false;
+
 			// negate clicked setting & set others to false
 			switch (key) {
 				// skip client creation always
 				case 'skip-cc':
-					Ctrl.skipClientCreation = !Ctrl.skipClientCreation;
-					Ctrl.skipConditionally = false;
-					Ctrl.createAllClients = false;
+					skipClientCreation = Ctrl.skipClientCreation;
 					break;
 
 				// skip conditionally (only skip when > 0 results but 0 exact match)
 				case 'skip-con':
-					Ctrl.skipClientCreation = false;
-					Ctrl.skipConditionally = !Ctrl.skipConditionally;
-					Ctrl.createAllClients = false;
+					skipConditionally = Ctrl.skipConditionally;
 					break;
 
 				// create all clients (when 0 exact matches)
 				case 'create-all':
-					Ctrl.skipClientCreation = false;
-					Ctrl.skipConditionally = false;
-					Ctrl.createAllClients = !Ctrl.createAllClients;
+					createAllClients = Ctrl.createAllClients;
 					break;
 
 				// shouldn't get here -> error
@@ -320,6 +319,16 @@
 						`is invalid:<${key}>`
 					]);
 			}
+
+			// store new values to controller
+			Ctrl.skipClientCreation = skipClientCreation;
+			Ctrl.skipConditionally = skipConditionally;
+			Ctrl.createAllClients = createAllClients;
+
+			
+			// if no creation settings are checked (all false), set default
+			if (!skipClientCreation && !skipConditionally && !createAllClients)
+				Ctrl.skipConditionally = true;
 		}
 		
 		// Function fills table with pasted client data

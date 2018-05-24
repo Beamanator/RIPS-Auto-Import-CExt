@@ -156,7 +156,7 @@
 					<div class="sidebar-checkbox">
 						<label>
 							<input type="checkbox" value="skip_client_creation"
-							ng-checked="ctrl.skipClientCreation"
+							ng-model="ctrl.skipClientCreation"
 							ng-click="ctrl.handleClientCreationRuleChange('skip-cc')">
 							Skip Client Creation (<strong>ALWAYS</strong>)
 						</label>
@@ -165,7 +165,7 @@
 					<div class="sidebar-checkbox">
 						<label>
 							<input type="checkbox" value="skip_conditionally"
-							ng-checked="ctrl.skipConditionally"
+							ng-model="ctrl.skipConditionally"
 							ng-click="ctrl.handleClientCreationRuleChange('skip-con')">
 							Skip Conditionally (<strong>only skip when > 0 results but 0 exact matches - Create Client(s) otherwise</strong>)
 						</label>
@@ -173,7 +173,7 @@
 					<div class="sidebar-checkbox">
 						<label>
 							<input type="checkbox" value="create_all_clients"
-							ng-checked="ctrl.createAllClients"
+							ng-model="ctrl.createAllClients"
 							ng-click="ctrl.handleClientCreationRuleChange('create-all')">
 							Create Client(s) (<strong>if 0 exact matches</strong>)
 						</label>
