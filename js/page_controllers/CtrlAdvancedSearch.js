@@ -511,7 +511,7 @@ function searchThroughResults(resultRows, client, action, importSettings, client
 		return;
 	}
 
-	// Check length of matchedRows array, decide next step from there
+	// > 1 matching client, meaning dupes found.
 	if (matches.length > 1) {
 		// get valueCode from action
 		let valueCode = Utils_GetValueCodeFromActionState(action);
