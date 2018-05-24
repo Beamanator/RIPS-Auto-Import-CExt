@@ -146,9 +146,10 @@ Notes about Add Action table:
 |1.6|Only Reg data (0 matching UNHCR #s)|Skip Conditionally / Create Client(s)|New client created||
 |1.7|Only Reg data (0 matching UNHCR #s, missing a required field)|Skip Conditionally / Create Client(s)|Error in Registration page, client skipped, error added to options page|v2.0.5|
 |2.1|Reg data, UNHCR File Status|Default - 1 matching client|CBI data updated, Passes dependent / vuln swal warning|v2.0.5|
-|2.2|Reg data, UNHCR Case Size, Vulnerability (fill out!)|Default - 1 matching client|CBI data updated|v2.0.5|
-|3|Reg data, Service start date, Service code|Default - 1 matching client|Service data added|v2.0.0|
-|4|Reg data, Service data, Action data|Default - 1 matching client|Service data added, Action data added|v2.0.0|
+|2.2|Reg data, UNHCR Case Size, Vulnerability (fill out!) **Note**: VULN IMPORT NOT READY|Default - 1 matching client|CBI data updated|v2.0.5|
+|3|Reg data, Service start date, Service code, Service caseworker|Default - 1 matching client|Service data added|v2.0.0|
+|4.1|Reg data, Service data (code / caseworker), Action name, Action caseworker, Action notes, Action date|Default - 1 matching client|Service data added, Action data added|v2.0.0|
+|4.2|Reg data, Service data, Action data (service matches pre-existing service)|Defeault - 1 matching client|Service matches old service, moves directly to adding action data||
 |10|Only Reg data - Duplicate UNHCR #s|Default - 1 matching client|Client added to error list, no new client created|v2.0.0|
 
 **Note**: Although these testing scenarios should be run before releasing a new version, please still test a few clients in your spreadsheet before completely trusting that this import will work for you! We don't want to add lots of bad data to the database.
