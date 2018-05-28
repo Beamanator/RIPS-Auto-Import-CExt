@@ -221,7 +221,7 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 			// timeout wait is 1 second (1000 ms)
 			let waitTime = 1000;
 
-			// After a bit of time, then check for presence of popup on page
+			// After a bit of time, check for presence of popup on page
 			Utils_WaitTime(waitTime)
 			.then(function() {
 				let $alert = $('.sweet-alert');
@@ -242,11 +242,10 @@ function processSearchResults(clientIndex, clientData, importSettings, action) {
 					// 0 results! No error, decide if we need to create client
 					if (sweetAlertText === mNoResults) {
 						decideNextStep(importSettings, clientIndex, action);
-						return;
 					}
 
 					// > 100 results! Search next option or skip client
-					if (sweetAlertText === mManyResults) {
+					else if (sweetAlertText === mManyResults) {
 						// get next action to do
 						let nextAction = Utils_GetNextSearchActionState(action, searchSettings);
 						
@@ -681,17 +680,10 @@ function decideNextStep(importSettings, ci, action, numSearchResults=0) {
 					Utils_SkipClient(msg, ci);
 				}
 				
-				// 1) didn't find match (as above)
-				// 2) 0 search results found
-				// 3) settings say create new client
+				// 1) 0 search results found (popup)
+				// 2) settings say create new client
 				else {
-					// shouldn't get here b/c 0 search results is handled w/ popup
-					let msg = '0 results, so why in decideNextStep()??';
-					Utils_SkipClient(msg, ci);
-
-					// Note: logically, navigate to Registration. But this shouldn't
-					// get hit ever so throw error.
-					// navigateToRegistration();
+					navigateToRegistration();
 				}
 			}
 
