@@ -510,13 +510,13 @@ function searchThroughResults(resultRows, client, action, importSettings, client
 		return;
 	}
 
-	// > 1 matching client, meaning dupes found.
+	// > 1 matching client, meaning duplicates found :(
 	if (matches.length > 1) {
 		// get valueCode from action
 		let valueCode = Utils_GetValueCodeFromActionState(action);
 
-		// -> ALSO get FTs (search translator)
-		let msg = `Duplicate matching clients found [action=${action}], ` +
+		// -> create error message, add UNHCR so can be searched easily later
+		let msg = `Duplicate matching clients found ` +
 			`[${valueCode}=${client[valueCode]}]:`;
 
 		// loop through matches, pull out StARS numbers for error
