@@ -82,10 +82,10 @@ Fields in separate tabs:
 
 Vulnerability Data:
 
-| Vulnerability Notes | Vulnerability Name |
-|---------------------|--------------------|
-| Test vulnerability! |    Homeless        |
-|               | Single female head of household |
+| Vulnerability Notes |  Vulnerability Names  |
+|---------------------|-----------------------|
+| Test vulnerability! |Homeless, Mental health|
+|      ...            |Single female head of household|
 
 Notes about "Optional" tables above:
 1) *Vulnerability name* - make sure vulnerability is spelled exactly correct
@@ -135,21 +135,21 @@ Notes about Add Action table:
 1) *Service Code* - If populated but "Action Name" column is omitted, service will be added, then action data will be skipped.
 2) *Service Code* - This is the same column as above for Services -> don't add 2 columns with "Service Code" title.
 
-### Testing Scenarios:
+## Testing Scenarios:
 | # | Client Data Description (list) |Client Creation Settings|Expected Outcome| Last Pass (Version #) |
 |:-:|:------------------------------:|:----------------------:|:--------------:|:---------------------:|
-|1.1|Only Reg data (1 exact matching client)|All settings|No new client created, no error, client selected||
-|1.2|Only Reg data (> 1 matching UNHCR #s, 1 matching name)|All Settings|No new client created, no error, matching client selected|v2.0.5|
-|1.3|Only Reg data (> 1 matching UNHCR #s, no matching names)|Skip Client Creation / Skip Conditionally|No new client created, skip error thrown, next client is searched for||
-|1.4|Only Reg data (> 1 matching UNHCR #s, no matching names)|Create Client(s)|New client created||
-|1.5|Only Reg data (0 matching UNHCR #s)|Skip Client Creation|No new client created, skip error thrown, next client is searched for||
-|1.6|Only Reg data (0 matching UNHCR #s)|Skip Conditionally / Create Client(s)|New client created||
-|1.7|Only Reg data (0 matching UNHCR #s, missing a required field)|Skip Conditionally / Create Client(s)|Error in Registration page, client skipped, error added to options page|v2.0.5|
-|2.1|Reg data, UNHCR File Status|Default - 1 matching client|CBI data updated, Passes dependent / vuln swal warning|v2.0.5|
-|2.2|Reg data, UNHCR Case Size, Vulnerability (fill out!) **Note**: VULN IMPORT NOT READY|Default - 1 matching client|CBI data updated|v2.0.5|
-|3|Reg data, Service start date, Service code, Service caseworker|Default - 1 matching client|Service data added|v2.0.0|
-|4.1|Reg data, Service data (code / caseworker), Action name, Action caseworker, Action notes, Action date|Default - 1 matching client|Service data added, Action data added|v2.0.0|
-|4.2|Reg data, Service data, Action data (service matches pre-existing service)|Defeault - 1 matching client|Service matches old service, moves directly to adding action data||
-|10|Only Reg data - Duplicate UNHCR #s|Default - 1 matching client|Client added to error list, no new client created|v2.0.0|
+|1.1|Only Reg data (1 exact matching client)|All settings|No new client created, no error, client selected|v2.3.0|
+|1.2|Only Reg data (> 1 matching UNHCR #s, 1 matching name)|All Settings|No new client created, no error, matching client selected|v2.3.0|
+|1.3|Only Reg data (> 1 matching UNHCR #s, no matching names)|Skip Client Creation / Skip Conditionally|No new client created, skip error thrown, next client is searched for|v2.3.0|
+|1.4|Only Reg data (> 1 matching UNHCR #s, no matching names)|Create Client(s)|New client created|v2.3.0|
+|1.5|Only Reg data (0 matching UNHCR #s)|Skip Client Creation|No new client created, skip error thrown, next client is searched for|v2.3.0|
+|1.6|Only Reg data (0 matching UNHCR #s)|Skip Conditionally / Create Client(s)|New client created|v2.3.0|
+|1.7|Only Reg data (0 matching UNHCR #s, missing a required field)|Skip Conditionally / Create Client(s)|Error in Registration page, client skipped, error added to options page|v2.3.0|
+|2.1|Reg data, UNHCR File Status|Default - 1 matching client|CBI data updated, Passes dependent / vuln swal warning|v2.3.0|
+|2.2|Reg data, UNHCR Case Size, *Vulnerability Notes / Names - NOT READY YET*|Default - 1 matching client|CBI data updated|v2.3.0|
+|3|Reg data, Service start date, Service code, Service caseworker|Default - 1 matching client|Service data added|v2.3.0|
+|4.1|Reg data, Service data (code / caseworker), Action name, Action caseworker, Action notes, Action date|Default - 1 matching client|NEW Service added, Action data added|v2.3.0|
+|4.2|Reg data, Service data (code / caseworker), Action data (service matches pre-existing service)|Default - 1 matching client|Service matches old service, moves directly to adding action data|v2.3.0|
+|10|Only Reg data - Duplicate UNHCR #s AND duplicate matching names|Default - 1 matching client|Client added to error list, no new client created|v2.3.0|
 
 **Note**: Although these testing scenarios should be run before releasing a new version, please still test a few clients in your spreadsheet before completely trusting that this import will work for you! We don't want to add lots of bad data to the database.
