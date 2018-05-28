@@ -96,6 +96,7 @@ function FT_getOptionalTranslator() {
 		"CRS NUMBER":			'CDIdentifier3',
 		"STARS STUDENT NUMBER":	'CDIdentifier6',
 		"MSF NUMBER":			'CDIdentifier5',
+		// For 'Dependents' textboxes, see appendHiddenCBITranslators()
 		
 		// ====== CHECKBOXES: ======
 		"CARE": 		'IsCBLabel1',
@@ -108,7 +109,7 @@ function FT_getOptionalTranslator() {
 		"SAVE THE CHILDREN":	'IsCBLabel8',
 		"UNICEF/TDH": 			'IsCBLabel9',
 		"OTHER SERVICE PROVIDER":	'IsCBLabel10',
-		// Vulnerability checkboxes in separate function! (appendHiddenCBITranslators)
+		// For 'Vulnerabilities' checkboxes, see appendHiddenCBITranslators()
 
 		// ====== DROPDOWNS: ======
 
@@ -154,7 +155,7 @@ function FT_getOptionalTranslator() {
 function appendHiddenCBITranslators( obj ) {
 	// make sure caller is on 'ClientDetails/ClientDetails' page (CBI)
 	if ( Utils_GetUrlPiece(Utils_GetPageURL()) !==
-		Utils_GetUrlPiece( Utils_GetTabHref('ClientBasicInformation')) ) {
+		Utils_GetUrlPiece(Utils_GetTabHref('ClientBasicInformation')) ) {
 			return obj;
 	}
 
@@ -179,16 +180,19 @@ function appendHiddenCBITranslators( obj ) {
 	var vulnLabelArray = $('form#postClntVulSubmit').find('label');
 
 	// loop through vulnerability label elements to get name of
-	// vulnerability & the 'for' attribute -> the element id of
-	// the checkboxes
-	$.each(vulnLabelArray, function( i, elem ) {
-		// get vulnerability name and element ID
-		var vulnName = elem.innerText;
-		var elemId = elem.getAttribute('for');
+	//  vulnerability & the 'for' attribute -> the element id of
+	//  the checkboxes
+	// TODO: uncomment below code to add every vulnerability name to this
+	//  field translator. Before doing this, add some code in app.js to
+	//  convert all vulerability name data to match the client values
+	// $.each(vulnLabelArray, function( i, elem ) {
+	// 	// get vulnerability name and element ID
+	// 	var vulnName = elem.innerText;
+	// 	var elemId = elem.getAttribute('for');
 		
-		// put name and id key: value pair into obj
-		obj[vulnName] = elemId;
-	});
+	// 	// put name and id key: value pair into obj
+	// 	obj[vulnName] = elemId;
+	// });
 
 	// even though passed-in object was changed, still need to return it.
 	return obj;
