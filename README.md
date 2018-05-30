@@ -1,7 +1,7 @@
 # RIPS-Auto-Import-CExt
 
-**Latest Stable Version: 2.2.2**
-**Version in progress: 2.3.0 - testing**
+**Latest Stable Version: 2.3.0**
+**Version in progress: X.X.X**
 
 ## Instructions for useage:
 1) Install the [RIPS Auto Import - Chrome Extension](https://chrome.google.com/webstore/detail/rips-extension-auto-clien/pocojahdkeglomgiciopcfcheoffdaoa).
