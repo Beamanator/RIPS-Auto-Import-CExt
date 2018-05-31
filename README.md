@@ -1,11 +1,11 @@
 # RIPS-Auto-Import-CExt
 
-**Latest Stable Version: 2.2.2**
-**Version in progress: 2.3.0 - testing**
+**Latest Stable Version: 2.3.0**
+**Version in progress: X.X.X**
 
 ## Instructions for useage:
 1) Install the [RIPS Auto Import - Chrome Extension](https://chrome.google.com/webstore/detail/rips-extension-auto-clien/pocojahdkeglomgiciopcfcheoffdaoa).
-2) Log in to [RIPS](http://bit.ly/2CHOAcV) in only 1 tab on Google Chrome.
+2) Log in to RIPS (talk to RIPS guy if you need the link) in only 1 tab on Google Chrome.
    - If you have more than 1 RIPS tab open, even in multiple Google Chrome windows, the import will get confused and send an error!
    - If you NEED to work on RIPS at the same time as the import, you can open RIPS using a different browser like Safari, Firefox, Bing, etc.
 3) Open the extension's "Options page" by clicking on the extension icon labeled "Ri" in the upper-right corner of Google Chrome.
