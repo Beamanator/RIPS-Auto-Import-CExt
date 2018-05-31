@@ -10,7 +10,7 @@ body div {
 /* Data table -> Column styling */
 div[class^="col-"] {
     border: solid 1px black;
-    display: inline-block;
+    float: left;
 }
 div[class^="col-"]:nth-child(even) {
     background-color: #bfbfbf;
@@ -164,13 +164,13 @@ div.client-data-errors {
 div.data-table-container {
     white-space: nowrap;
     overflow-x: scroll;
-    padding: 0px;
+    padding: 0px 10px;
 }
 div.row {
     padding: 0px;
 }
 div.row div {
-    padding: 0px;
+    padding: 0px 3px;
     font-size: 15px;
     overflow-x: hidden;
 }
