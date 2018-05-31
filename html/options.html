@@ -211,6 +211,7 @@
 				<div class="container-fluid" id="data-table-container"
 					ng-if="!ctrl.errorMessages.length && ctrl.delim">
 					
+					<!-- expand / shring button row -->
 					<div class="row">
 						<div ng-repeat="button in ctrl.headerArr"
 							style="width: {{ ctrl.getWidth($index) }}px;" 
@@ -223,15 +224,19 @@
 						</div>
 					</div>
 
+					<!-- Header row -->
 					<div class="row">
-						<div ng-repeat="title in ctrl.headerArr" class="col-{{$index}}"
+						<div ng-repeat="title in ctrl.headerArr" 
+							class="col-{{$index}}"
 							style="width: {{ ctrl.getWidth($index) }}px;">
 							{{ title }}
 						</div>
 					</div>
 
+					<!-- client properties -->
 					<div class="row" ng-repeat="row in ctrl.dataArray">
-						<div ng-repeat="prop in row" class="col-{{$index}}"
+						<div ng-repeat="prop in row"
+							class="col-{{$index}}"
 							style="width: {{ ctrl.getWidth($index) }}px;">
 							{{ prop }}
 						</div>
