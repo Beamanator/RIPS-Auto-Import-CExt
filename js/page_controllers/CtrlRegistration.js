@@ -62,21 +62,45 @@ function registerNewClient(clientIndex, clientData) {
 			
 			// success => no fatal error found
 			.then(function(success) {
-				// Here we click the 'save button'
-				// -> redirects to Client Basic Information if data valid
-				$('input[value="Save"].newField').click();
+				// get save button
+				// NOTE: this button is created via the RIPS Validation Extension
+				// -> need that ext installed for this auto import ext to work
+				let validSaveBtn = $('input[value="Save"].newField');
 
-				// check again for Swal
-				checkForSwal()
-				.then(function(success) {
-					// this condition should never be reached because this means
-					// no swal occured. In this case, page will redirect to
-					// CBI if no swal occurs
-				})
-				.catch(function(errMsg) {
-					// error, skip client.
-					Utils_SkipClient(errMsg, clientIndex);
-				});;
+				// check that btn exists
+				if (validSaveBtn.length === 1) {
+					// Here we click the 'save button'
+					// -> redirects to Client Basic Information if data valid
+					validSaveBtn.click();
+
+					// check again for Swal
+					checkForSwal()
+					.then(function(success) {
+						// do nothing -> this means no swal occured.
+						// In this case, page will redirect to
+						// CBI automatically (at least, it should)
+						console.log('Hopefully i redirect?');
+					})
+					.catch(function(errMsg) {
+						// error, skip client.
+						Utils_SkipClient(errMsg, clientIndex);
+					});
+				}
+
+				// no valid save button - probably because validation extension
+				//  isn't installed on comp! :(
+				else {
+					let errMsg = `# of valid save buttons found: ${validSaveBtn.length}. ` +
+						'Make sure you have the RIPS Validation Extension installed! ' +
+						'Installation instructions here: http://bit.ly/2x54v4T';
+
+					Utils_StopImport(errMsg, function(response) {
+						ThrowError({
+							message: errMsg,
+							errMethods: ['mConsole']
+						});
+					});
+				}
 			})
 
 			// error => fatal error found! Skip client
