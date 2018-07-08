@@ -56,7 +56,7 @@ function FT_getServiceTranslator() {
 	return {
 		// ====================== SERVICES: ======================
 		"SERVICE CODE":			'lscCodeValue', // REQUIRED!
-		"SERVICE CASEWORKER": 	'CASEWORKERID',
+		"SERVICE CASEWORKER": 	'cwValue', // OLD: CASEWORKERID (changed ~ 8 July 2018)
 		"SERVICE START DATE": 	'DATE_OF_MATTER_START'
 	};
 }

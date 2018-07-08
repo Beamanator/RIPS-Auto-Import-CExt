@@ -343,10 +343,16 @@ function  Utils_InsertValue(value, id, configParam) {
 	let success = false,
 		$elem = $('#' + id);
 
+	// check to make sure the elem exists!
+	if ($elem.length === 0) {
+		let errMsg = `ERROR: $elem doesn't exist: <#${id}>. Check HTML! Ask Developer!`;
+		Utils_AddError(errMsg);
+		success = false;
+	}
+
 	// check if value or id are undefined
-	if (!value || !id) {
-		console.warn('Warning: value <' + value + '> or id <' + id +
-			'> are undefined');
+	else if (!value || !id) {
+		console.warn(`Warning: value <${value}> or id <${id}> are undefined`);
 		success = false;
 	}
 
