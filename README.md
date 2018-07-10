@@ -107,22 +107,24 @@ Notes about Services table:
 
 | Service Code | Service Description |
 |:------------:|:-------------------:|
+|AEP|Adult Education Program|
 |AFP|PS Adults and Families Program|
+|CEP|Children Education Program|
 |DA|PS Direct Assistance Program|
 |DIER|PS Drop in and Emergency Response|
+|EACB|Education Access and Capacity Building|
+|ECW|Early Childhood Wellbeing|
 |GROUPS|PS Groups and Activities|
+|MAN|Management|
 |MED|PS Medical Access Program|
-|UCY|PS Unaccompanied Children and Youth Program|
-|UYBP|PS Unaccompanied Youth Bridging Program|
-|RST|RLAP Resettlement|
+|MONT|Montessori Preschool|
+|OUT|Community Outreach|
+|PDC|Professional Development Courses|
 |PRO|RLAP Protection|
 |RSD|RLAP RSD|
-|AEP|Adult Education Program|
-|CEP|Children Education Program|
-|EACB|Education Access and Capacity Building|
-|MONT|Montessori Preschool|
-|PDC|Professional Development Courses|
-|OUT|Community Outreach|
+|RST|RLAP Resettlement|
+|UCY|PS Unaccompanied Children and Youth Program|
+|UYBP|PS Unaccompanied Youth Bridging Program|
 
 ## Fields available for Add Action page, and example data:
 

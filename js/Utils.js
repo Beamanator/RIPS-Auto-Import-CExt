@@ -254,16 +254,17 @@ function Utils_GetServiceDescFromCode( code ) {
 	var map = {										// id's below
 		AEP:	'Adult Education Program',			// 65
 		AFP: 	'PS Adults and Families Program',	// 56
-		CEP: 	'Children Education Program', 	// 64
+		CEP: 	'Children Education Program', 		// 64
 		DA:		'PS Direct Assistance Program',		// 57 (note: NOT DAP!)
 		DIER:	'PS Drop in and Emergency Response',		// 58
 		EACB:	'Education Access and Capacity Building',	// 66
+		ECW:    'Early Childhood Wellbeing',		// 72
 		GROUPS:	'PS Groups and Activities',			// 59
 		MAN:	'Management',						// 67
-		MED:	'PS Medical Access Program',		// 60
+		MED:	'PS Medical Access Program',		// 60 (note: NOT MAP!)
 		MONT:	'Montessori Preschool',				// 63
-		NONCLN:	'Non Client Time',					// 39
-		OUT:	'Community Outreach',				// ???
+		// NONCLN:	'Non Client Time',					// 39
+		OUT:	'Community Outreach',				// 71
 		PDC:	'Professional Development Courses',	// 69
 		PRO:	'RLAP Protection',					// 68
 		RSD:	'RLAP RSD',							// 45
