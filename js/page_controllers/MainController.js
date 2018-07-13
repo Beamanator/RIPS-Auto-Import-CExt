@@ -169,6 +169,7 @@ function BeginClientImport() {
 		.then(function( config ) {
 			Run_CtrlAdvancedSearch( config );
 		});
+		// TODO: add catch statement?
 	}
 	
 	// else, we're not on AdvancedSearch, so navigate there
