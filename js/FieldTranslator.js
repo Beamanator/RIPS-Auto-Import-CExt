@@ -185,14 +185,15 @@ function appendHiddenCBITranslators( obj ) {
 	// TODO: uncomment below code to add every vulnerability name to this
 	//  field translator. Before doing this, add some code in app.js to
 	//  convert all vulerability name data to match the client values
-	// $.each(vulnLabelArray, function( i, elem ) {
-	// 	// get vulnerability name and element ID
-	// 	var vulnName = elem.innerText;
-	// 	var elemId = elem.getAttribute('for');
+	$.each(vulnLabelArray, function( i, elem ) {
+		// get vulnerability name and element ID
+		// -> uppercase to match keys above
+		var vulnName = elem.innerText.toUpperCase();
+		var elemId = elem.getAttribute('for');
 		
-	// 	// put name and id key: value pair into obj
-	// 	obj[vulnName] = elemId;
-	// });
+		// put name and id key: value pair into obj
+		obj[vulnName] = elemId;
+	});
 
 	// even though passed-in object was changed, still need to return it.
 	return obj;
