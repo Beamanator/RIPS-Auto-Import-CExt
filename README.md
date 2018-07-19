@@ -85,11 +85,12 @@ Vulnerability Data:
 
 | Vulnerability Notes |  Vulnerability Names  |
 |---------------------|-----------------------|
-| Test vulnerability! |Homeless, Mental health|
+| Test vulnerability! |Homeless; Mental health|
 |      ...            |Single female head of household|
 
 Notes about "Optional" tables above:
-1) *Vulnerability name* - make sure vulnerability is spelled exactly correct
+1) *Vulnerability Names* - make sure vulnerability is spelled exactly correct
+2) *Vulnerability Names* - if you import multiple vulnerabilities on one client, separate the vulnerability names with a semi-colon **`;`**
 
 ## Fields available for Services page, and example data:
 
