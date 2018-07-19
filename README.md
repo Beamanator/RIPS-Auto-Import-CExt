@@ -149,7 +149,8 @@ Notes about Add Action table:
 |1.6|Only Reg data (0 matching UNHCR #s)|Skip Conditionally / Create Client(s)|New client created|v2.3.0|
 |1.7|Only Reg data (0 matching UNHCR #s, missing a required field)|Skip Conditionally / Create Client(s)|Error in Registration page, client skipped, error added to options page|v2.3.0|
 |2.1|Reg data, UNHCR File Status|Default - 1 matching client|CBI data updated, Passes dependent / vuln swal warning|v2.3.0|
-|2.2|Reg data, UNHCR Case Size, *Vulnerability Notes / Names - NOT READY YET*|Default - 1 matching client|CBI data updated|v2.3.0|
+|2.2|Reg data, UNHCR Case Size, *Vulnerability Notes / Names - NOT READY YET*|Default - 1 matching client|CBI data updated|v2.4.3|
+|2.3|Reg data, Vulnerability Names only (no previous vulnerability data saved)|Default - 1 matching client|Vulns updated|v2.4.3|
 |3|Reg data, Service start date, Service code, Service caseworker|Default - 1 matching client|Service data added|v2.3.0|
 |4.1|Reg data, Service data (code / caseworker), Action name, Action caseworker, Action notes, Action date|Default - 1 matching client|NEW Service added, Action data added|v2.3.0|
 |4.2|Reg data, Service data (code / caseworker), Action data (service matches pre-existing service)|Default - 1 matching client|Service matches old service, moves directly to adding action data|v2.3.0|
