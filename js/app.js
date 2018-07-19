@@ -467,6 +467,7 @@
 			 * Cannot look for matching header fields here BECAUSE Vulnerabilities
 			 * Are dynamically added to translator when on client basic information
 			 * page. THEREFORE, don't check here, just check when importing clients
+			 * === 19 July comment: I don't know what this above note means... ===
 			 */ 
 
 			// create keys for header Obj -> ALL UPPERCASE :)
@@ -499,6 +500,24 @@
 					var propName = headerKeys[cellIndex];
 
 					clientObj[propName] = cell.trim();
+				}
+
+				// client has vulnerability, add each vuln to separate
+				// -> key in client object -> value = "true"
+				// Note: keeping propName 'VULNERABILITY NOTES' on client
+				// -> for potential debugging purposes
+				if (clientObj[ 'VULNERABILITY NAMES' ]) {
+					// split on semi-colon ';'
+					clientObj[ 'VULNERABILITY NAMES' ].split(';').forEach((vuln, _) => {
+						// add vulnerability to headerArr just to look consistent
+						headerRow.push(vuln);
+						
+						// uppercase to match other client keys
+						vuln = vuln.trim().toUpperCase();
+
+						// add vuln to separate client key
+						clientObj[ vuln ] = true
+					});
 				}
 
 				returnObj.dataArray.push(clientObj);
