@@ -502,17 +502,19 @@
 					clientObj[propName] = cell.trim();
 				}
 
-				// client has vulnerability, add each vuln to separate
-				// -> key in client object -> value = "true"
-				// Note: keeping propName 'VULNERABILITY NOTES' on client
+				// if client has vulnerability names, add each vuln to separate
+				// -> key in client object -> with `value = "true"`
+				// -> for Utils_SetCheckboxValue function to work properly
+				// Note: keeping propName 'VULNERABILITY NAMES' on client
 				// -> for potential debugging purposes
 				if (clientObj[ 'VULNERABILITY NAMES' ]) {
 					// split on semi-colon ';'
 					clientObj[ 'VULNERABILITY NAMES' ].split(';').forEach((vuln, _) => {
 						// add vulnerability to headerArr just to look consistent
+						// -> in "options.html" page
 						headerRow.push(vuln);
 						
-						// uppercase to match other client keys
+						// uppercase vuln to match other client keys
 						vuln = vuln.trim().toUpperCase();
 
 						// add vuln to separate client key
