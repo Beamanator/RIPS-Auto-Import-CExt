@@ -353,7 +353,8 @@ function  Utils_InsertValue(value, id, configParam) {
 
 	// check if value or id are undefined
 	else if (!value || !id) {
-		console.warn(`Warning: value <${value}> or id <${id}> are undefined`);
+		let errMsg = `ERROR: cannot insert value! value <${value}> or id <${id}> are undefined`;
+		Utils_AddError(errMsg);
 		success = false;
 	}
 
