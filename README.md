@@ -130,7 +130,7 @@ Notes about Services table:
 
 ## Fields available for Add Action page, and example data:
 
-| Service Code\* | Action Name\* | Action Date (not ready) | Action Caseworker | Attendance Notes |
+| Service Code\* | Action Name\* | Action Date (not ready) | Action Caseworker | Action Notes |
 |:----------------:|-----------------|-------------|-------------------|------------------|
 | RSD, UYBP, GROUPS, etc| Other      |             | abeaman           |                  |
 |   MAN            | Referred for food & hygiene box || Staff | Awww giggidy, let's get some boxes!|
