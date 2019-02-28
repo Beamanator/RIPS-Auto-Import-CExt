@@ -262,6 +262,7 @@ function Utils_GetServiceDescFromCode( code ) {
 		GROUPS:	'PS Groups and Activities',			// 59
 		MAN:	'Management',						// 67
 		MED:	'PS Medical Access Program',		// 60 (note: NOT MAP!)
+		MHP: 	'PS Mental Health Program', 		// 74
 		MONT:	'Montessori Preschool',				// 63
 		// NONCLN:	'Non Client Time',					// 39
 		OUT:	'Community Outreach',				// 71
