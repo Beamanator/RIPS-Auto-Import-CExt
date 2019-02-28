@@ -118,6 +118,7 @@ Notes about Services table:
 |GROUPS|PS Groups and Activities|
 |MAN|Management|
 |MED|PS Medical Access Program|
+|MHP|PS Mental Health Program|
 |MONT|Montessori Preschool|
 |OUT|Community Outreach|
 |PDC|Professional Development Courses|
