@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "RIPS Extension - Auto Client Import",
-	"version": "2.4.3",
+	"version": "2.5.0",
 
 	"description": "RIPS Extension - Enables automatic client data import. Checks for existing client data before importing new client info.",
 
@@ -11,33 +11,33 @@
 	],
 	"content_scripts": [
 		{	// Registration page
-			"matches": [ "http://rips.247lib.com/*/Registration/Registration" ],
+			"matches": [ "*://rips.247lib.com/*/Registration/Registration" ],
 			"js": [ "js/DropdownCodeContainer.js",
 				"js/page_controllers/CtrlRegistration.js" ]
 		},
 		{	// Client Basic Information page
-			"matches": [ "http://rips.247lib.com/*/ClientDetails/ClientDetails" ],
+			"matches": [ "*://rips.247lib.com/*/ClientDetails/ClientDetails" ],
 			"js": [	"js/page_controllers/CtrlClientBasicInformation.js" ]
 		},
 		{	// Services pages
 			"matches": [ 
-				"http://rips.247lib.com/*/ClientDetails/ClientServicesList",
-				"http://rips.247lib.com/*/MatterAction/CreateNewServices"
+				"*://rips.247lib.com/*/ClientDetails/ClientServicesList",
+				"*://rips.247lib.com/*/MatterAction/CreateNewServices"
 			],
 			"js": [ "js/page_controllers/CtrlServices.js" ]
 		},
 		{	// Add Action page
-			"matches": [ "http://rips.247lib.com/*/MatterAction/CreateNewAction" ],
+			"matches": [ "*://rips.247lib.com/*/MatterAction/CreateNewAction" ],
 			"js": [ "js/page_controllers/CtrlAddAction.js" ]
 		},
 		{	// View Actions page
-			"matches": [ "http://rips.247lib.com/*/MatterAction/MatterActionsList" ],
+			"matches": [ "*://rips.247lib.com/*/MatterAction/MatterActionsList" ],
 			"js": [ "js/page_controllers/CtrlViewActions.js" ]
 		},
 		{	// Advanced Search pages
 			"matches": [
-				"http://rips.247lib.com/Stars/SearchClientDetails/AdvancedSearch",
-				"http://rips.247lib.com/Stars/SearchClientDetails/ClientListSearchResult"
+				"*://rips.247lib.com/Stars/SearchClientDetails/AdvancedSearch",
+				"*://rips.247lib.com/Stars/SearchClientDetails/ClientListSearchResult"
 			],
 			"js": [
 				"js/page_controllers/CtrlAdvancedSearch.js",
@@ -45,7 +45,7 @@
 			]
 		},
 		{	// This one needs to go last so that it can use other pages' functions!
-			"matches": [ "http://rips.247lib.com/*" ],
+			"matches": [ "*://rips.247lib.com/*" ],
 			"js": [ "js/min/jquery-3.1.1.min.js",
 				"js/Utils.js",
 				"js/ErrorThrowingAPI.js",
