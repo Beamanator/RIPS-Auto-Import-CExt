@@ -1,8 +1,8 @@
 # RIPS-Auto-Import-CExt
 
-**Latest Stable Version: 2.4.2**
+**Latest Stable Version: 2.5.1**
 
-**Version in progress: 2.4.3 (none)**
+**Version in progress: (none)**
 
 ## Instructions for useage:
 
