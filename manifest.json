@@ -1,73 +1,80 @@
 {
-	"manifest_version": 2,
-	"name": "RIPS Extension - Auto Client Import",
-	"version": "2.5.0",
+    "manifest_version": 2,
+    "name": "RIPS Extension - Auto Client Import",
+    "version": "2.5.1",
 
-	"description": "RIPS Extension - Enables automatic client data import. Checks for existing client data before importing new client info.",
+    "description": "RIPS Extension - Enables automatic client data import. Checks for existing client data before importing new client info.",
 
-	"permissions": [
-		"storage",
-		"tabs"
-	],
-	"content_scripts": [
-		{	// Registration page
-			"matches": [ "*://rips.247lib.com/*/Registration/Registration" ],
-			"js": [ "js/DropdownCodeContainer.js",
-				"js/page_controllers/CtrlRegistration.js" ]
-		},
-		{	// Client Basic Information page
-			"matches": [ "*://rips.247lib.com/*/ClientDetails/ClientDetails" ],
-			"js": [	"js/page_controllers/CtrlClientBasicInformation.js" ]
-		},
-		{	// Services pages
-			"matches": [ 
-				"*://rips.247lib.com/*/ClientDetails/ClientServicesList",
-				"*://rips.247lib.com/*/MatterAction/CreateNewServices"
-			],
-			"js": [ "js/page_controllers/CtrlServices.js" ]
-		},
-		{	// Add Action page
-			"matches": [ "*://rips.247lib.com/*/MatterAction/CreateNewAction" ],
-			"js": [ "js/page_controllers/CtrlAddAction.js" ]
-		},
-		{	// View Actions page
-			"matches": [ "*://rips.247lib.com/*/MatterAction/MatterActionsList" ],
-			"js": [ "js/page_controllers/CtrlViewActions.js" ]
-		},
-		{	// Advanced Search pages
-			"matches": [
-				"*://rips.247lib.com/Stars/SearchClientDetails/AdvancedSearch",
-				"*://rips.247lib.com/Stars/SearchClientDetails/ClientListSearchResult"
-			],
-			"js": [
-				"js/page_controllers/CtrlAdvancedSearch.js",
-				"js/min/fuse.min.js"
-			]
-		},
-		{	// This one needs to go last so that it can use other pages' functions!
-			"matches": [ "*://rips.247lib.com/*" ],
-			"js": [ "js/min/jquery-3.1.1.min.js",
-				"js/Utils.js",
-				"js/ErrorThrowingAPI.js",
-				"js/FieldTranslator.js",
-				// "js/FirebaseContentScriptAPI.js",
-				"js/page_controllers/MainController.js"
-			]
-		}
-	],
-	"background": {
-		"page": "html/background.html"
-	},
-	"options_page": "html/options.html",
-	"browser_action": {
-		"default_icon": {
-			"32": "img/fav128.png"
-			// "48": "img/icon48.png" // unpacked exts need .png to see icon :)
-		},
-		"default_popup": "html/optionPageRedirect.html"
-	},
-	"icons": {
-    	"128": "img/fav128.png"
+    "permissions": ["storage", "tabs"],
+    "content_scripts": [
+        {
+            // Registration page
+            "matches": ["*://rips.247lib.com/*/Registration/Registration"],
+            "js": [
+                "js/DropdownCodeContainer.js",
+                "js/page_controllers/CtrlRegistration.js"
+            ]
+        },
+        {
+            // Client Basic Information page
+            "matches": ["*://rips.247lib.com/*/ClientDetails/ClientDetails"],
+            "js": ["js/page_controllers/CtrlClientBasicInformation.js"]
+        },
+        {
+            // Services pages
+            "matches": [
+                "*://rips.247lib.com/*/ClientDetails/ClientServicesList",
+                "*://rips.247lib.com/*/MatterAction/CreateNewServices"
+            ],
+            "js": ["js/page_controllers/CtrlServices.js"]
+        },
+        {
+            // Add Action page
+            "matches": ["*://rips.247lib.com/*/MatterAction/CreateNewAction"],
+            "js": ["js/page_controllers/CtrlAddAction.js"]
+        },
+        {
+            // View Actions page
+            "matches": ["*://rips.247lib.com/*/MatterAction/MatterActionsList"],
+            "js": ["js/page_controllers/CtrlViewActions.js"]
+        },
+        {
+            // Advanced Search pages
+            "matches": [
+                "*://rips.247lib.com/Stars/SearchClientDetails/AdvancedSearch",
+                "*://rips.247lib.com/Stars/SearchClientDetails/ClientListSearchResult"
+            ],
+            "js": [
+                "js/page_controllers/CtrlAdvancedSearch.js",
+                "js/min/fuse.min.js"
+            ]
+        },
+        {
+            // This one needs to go last so that it can use other pages' functions!
+            "matches": ["*://rips.247lib.com/*"],
+            "js": [
+                "js/min/jquery-3.1.1.min.js",
+                "js/Utils.js",
+                "js/ErrorThrowingAPI.js",
+                "js/FieldTranslator.js",
+                // "js/FirebaseContentScriptAPI.js",
+                "js/page_controllers/MainController.js"
+            ]
+        }
+    ],
+    "background": {
+        "page": "html/background.html"
+    },
+    "options_page": "html/options.html",
+    "browser_action": {
+        "default_icon": {
+            "32": "img/fav128.png"
+            // "48": "img/icon48.png" // unpacked exts need .png to see icon :)
+        },
+        "default_popup": "html/optionPageRedirect.html"
+    },
+    "icons": {
+        "128": "img/fav128.png"
     }
     // "content_security_policy":"script-src 'self' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'"
     // TODO: oath stuff here, later maybe

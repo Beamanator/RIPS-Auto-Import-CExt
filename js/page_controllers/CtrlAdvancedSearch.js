@@ -30,6 +30,7 @@ function AdvancedSearch_Controller( config ) {
 		case 'ANALYZE_SEARCH_RESULTS_PHONE':
 		case 'ANALYZE_SEARCH_RESULTS_OTHER_PHONE':
 		case 'ANALYZE_SEARCH_RESULTS_STARS_NUMBER':
+		case 'ANALYZE_SEARCH_RESULTS_PASSPORT_NUMBER':
 			processSearchResults(clientIndex, clientData, importSettings, action);
 			break;
 
@@ -87,7 +88,8 @@ function kickoffSearch(clientIndex, clientData, importSettings, action) {
 	// if all search settings are unchecked, quit import before beginning
 	let searchSettings = importSettings.searchSettings;
 	if (!searchSettings.byUnhcr && !searchSettings.byStarsNumber 
-	&& !searchSettings.byPhone && !searchSettings.byOtherPhone) {
+	&& !searchSettings.byPhone && !searchSettings.byOtherPhone
+	&& !searchSettings.byPassportNumber) {
 		let msg = 'Need to check at least one search type checkbox :)';
 
 		// stop import and throw error
@@ -112,6 +114,11 @@ function kickoffSearch(clientIndex, clientData, importSettings, action) {
 		case 'SEARCH_FOR_CLIENT_UNHCR_NUMBER':
 			// valueCode = 'UNHCR NUMBER';
 			nextActionState = 'ANALYZE_SEARCH_RESULTS_UNHCR_NUMBER';
+			break;
+
+		case 'SEARCH_FOR_CLIENT_PASSPORT_NUMBER':
+			// valueCode = 'PASSPORT NUMBER';
+			nextActionState = 'ANALYZE_SEARCH_RESULTS_PASSPORT_NUMBER';
 			break;
 
 		case 'SEARCH_FOR_CLIENT_PHONE':

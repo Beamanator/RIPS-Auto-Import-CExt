@@ -27,9 +27,9 @@
             " - Headers must match fields below\n" +
             "Required Fields:\n" +
             "\tFirst / Last / Full name, Date of Birth, Gender, Nationality,\n" +
-            "Preferred Language, Phone Number, UNHCR No\n" +
+            "Preferred Language, Phone Number, UNHCR Number\n" +
             "Optional Fields:\n" +
-            "\tDate of UNHCR Reg, Country of Origin, Ethnic origin,\n" +
+            "\tPassport Number, Date of UNHCR Reg, Country of Origin, Ethnic origin,\n" +
             "\tSecond Language, Marital Status, Address 1, Caritas No,\n" +
             "\tService Code (+ more), Action Code (+ more)";
         // Ctrl.clientCount = 0;
@@ -50,7 +50,8 @@
         Ctrl.byPhone = false;
         Ctrl.byOtherPhone = false;
         Ctrl.byStarsNumber = false;
-        Ctrl.matchFirst = true;
+        Ctrl.byPassportNumber = false;
+        // Ctrl.matchFirst = true;
         Ctrl.matchLast = true;
 
         // handle client creation rules checkboxes
@@ -129,15 +130,15 @@
             let mObjFirst = {
                 action: "store_data_to_chrome_storage_local",
                 dataObj: {
-                    ADD_MESSAGE: "",
-                },
+                    ADD_MESSAGE: ""
+                }
             };
             chrome.runtime.sendMessage(mObjFirst, function(response) {
                 // then, query tabs for rips urls
                 chrome.tabs.query(
                     {
                         currentWindow: true,
-                        url: "*://rips.247lib.com/Stars/*",
+                        url: "*://rips.247lib.com/Stars/*"
                     },
                     function(tabs) {
                         // error if too many or too few tabs found w/ RIPS open
@@ -154,9 +155,7 @@
 
                             return;
                         } else if (tabs.length > 1) {
-                            let errMessage = `Too many RIPS tabs open! Found: ${
-                                tabs.length
-                            }.`;
+                            let errMessage = `Too many RIPS tabs open! Found: ${tabs.length}.`;
 
                             console.error(errMessage);
 
@@ -179,14 +178,14 @@
                                 ACTION_STATE: "SEARCH_FOR_CLIENT",
                                 CLIENT_DATA: Ctrl.dataArray,
                                 CLIENT_INDEX: 0,
-                                IMPORT_SETTINGS: getImportSettings(Ctrl),
-                            },
+                                IMPORT_SETTINGS: getImportSettings(Ctrl)
+                            }
                         };
 
                         // send message config (store data) then tell MainContent to GO!
                         chrome.runtime.sendMessage(mObj, function(response) {
                             chrome.tabs.sendMessage(targetTab.id, {
-                                message: "begin_client_import",
+                                message: "begin_client_import"
                             });
                         });
                     }
@@ -210,8 +209,8 @@
                     ACTION_STATE: "",
                     DUPLICATE_CLIENT_UNHCR_NO: "",
                     ADD_MESSAGE: "",
-                    IMPORT_SETTINGS: "",
-                },
+                    IMPORT_SETTINGS: ""
+                }
             };
 
             chrome.runtime.sendMessage(mObj, function(response) {
@@ -328,7 +327,7 @@
                 default:
                     displayError([
                         `Key from Ctrl.handleClientCreationRuleChange ` +
-                            `is invalid:<${key}>`,
+                            `is invalid:<${key}>`
                     ]);
             }
 
@@ -398,7 +397,7 @@
             return {
                 matchSettings: {
                     matchFirst: app.matchFirst,
-                    matchLast: app.matchLast,
+                    matchLast: app.matchLast
                 },
 
                 searchSettings: {
@@ -406,18 +405,19 @@
                     byPhone: app.byPhone,
                     byOtherPhone: app.byOtherPhone,
                     byStarsNumber: app.byStarsNumber,
+                    byPassportNumber: app.byPassportNumber
                 },
 
                 clientCreationSettings: {
                     // TODO: handle these in scripts
                     skipClientCreation: app.skipClientCreation,
                     skipConditionally: app.skipConditionally,
-                    createAllClients: app.createAllClients,
+                    createAllClients: app.createAllClients
                 },
 
                 otherSettings: {
                     // Add stuff here if needed
-                },
+                }
             };
         }
 
@@ -450,7 +450,7 @@
             var returnObj = {
                 errorCount: 0,
                 headerArr: [],
-                dataArray: [],
+                dataArray: []
             };
 
             var errArr = [];
@@ -565,7 +565,7 @@
             // look for "\n" in data. if there aren't any, create an error
             if (data.indexOf("\n") === -1) {
                 displayError([
-                    "ONLY 1 LINE OF DATA - NEED TITLE ROW + DATA ROW!",
+                    "ONLY 1 LINE OF DATA - NEED TITLE ROW + DATA ROW!"
                 ]);
                 return true;
             }
@@ -591,7 +591,7 @@
             // if no tabs or commas exist, throw error
             if (tab1 === -1 && com1 === -1) {
                 displayError([
-                    "CLIENT DATA MUST HAVE TABS OR COMMAS BETWEEN COLUMNS OF DATA",
+                    "CLIENT DATA MUST HAVE TABS OR COMMAS BETWEEN COLUMNS OF DATA"
                 ]);
                 return "";
             }
