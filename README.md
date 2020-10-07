@@ -109,33 +109,40 @@ Notes about "Optional" tables above:
 Notes about Services table:
 
 1. _Service Code_ - To determine the correct service code for each service, see table "Service Code -> Description Table" below.
+    - NOTE: If a new service needs to be added, contact a developer! This Chrome Extension will need to be updated & re-published with the new service(s).
 2. _Service Code_ - The only required column for this page.
 3. _Service Caseworker_ - RIPS defaults to adding logged-in user as caseworker for new services. If import user would like a different user added to new services, this column is where the caseworker should be specified.
 4. _Service Start Date_ - Should always be in format above: Day-Month-Year, where Day and Month are numbers and Month is a 3-letter string.
 
 **Service Code -> Description Table**
 
-| Service Code |             Service Description             |
-| :----------: | :-----------------------------------------: |
-|     AEP      |           Adult Education Program           |
-|     AFP      |       PS Adults and Families Program        |
-|     CEP      |         Children Education Program          |
-|      DA      |        PS Direct Assistance Program         |
-|     DIER     |      PS Drop in and Emergency Response      |
-|     EACB     |   Education Access and Capacity Building    |
-|     ECW      |          Early Childhood Wellbeing          |
-|    GROUPS    |          PS Groups and Activities           |
-|     MAN      |                 Management                  |
-|     MED      |          PS Medical Access Program          |
-|     MHP      |          PS Mental Health Program           |
-|     MONT     |            Montessori Preschool             |
-|     OUT      |             Community Outreach              |
-|     PDC      |      Professional Development Courses       |
-|     PRO      |               RLAP Protection               |
-|     RSD      |                  RLAP RSD                   |
-|     RST      |              RLAP Resettlement              |
-|     UCY      | PS Unaccompanied Children and Youth Program |
-|     UYBP     |   PS Unaccompanied Youth Bridging Program   |
+| Service Code |                  Service Description                  |
+| :----------: | :---------------------------------------------------: |
+|     AEP      |                Adult Education Program                |
+|     AFP      |            PS Adults and Families Program             |
+|     CEP      |              Children Education Program               |
+|     CHP      |             PS Community Hosting Program              |
+|      DA      |             PS Direct Assistance Program              |
+|     DIER     |           PS Drop in and Emergency Response           |
+|     DRP      |           PS Distribution Response Program            |
+|     EACB     |        Education Access and Capacity Building         |
+|     ECW      |               Early Childhood Wellbeing               |
+|      ED      |                    Education Grant                    |
+|    GROUPS    |               PS Groups and Activities                |
+|     MAN      |                      Management                       |
+|     MED      |               PS Medical Access Program               |
+|     MHP      |               PS Mental Health Program                |
+|     MONT     |                 Montessori Preschool                  |
+|     OUT      |                  Community Outreach                   |
+|     PDC      |           Professional Development Courses            |
+|     PRO      |                    RLAP Protection                    |
+|     RSD      |                       RLAP RSD                        |
+|     RST      |                   RLAP Resettlement                   |
+|     UCY      |      PS Unaccompanied Children and Youth Program      |
+|    UCYDR     | Unaccompanied Children and Youth Department Reception |
+|    UCYNCN    |               UCY Naimo Center Nursery                |
+|     UYBP     |        PS Unaccompanied Youth Bridging Program        |
+|     YMPP     |          Young Mothers Psychosocial Program           |
 
 ## Fields available for Add Action page, and example data:
 
@@ -170,3 +177,38 @@ Notes about Add Action table:
 | 10  |                    Only Reg data - Duplicate UNHCR #s AND duplicate matching names                    |        Default - 1 matching client        |            Client added to error list, no new client created            |        v2.3.0         |
 
 **Note**: Although these testing scenarios should be run before releasing a new version, please still test a few clients in your spreadsheet before completely trusting that this import will work for you! We don't want to add lots of bad data to the database.
+
+# Notes for Developers
+
+## Publishing an update
+
+Create a zipped folder with this extension's code inside:
+
+1. Update the project's _version number_ `manifest.json`
+    - Try to use [Semantic Versioning](https://semver.org/) standards
+1. Copy / paste this project to a new folder
+1. Delete the `/archive` directory in the new folder (and `README.md` file if you want)
+1. Open the `manifest.json` file in the new folder
+    - Delete all lines starting with `// ...` - these are comments that are not supported in the `manifest.json` file, they're just nice for readability. If you try to update this project without deleting these lines, you'll get an error.
+1. Compress / Zip the new folder
+1. Move to the next step :)
+
+Upload the zipped folder to the store:
+
+1. Navigate to https://chrome.google.com/webstore/devconsole/
+1. Find the Item you want to update (In this case, the **RIPS Extension - Auto Client Import**)
+1. Click "Package" on the Left-hand menu
+1. Click "Upload new package" in the top-right
+1. Upload the zipped folder (from the previous steps)
+
+Now you'll be back on the "Store listing" page. Finish with these steps:
+
+1. Click "Save draft" in the top-right
+1. Click "Submit for review"
+    - Note: You may have to resolve some metadata issues, as Chrome Extensions seem to consistently need new / updated information every few months.
+1. Publish your updates on Github
+    - I'd recommend waiting till after publishing on the Chrome Web Store because sometimes late in this process you'll need to update metadata. So at this point, the app is ready for review, you're ready to update Github.
+
+Done! You should now see `"Status: Pending review"`. Once your app has been reviewed, users should get the new version automatically :)
+
+Note: To make a publishing "group" (more than 1 person being able to update / publish to the chrome web store), may have to follow these steps: https://developer.chrome.com/webstore/group-publishers

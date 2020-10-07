@@ -244,10 +244,13 @@ function Utils_GetServiceDescFromCode(code) {
         AEP: "Adult Education Program", // 65
         AFP: "PS Adults and Families Program", // 56
         CEP: "Children Education Program", // 64
+        CHP: "PS Community Hosting Program", // 73
         DA: "PS Direct Assistance Program", // 57 (note: NOT DAP!)
         DIER: "PS Drop in and Emergency Response", // 58
+        DRP: "PS Distribution Response Program", // 77
         EACB: "Education Access and Capacity Building", // 66
         ECW: "Early Childhood Wellbeing", // 72
+        ED: "Education grant", // 79
         GROUPS: "PS Groups and Activities", // 59
         MAN: "Management", // 67
         MED: "PS Medical Access Program", // 60 (note: NOT MAP!)
@@ -260,7 +263,10 @@ function Utils_GetServiceDescFromCode(code) {
         RSD: "RLAP RSD", // 45
         RST: "RLAP Resettlement", // 55
         UCY: "PS Unaccompanied Children and Youth Program", // 61
-        UYBP: "PS Unaccompanied Youth Bridging Program" // 62
+        UCYDR: "Unaccompanied Children and Youth Department Reception", // 76
+        UCYNCN: "UCY Naimo Center Nursery", // 78
+        UYBP: "PS Unaccompanied Youth Bridging Program", // 62
+        YMPP: "Young Mothers Psychosocial Program", // 75
     };
 
     return map[code];

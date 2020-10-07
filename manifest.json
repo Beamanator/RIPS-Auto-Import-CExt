@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "RIPS Extension - Auto Client Import",
-    "version": "2.5.1",
+    "version": "2.5.2",
 
     "description": "RIPS Extension - Enables automatic client data import. Checks for existing client data before importing new client info.",
 
